@@ -3,73 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meteoryx Pro - Professional Weather Intelligence</title>
-    <meta name="description" content="Premium weather analysis platform with advanced historical predictions and cost impact calculations">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
-    <link rel="stylesheet" href="styles.css">
+    <title>Xyloclime Pro - Professional Weather Intelligence</title>
+    <meta name="description" content="Premium weather analysis platform with advanced analytics and cost calculations">
 
-    <!-- External Libraries with Subresource Integrity -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin="anonymous" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"
-            integrity="sha512-Y51n9mtKTVBh3Jbx5pZSJNDDMyY+yGe77DGtBPzRlgsf/YLCh13kSZ3JmfHGzYFCmOndraf0sQgfM654b7dJ3w=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-            integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
-            integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"></script>
+    <!-- Cache Control - Prevent aggressive browser caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
+    <link rel="stylesheet" href="styles.css?v=2.1.0">
+
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha512-Y51n9mtKTVBh3Jbx5pZSJNDDMyY+yGe77DGtBPzRlgsf/YLCh13kSZ3JmfHGzYFCmOndraf0sQgfM654b7dJ3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer"
-          rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
 </head>
 <body>
-    <!-- Terms of Service Acceptance Screen -->
-    <div id="termsScreen" class="terms-screen">
+    <!-- Authentication Screen -->
+    <div id="authScreen" class="auth-screen hidden">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="logo-large">
+                    <div class="logo-icon-large">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h1>XYLOCLIME PRO</h1>
+                    <p class="tagline">Professional Weather Intelligence</p>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to access your weather projects</p>
+
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+                </div>
+
+                <button id="loginBtn" class="auth-btn primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+
+                <button id="googleLoginBtn" class="auth-btn google">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" id="showForgotPassword">Forgot password?</a>
+                    <span>•</span>
+                    <a href="#" id="showSignup">Create account</a>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" class="auth-form hidden">
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Start analyzing weather data today</p>
+
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Smith" autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPasswordConfirm">Confirm Password</label>
+                    <input type="password" id="signupPasswordConfirm" placeholder="Re-enter password" autocomplete="new-password">
+                </div>
+
+                <button id="signupBtn" class="auth-btn primary">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+
+                <button id="googleSignupBtn" class="auth-btn google">
+                    <i class="fab fa-google"></i> Sign up with Google
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" id="showLogin">Already have an account? Sign in</a>
+                </div>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgotPasswordForm" class="auth-form hidden">
+                <h2>Reset Password</h2>
+                <p class="auth-subtitle">We'll send you a password reset link</p>
+
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" placeholder="your@email.com" autocomplete="email">
+                </div>
+
+                <button id="resetPasswordBtn" class="auth-btn primary">
+                    <i class="fas fa-envelope"></i> Send Reset Link
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" id="backToLogin">Back to sign in</a>
+                </div>
+            </div>
+
+            <div class="auth-footer">
+                <p><i class="fas fa-shield-alt"></i> Your data is secure and encrypted</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Screen (same as before) -->
+    <div id="termsScreen" class="terms-screen hidden">
         <div class="terms-container">
             <div class="terms-header">
                 <div class="logo-large">
                     <div class="logo-icon-large">
                         <i class="fas fa-bolt"></i>
                     </div>
-                    <h1>METEORYX PRO</h1>
-                    <p class="tagline">Professional Weather Intelligence Platform</p>
+                    <h1>XYLOCLIME PRO</h1>
+                    <p class="tagline">Professional Weather Intelligence Platform - ENHANCED</p>
                 </div>
             </div>
-
             <div class="terms-content">
                 <div class="critical-notice">
-                    <div class="notice-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
+                    <div class="notice-icon"><i class="fas fa-exclamation-triangle"></i></div>
                     <div class="notice-content">
                         <h2>IMPORTANT NOTICE - PLEASE READ CAREFULLY</h2>
-                        <p>Meteoryx Pro provides weather analysis based on historical data patterns. Before using this platform, you must understand and agree to these critical terms:</p>
+                        <p>Xyloclime Pro provides weather analysis based on historical data patterns. Before using this platform, you must understand and agree to these critical terms:</p>
                     </div>
                 </div>
-
                 <div class="terms-section">
-                    <h3><i class="fas fa-shield-alt"></i> What Meteoryx Pro IS:</h3>
+                    <h3><i class="fas fa-shield-alt"></i> What Xyloclime Pro IS:</h3>
                     <ul class="check-list">
                         <li><i class="fas fa-check"></i> A planning tool based on historical weather patterns</li>
                         <li><i class="fas fa-check"></i> A statistical analysis platform for informed decision-making</li>
                         <li><i class="fas fa-check"></i> A resource for understanding historical weather trends</li>
                     </ul>
                 </div>
-
                 <div class="terms-section warning">
-                    <h3><i class="fas fa-times-circle"></i> What Meteoryx Pro IS NOT:</h3>
+                    <h3><i class="fas fa-times-circle"></i> What Xyloclime Pro IS NOT:</h3>
                     <ul class="x-list">
                         <li><i class="fas fa-times"></i> A substitute for official weather forecasts</li>
                         <li><i class="fas fa-times"></i> Suitable for life-safety or critical decisions</li>
@@ -77,11 +168,9 @@
                         <li><i class="fas fa-times"></i> Intended for aviation, marine, or emergency use</li>
                     </ul>
                 </div>
-
                 <div class="terms-section">
                     <h3><i class="fas fa-clipboard-check"></i> Required Acknowledgments</h3>
                     <p class="section-intro">You MUST acknowledge each of the following before proceeding:</p>
-
                     <div class="acknowledgment-grid">
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack1" class="ack-checkbox">
@@ -91,16 +180,14 @@
                                 I understand that historical data does not guarantee future weather conditions and actual conditions may vary significantly.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack2" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
                             <span class="ack-text">
                                 <strong>Not for life-safety critical decisions.</strong>
-                                I will not use Meteoryx Pro for aviation, marine navigation, emergency response, or any life-safety critical applications.
+                                I will not use Xyloclime Pro for aviation, marine navigation, emergency response, or any life-safety critical applications.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack3" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
@@ -109,16 +196,14 @@
                                 I will verify all critical information with current forecasts from official sources and professional meteorologists.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack4" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
                             <span class="ack-text">
                                 <strong>Assumption of risk.</strong>
-                                I accept full responsibility for all decisions made based on Meteoryx Pro data and assume all associated risks.
+                                I accept full responsibility for all decisions made based on Xyloclime Pro data and assume all associated risks.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack5" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
@@ -127,16 +212,14 @@
                                 I understand the service is provided without warranties of accuracy, reliability, or fitness for any particular purpose.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack6" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
                             <span class="ack-text">
                                 <strong>Limited liability.</strong>
-                                I understand that Meteoryx Pro's liability is limited and they are not responsible for damages or losses arising from my use of the service.
+                                I understand that Xyloclime Pro's liability is limited and they are not responsible for damages or losses arising from my use of the service.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack7" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
@@ -145,7 +228,6 @@
                                 I acknowledge that data may be inaccurate, incomplete, delayed, or contain errors, and is dependent on third-party sources.
                             </span>
                         </label>
-
                         <label class="acknowledgment-item">
                             <input type="checkbox" id="ack8" class="ack-checkbox">
                             <span class="checkbox-custom"></span>
@@ -156,18 +238,16 @@
                         </label>
                     </div>
                 </div>
-
                 <div class="terms-actions">
                     <button id="acceptTermsBtn" class="btn-accept" disabled>
                         <i class="fas fa-check-circle"></i>
-                        I Agree - Enter Meteoryx Pro
+                        I Agree - Enter Xyloclime Pro
                     </button>
                     <button id="declineTermsBtn" class="btn-decline">
                         <i class="fas fa-times-circle"></i>
                         I Do Not Agree
                     </button>
                 </div>
-
                 <div class="terms-footer">
                     <p><i class="fas fa-info-circle"></i> By clicking "I Agree," you acknowledge that you have read and understood all terms and agree to be legally bound by them.</p>
                     <p class="version-info">Terms Version 1.0 | Last Updated: January 2025</p>
@@ -180,58 +260,27 @@
     <div id="fullTermsModal" class="modal-overlay hidden">
         <div class="modal-container large">
             <div class="modal-header">
-                <h2>Meteoryx Pro - Complete Terms of Service</h2>
-                <button id="closeFullTerms" class="modal-close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2>Xyloclime Pro - Complete Terms of Service</h2>
+                <button id="closeFullTerms" class="modal-close"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="terms-document">
                     <p><strong>Last Updated: January 2025 | Version 1.0</strong></p>
-
-                    <h3>1. SERVICE DESCRIPTION</h3>
-                    <p>Meteoryx Pro is a weather analysis platform that provides historical weather pattern analysis and predictive insights based on past meteorological data. The service is designed for <strong>planning and informational purposes only</strong>.</p>
-
-                    <h3>2. CRITICAL DISCLAIMERS</h3>
-                    <p><strong>WEATHER IS INHERENTLY UNPREDICTABLE.</strong> Historical weather patterns do not guarantee future conditions. Meteoryx Pro predictions are estimates based on statistical analysis and should be treated as preliminary planning tools only.</p>
-
-                    <h3>3. LIMITATION OF LIABILITY</h3>
-                    <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, our total liability shall not exceed the greater of (a) the amount you paid for the service in the 12 months prior to the claim, or (b) $100 USD.</p>
-                    <p>We shall not be liable for indirect, incidental, consequential damages, lost profits, business interruption, project delays, or any weather-related losses.</p>
-
-                    <h3>4. DISCLAIMER OF WARRANTIES</h3>
-                    <p>Meteoryx Pro is provided "AS-IS" and "AS-AVAILABLE" without warranties of any kind. We disclaim all warranties including merchantability, fitness for a particular purpose, accuracy, reliability, and uninterrupted operation.</p>
-
-                    <h3>5. USER RESPONSIBILITIES</h3>
-                    <p>You must independently verify all critical information, obtain current forecasts from official sources, and consult professional meteorologists for important decisions. You assume all risk for decisions made based on Meteoryx Pro data.</p>
-
-                    <h3>6. PROHIBITED USES</h3>
-                    <p>DO NOT use Meteoryx Pro for: life-safety decisions, aviation, marine navigation, emergency response, medical decisions, financial derivatives, legal proceedings, or construction safety determinations.</p>
-
-                    <h3>7. INDEMNIFICATION</h3>
-                    <p>You agree to indemnify, defend, and hold harmless Meteoryx Pro from any claims, damages, losses, liabilities, and expenses arising from your use or misuse of the service.</p>
-
-                    <p class="terms-note"><strong>NOTE:</strong> This is a summary. The complete Terms of Service should be reviewed by consulting the TERMS_OF_SERVICE.md document provided with this application.</p>
-
-                    <div class="important-notice">
-                        <h4>⚠️ FINAL IMPORTANT NOTICE</h4>
-                        <p>Meteoryx Pro provides statistical analysis based on historical weather patterns. Actual weather conditions may vary significantly. ALWAYS obtain current forecasts from official sources (NOAA, NWS, etc.) and consult professional meteorologists for critical decisions.</p>
-                    </div>
+                    <h3>IMPORTANT</h3>
+                    <p>See TERMS_OF_SERVICE.md for complete legal terms. This is for planning purposes only. Not for life-safety decisions.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Application (Hidden Until Terms Accepted) -->
+    <!-- Main Application -->
     <div id="mainApp" class="main-app hidden">
-        <!-- Header -->
         <header class="header">
             <div class="header-left">
                 <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <span class="logo-text">METEORYX PRO</span>
+                    <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+                    <span class="logo-text">XYLOCLIME PRO</span>
+                    <span class="version-badge">ENHANCED</span>
                 </div>
             </div>
             <div class="header-center">
@@ -241,34 +290,55 @@
                 </select>
             </div>
             <div class="header-right">
+                <div class="unit-system-toggle">
+                    <span class="unit-toggle-label">Units:</span>
+                    <button class="unit-btn active" id="unitSystemImperial" data-system="imperial">
+                        <i class="fas fa-flag-usa"></i> Imperial
+                    </button>
+                    <button class="unit-btn" id="unitSystemMetric" data-system="metric">
+                        <i class="fas fa-globe"></i> Metric
+                    </button>
+                </div>
                 <button class="header-btn" id="notificationsBtn">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge">0</span>
                 </button>
+                <button class="header-btn" id="costCalcBtn" title="Cost Calculator">
+                    <i class="fas fa-calculator"></i>
+                </button>
                 <button class="header-btn" id="settingsBtn">
                     <i class="fas fa-cog"></i>
                 </button>
-                <div class="user-menu-btn" id="userMenuBtn">
-                    <i class="fas fa-user-circle"></i>
+                <div class="user-profile-container">
+                    <button class="user-profile-btn" id="userProfileBtn">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userEmailDisplay">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown hidden" id="userDropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="userDropdownName">User Name</div>
+                            <div class="user-dropdown-email" id="userDropdownEmail">user@email.com</div>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <button class="user-dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- Liability Disclaimer Banner (Always Visible) -->
         <div class="liability-banner">
-            <div class="banner-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
+            <div class="banner-icon"><i class="fas fa-exclamation-triangle"></i></div>
             <div class="banner-text">
                 <strong>⚠️ WEATHER PREDICTIONS ARE ESTIMATES ONLY</strong> -
-                This analysis is based on historical data and should not be used for life-safety decisions or as sole basis for critical business decisions. Verify all information independently.
+                This analysis is based on historical data and should not be used for life-safety decisions. Verify all information independently.
                 <a href="#" id="viewTermsLink" class="banner-link">View Terms</a>
             </div>
         </div>
 
-        <!-- Main Container -->
         <div class="main-container">
-            <!-- Sidebar -->
             <aside class="sidebar">
                 <nav class="sidebar-nav">
                     <ul>
@@ -280,20 +350,12 @@
                             <i class="fas fa-folder"></i>
                             <span>Projects</span>
                         </li>
-                        <li class="nav-item" data-tab="settings">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </li>
                     </ul>
                 </nav>
-
                 <div class="saved-projects">
                     <h3>Saved Projects</h3>
-                    <div id="savedProjectsList" class="projects-list">
-                        <!-- Projects populated by JavaScript -->
-                    </div>
+                    <div id="savedProjectsList" class="projects-list"></div>
                 </div>
-
                 <div class="sidebar-footer">
                     <div class="disclaimer-mini">
                         <i class="fas fa-shield-alt"></i>
@@ -302,27 +364,50 @@
                 </div>
             </aside>
 
-            <!-- Main Content -->
             <main class="main-content">
-                <!-- Project Setup Panel -->
+                <!-- Setup Panel -->
                 <div id="setupPanel" class="setup-panel">
                     <div class="panel-header">
                         <h2>New Weather Analysis Project</h2>
-                        <p>Select location and date range to analyze historical weather patterns</p>
+                        <p>Select location and date range for comprehensive weather intelligence</p>
                     </div>
-
                     <div class="setup-form">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="projectName">Project Name</label>
-                                <input type="text" id="projectName" placeholder="Enter project name" maxlength="100" required>
+                                <label for="projectName">
+                                    Project Name
+                                    <span class="help-icon" title="Give your project a descriptive name. Example: 'Downtown Construction 2025'">
+                                        <i class="fas fa-question-circle"></i>
+                                    </span>
+                                </label>
+                                <input type="text" id="projectName" placeholder="e.g., Downtown Construction, Summer Event 2025, Highway Paving Project" maxlength="100" required>
+                                <div class="field-hint">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <button type="button" class="btn-use-example" id="useExampleName">
+                                        Use Example
+                                    </button>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="locationSearch">Location Search</label>
-                                <input type="text" id="locationSearch" placeholder="Search for address or city" maxlength="200">
+                                <label for="locationSearch">
+                                    <i class="fas fa-map-marker-alt"></i> Location Search
+                                    <span class="label-hint">(Start typing for suggestions, or click map)</span>
+                                </label>
+                                <div class="location-search-container">
+                                    <input type="text" id="locationSearch" placeholder="Start typing: address, city, zip code..." maxlength="200" autocomplete="off" spellcheck="false">
+                                    <button type="button" id="searchLocationBtn" class="btn-search-location" title="Search Location">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    <button type="button" id="useMyLocationBtn" class="btn-use-location" title="Use My Current Location">
+                                        <i class="fas fa-crosshairs"></i>
+                                    </button>
+                                </div>
+                                <div id="locationSuggestions" class="location-suggestions hidden"></div>
+                                <div id="locationSearchStatus" class="search-status hidden">
+                                    <i class="fas fa-spinner fa-spin"></i> Searching...
+                                </div>
                             </div>
                         </div>
-
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="startDate">Start Date</label>
@@ -333,7 +418,6 @@
                                 <input type="date" id="endDate">
                             </div>
                         </div>
-
                         <div class="map-container">
                             <div id="map" class="map"></div>
                             <div class="coordinates-display">
@@ -341,7 +425,6 @@
                                 <span>Longitude: <span id="selectedLng">--</span></span>
                             </div>
                         </div>
-
                         <button id="analyzeBtn" class="analyze-btn">
                             <i class="fas fa-bolt"></i>
                             Analyze Weather Data
@@ -351,7 +434,6 @@
 
                 <!-- Dashboard Panel -->
                 <div id="dashboardPanel" class="dashboard-panel hidden">
-                    <!-- Content similar to original but with Meteoryx Pro branding -->
                     <div class="project-info-header">
                         <div class="project-info-main">
                             <h2 id="projectInfoName">Project Name</h2>
@@ -366,19 +448,46 @@
                                 </div>
                             </div>
                         </div>
-                        <button id="backToNewProject" class="btn-back">
-                            <i class="fas fa-plus"></i> New Analysis
-                        </button>
+                        <div class="header-actions">
+                            <!-- PRIMARY ACTION -->
+                            <button id="exportAdvancedPdfBtn" class="btn-action btn-primary export-pdf" title="Export Professional PDF Report">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
+
+                            <!-- SECONDARY ACTIONS - Data Export -->
+                            <button id="exportExcelBtn" class="btn-action btn-secondary export-excel" title="Export to Excel Spreadsheet">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button id="exportCsvBtn" class="btn-action btn-secondary export-csv" title="Export Raw CSV Data">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+
+                            <!-- TERTIARY ACTIONS - Tools -->
+                            <button id="openCostCalc" class="btn-action btn-tertiary" title="Calculate Weather Impact Costs">
+                                <i class="fas fa-calculator"></i> Cost
+                            </button>
+                            <button id="openAdvancedCalc" class="btn-action btn-tertiary" title="Advanced Workable Days Calculator">
+                                <i class="fas fa-chart-line"></i> Advanced
+                            </button>
+                            <button id="openCompareProjects" class="btn-action btn-tertiary" title="Compare Multiple Projects">
+                                <i class="fas fa-columns"></i> Compare
+                            </button>
+
+                            <!-- NEW PROJECT -->
+                            <button id="backToNewProject" class="btn-back">
+                                <i class="fas fa-plus"></i> New
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Summary Cards -->
-                    <div class="summary-cards">
-                        <div class="summary-card frost">
-                            <div class="card-icon"><i class="fas fa-snowflake"></i></div>
+                    <!-- Enhanced Summary Cards -->
+                    <div class="summary-cards-grid">
+                        <div class="summary-card temp">
+                            <div class="card-icon"><i class="fas fa-temperature-high"></i></div>
                             <div class="card-content">
-                                <h3>Freezing Days</h3>
-                                <div class="card-value" id="freezingDays">--</div>
-                                <div class="card-subtitle">Avg per year</div>
+                                <h3>Avg Temperature</h3>
+                                <div class="card-value" id="avgTemp">--°C</div>
+                                <div class="card-subtitle">High: <span id="avgTempMax">--</span> / Low: <span id="avgTempMin">--</span></div>
                             </div>
                         </div>
                         <div class="summary-card rain">
@@ -386,59 +495,755 @@
                             <div class="card-content">
                                 <h3>Rainy Days</h3>
                                 <div class="card-value" id="rainyDays">--</div>
-                                <div class="card-subtitle">Avg per year</div>
+                                <div class="card-subtitle">Total: <span id="totalPrecip">--</span></div>
+                                <div class="card-criteria">&gt;0.04 inches/day</div>
+                            </div>
+                        </div>
+                        <div class="summary-card heavy-rain">
+                            <div class="card-icon"><i class="fas fa-cloud-showers-heavy"></i></div>
+                            <div class="card-content">
+                                <h3>Heavy Rain Days</h3>
+                                <div class="card-value" id="heavyRainDays">--</div>
+                                <div class="card-subtitle">Work-stopping rain</div>
+                                <div class="card-criteria">&gt;0.39 inches/day</div>
                             </div>
                         </div>
                         <div class="summary-card snow">
-                            <div class="card-icon"><i class="fas fa-snowman"></i></div>
+                            <div class="card-icon"><i class="fas fa-snowflake"></i></div>
                             <div class="card-content">
-                                <h3>Snowy Days</h3>
+                                <h3>Snow Days</h3>
                                 <div class="card-value" id="snowyDays">--</div>
-                                <div class="card-subtitle">Avg per year</div>
+                                <div class="card-subtitle">Total: <span id="totalSnow">--</span></div>
+                            </div>
+                        </div>
+                        <div class="summary-card wind">
+                            <div class="card-icon"><i class="fas fa-wind"></i></div>
+                            <div class="card-content">
+                                <h3>Wind Speed</h3>
+                                <div class="card-value" id="avgWind">--</div>
+                                <div class="card-subtitle">Max: <span id="maxWind">--</span> km/h</div>
+                            </div>
+                        </div>
+                        <div class="summary-card humidity">
+                            <div class="card-icon"><i class="fas fa-tint"></i></div>
+                            <div class="card-content">
+                                <h3>Humidity</h3>
+                                <div class="card-value" id="avgHumidity">--%</div>
+                                <div class="card-subtitle">Average relative</div>
                             </div>
                         </div>
                         <div class="summary-card optimal">
                             <div class="card-icon"><i class="fas fa-sun"></i></div>
                             <div class="card-content">
-                                <h3>Optimal Days</h3>
-                                <div class="card-value" id="optimalDays">--</div>
-                                <div class="card-subtitle">Best conditions</div>
+                                <h3>Work Feasibility</h3>
+                                <div class="workability-tiers">
+                                    <div class="tier-item">
+                                        <span class="tier-label">Workable:</span>
+                                        <span class="card-value" id="workableDays">--</span>
+                                    </div>
+                                    <div class="tier-item">
+                                        <span class="tier-label">Ideal:</span>
+                                        <span class="card-value-small" id="idealDays">--</span>
+                                    </div>
+                                </div>
+                                <div class="card-subtitle">Construction feasibility</div>
+                            </div>
+                        </div>
+                        <div class="summary-card risk" id="riskScoreCard">
+                            <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div class="card-content">
+                                <h3>Risk Score</h3>
+                                <div class="card-value risk-score" id="riskScore">--</div>
+                                <div class="card-subtitle risk-level" id="riskLevel">Calculating...</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Charts Section -->
-                    <div class="analytics-section">
-                        <div class="chart-panel">
-                            <h3>Daily Weather Trends</h3>
-                            <canvas id="dailyChart"></canvas>
+                    <!-- NEW: Weather Risk Analysis Dashboard -->
+                    <div class="risk-analysis-section">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Weather Risk Analysis</h3>
+                        <div class="risk-breakdown-grid">
+                            <div class="risk-item">
+                                <div class="risk-category">Precipitation Risk</div>
+                                <div class="risk-bar">
+                                    <div class="risk-bar-fill" id="precipRiskBar" style="width: 0%"></div>
+                                </div>
+                                <div class="risk-score-text" id="precipRiskScore">0%</div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-category">Temperature Risk</div>
+                                <div class="risk-bar">
+                                    <div class="risk-bar-fill" id="tempRiskBar" style="width: 0%"></div>
+                                </div>
+                                <div class="risk-score-text" id="tempRiskScore">0%</div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-category">Wind Risk</div>
+                                <div class="risk-bar">
+                                    <div class="risk-bar-fill" id="windRiskBar" style="width: 0%"></div>
+                                </div>
+                                <div class="risk-score-text" id="windRiskScore">0%</div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-category">Seasonal Risk</div>
+                                <div class="risk-bar">
+                                    <div class="risk-bar-fill" id="seasonRiskBar" style="width: 0%"></div>
+                                </div>
+                                <div class="risk-score-text" id="seasonRiskScore">0%</div>
+                            </div>
+                        </div>
+                        <div class="risk-recommendations" id="riskRecommendations">
+                            <h4><i class="fas fa-lightbulb"></i> Risk Mitigation Recommendations</h4>
+                            <ul id="riskRecommendationsList">
+                                <li>Analyzing weather patterns...</li>
+                            </ul>
                         </div>
                     </div>
 
-                    <!-- Data Disclaimer in Reports -->
+                    <!-- Threshold Definitions -->
+                    <div class="definitions-section">
+                        <h3><i class="fas fa-info-circle"></i> Weather Threshold Definitions</h3>
+
+                        <div class="definitions-grid">
+                            <!-- Workability Tiers -->
+                            <div class="definition-card">
+                                <h4>🏗️ Work Feasibility Tiers</h4>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">WORKABLE DAYS:</div>
+                                    <div class="threshold-desc">Construction feasible with normal precautions</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Temperature: <strong>-5°C to 37°C</strong> (23°F to 99°F)</li>
+                                        <li>Precipitation: <strong>&lt;10mm/day</strong> (&lt;0.39 inches)</li>
+                                        <li>Wind Speed: <strong>&lt;60 km/h</strong> (&lt;37 mph)</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">IDEAL DAYS:</div>
+                                    <div class="threshold-desc">Perfect conditions, no precautions needed</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Temperature: <strong>0°C to 37.7°C</strong> (32°F to 100°F)</li>
+                                        <li>Precipitation: <strong>&lt;5mm/day</strong> (&lt;0.2 inches)</li>
+                                        <li>Wind Speed: <strong>&lt;50 km/h</strong> (&lt;31 mph)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Precipitation Metrics -->
+                            <div class="definition-card">
+                                <h4>💧 Precipitation Metrics</h4>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">RAINY DAYS:</div>
+                                    <div class="threshold-desc">Any measurable precipitation</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>&gt;1mm/day</strong> (&gt;0.04 inches)</li>
+                                        <li>Purpose: Statistical tracking</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">HEAVY RAIN DAYS:</div>
+                                    <div class="threshold-desc">Work-stopping rainfall</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>&gt;10mm/day</strong> (&gt;0.39 inches)</li>
+                                        <li>Impact: Outdoor work typically stops</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">SNOWY DAYS:</div>
+                                    <div class="threshold-desc">Days with snowfall accumulation</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>&gt;0mm</strong> (any snowfall)</li>
+                                        <li>Heavy Snow: <strong>&gt;10mm</strong> (&gt;0.39 inches)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Temperature Metrics -->
+                            <div class="definition-card">
+                                <h4>🌡️ Temperature Metrics</h4>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">FREEZING DAYS:</div>
+                                    <div class="threshold-desc">Cold-weather precautions needed</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>Minimum ≤0°C</strong> (≤32°F)</li>
+                                        <li>Impact: Heaters, cold-weather materials required</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">EXTREME COLD DAYS:</div>
+                                    <div class="threshold-desc">Very difficult conditions</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>Minimum ≤-17.7°C</strong> (≤0°F)</li>
+                                        <li>Impact: Major work restrictions</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">EXTREME HEAT DAYS:</div>
+                                    <div class="threshold-desc">Heat safety concerns</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>Maximum ≥37.7°C</strong> (≥100°F)</li>
+                                        <li>Impact: Heat illness risk, reduced productivity</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Wind Metrics -->
+                            <div class="definition-card">
+                                <h4>💨 Wind Metrics</h4>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">HIGH WIND DAYS:</div>
+                                    <div class="threshold-desc">Safety concerns for certain operations</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>&gt;50 km/h</strong> (&gt;31 mph)</li>
+                                        <li>Impact: Crane/scaffolding restrictions</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">VERY HIGH WIND:</div>
+                                    <div class="threshold-desc">Work stoppage likely</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>&gt;60 km/h</strong> (&gt;37 mph)</li>
+                                        <li>Impact: Most outdoor work stops</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="definitions-note">
+                            <strong>Note:</strong> These thresholds are based on construction industry standards and OSHA guidelines.
+                            Actual work feasibility depends on specific project requirements, materials, and equipment being used.
+                        </div>
+                    </div>
+
+                    <!-- Data Quality Warnings -->
+                    <div id="dataQualityWarnings" class="data-quality-container" style="display: none;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Extreme Events -->
+                    <div id="extremeEventsInfo" class="extreme-events-container" style="display: none;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Confidence Intervals -->
+                    <div id="confidenceIntervals" class="confidence-container" style="display: none;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Executive Summary -->
+                    <div class="executive-summary">
+                        <div class="summary-header">
+                            <h3><i class="fas fa-file-contract"></i> Executive Summary</h3>
+                            <button id="exportPdfBtn" class="btn-export-pdf">
+                                <i class="fas fa-file-pdf"></i> Export Professional Report
+                            </button>
+                        </div>
+                        <div class="summary-content" id="executiveSummary">
+                            <p class="summary-loading">Generating intelligent summary...</p>
+                        </div>
+                    </div>
+
+                    <!-- Best/Worst Periods -->
+                    <div class="periods-analysis">
+                        <h3><i class="fas fa-calendar-check"></i> Optimal Work Periods</h3>
+                        <div class="periods-grid">
+                            <div class="period-card best">
+                                <div class="period-icon"><i class="fas fa-thumbs-up"></i></div>
+                                <div class="period-content">
+                                    <h4>Best 2-Week Period</h4>
+                                    <div class="period-dates" id="bestPeriod">Analyzing...</div>
+                                    <div class="period-reason" id="bestReason">Optimal conditions expected</div>
+                                </div>
+                            </div>
+                            <div class="period-card worst">
+                                <div class="period-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="period-content">
+                                    <h4>Most Challenging Period</h4>
+                                    <div class="period-dates" id="worstPeriod">Analyzing...</div>
+                                    <div class="period-reason" id="worstReason">Adverse conditions likely</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-line"></i> Temperature Trends</h3>
+                            <canvas id="temperatureChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3><i class="fas fa-cloud-rain"></i> Precipitation Analysis</h3>
+                            <canvas id="precipitationChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3><i class="fas fa-wind"></i> Wind Patterns</h3>
+                            <canvas id="windChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-pie"></i> Weather Distribution</h3>
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                        <div class="chart-card span-2">
+                            <h3><i class="fas fa-chart-area"></i> Comprehensive Weather Overview</h3>
+                            <canvas id="comprehensiveChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-radar"></i> Conditions Radar</h3>
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
                     <div class="report-disclaimer">
                         <i class="fas fa-info-circle"></i>
                         <p><strong>Historical Weather Analysis - Not a Guarantee</strong><br>
-                        Based on <span id="yearsAnalyzed">5</span> years of past data. Future conditions may vary significantly. This is for planning purposes only.</p>
+                        Based on <span id="yearsAnalyzed">5</span> years of past data. Future conditions may vary significantly.</p>
                     </div>
                 </div>
 
-                <!-- Loading Spinner -->
                 <div id="loadingSpinner" class="loading-spinner hidden">
                     <div class="spinner"></div>
-                    <p>Analyzing historical weather data...</p>
+                    <p>Analyzing comprehensive weather data...</p>
                 </div>
             </main>
         </div>
 
-        <!-- Footer Disclaimer (Always Visible) -->
+        <!-- Cost Calculator Modal -->
+        <div id="costCalculatorModal" class="modal-overlay hidden">
+            <div class="modal-container large">
+                <div class="modal-header">
+                    <h2><i class="fas fa-calculator"></i> Project Cost Calculator</h2>
+                    <button id="closeCostCalc" class="modal-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="cost-calculator">
+                        <div class="cost-intro">
+                            <p>Configure custom costs for weather-related impacts specific to this project.</p>
+                        </div>
+                        <div class="cost-inputs-grid">
+                            <div class="cost-input-group">
+                                <label for="costRainyDay">
+                                    <i class="fas fa-cloud-rain"></i> Cost per Rainy Day
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="costRainyDay" value="1000" min="0" step="100">
+                                </div>
+                                <span class="days-count"><span id="rainyDaysCount">0</span> days expected</span>
+                            </div>
+                            <div class="cost-input-group">
+                                <label for="costSnowDay">
+                                    <i class="fas fa-snowflake"></i> Cost per Snow Day
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="costSnowDay" value="2000" min="0" step="100">
+                                </div>
+                                <span class="days-count"><span id="snowDaysCount">0</span> days expected</span>
+                            </div>
+                            <div class="cost-input-group">
+                                <label for="costFreezingDay">
+                                    <i class="fas fa-temperature-low"></i> Cost per Freezing Day
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="costFreezingDay" value="800" min="0" step="100">
+                                </div>
+                                <span class="days-count"><span id="freezingDaysCount">0</span> days expected</span>
+                            </div>
+                            <div class="cost-input-group">
+                                <label for="costHeatDay">
+                                    <i class="fas fa-temperature-high"></i> Cost per Extreme Heat Day
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="costHeatDay" value="1500" min="0" step="100">
+                                </div>
+                                <span class="days-count"><span id="heatDaysCount">0</span> days expected</span>
+                            </div>
+                            <div class="cost-input-group">
+                                <label for="costHighWindDay">
+                                    <i class="fas fa-wind"></i> Cost per High Wind Day
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="costHighWindDay" value="1200" min="0" step="100">
+                                </div>
+                                <span class="days-count"><span id="windDaysCount">0</span> days expected</span>
+                            </div>
+                            <div class="cost-input-group">
+                                <label for="costLaborDay">
+                                    <i class="fas fa-hard-hat"></i> Daily Labor Cost
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="costLaborDay" value="5000" min="0" step="500">
+                                </div>
+                                <span class="days-count"><span id="totalDays">0</span> total project days</span>
+                            </div>
+                        </div>
+                        <button id="calculateCosts" class="btn-calculate">
+                            <i class="fas fa-bolt"></i> Calculate Estimated Costs
+                        </button>
+                        <div id="costResults" class="cost-results hidden">
+                            <h3>Cost Impact Analysis</h3>
+                            <div class="cost-summary-card">
+                                <div class="total-cost">
+                                    <span class="label">Total Weather Impact Cost</span>
+                                    <span class="value" id="totalWeatherCost">$0</span>
+                                </div>
+                                <div class="total-cost">
+                                    <span class="label">Total Labor Cost</span>
+                                    <span class="value" id="totalLaborCost">$0</span>
+                                </div>
+                                <div class="total-cost grand">
+                                    <span class="label">Grand Total Project Cost</span>
+                                    <span class="value" id="grandTotalCost">$0</span>
+                                </div>
+                            </div>
+                            <div class="cost-breakdown">
+                                <h4>Detailed Breakdown</h4>
+                                <div class="breakdown-item">
+                                    <span class="item-label"><i class="fas fa-cloud-rain"></i> Rainy Days Impact</span>
+                                    <span class="item-calc" id="rainyCalc">0 × $0</span>
+                                    <span class="item-total" id="rainyTotal">$0</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="item-label"><i class="fas fa-snowflake"></i> Snow Days Impact</span>
+                                    <span class="item-calc" id="snowCalc">0 × $0</span>
+                                    <span class="item-total" id="snowTotal">$0</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="item-label"><i class="fas fa-temperature-low"></i> Freezing Days Impact</span>
+                                    <span class="item-calc" id="freezeCalc">0 × $0</span>
+                                    <span class="item-total" id="freezeTotal">$0</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="item-label"><i class="fas fa-temperature-high"></i> Extreme Heat Impact</span>
+                                    <span class="item-calc" id="heatCalc">0 × $0</span>
+                                    <span class="item-total" id="heatTotal">$0</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="item-label"><i class="fas fa-wind"></i> High Wind Impact</span>
+                                    <span class="item-calc" id="windCalc">0 × $0</span>
+                                    <span class="item-total" id="windTotal">$0</span>
+                                </div>
+                            </div>
+                            <div class="cost-recommendations">
+                                <h4><i class="fas fa-lightbulb"></i> Recommendations</h4>
+                                <div id="costRecommendations"></div>
+                            </div>
+                        </div>
+
+                        <!-- DATA LIMITATIONS & METHODOLOGY DISCLOSURE -->
+                        <div class="data-limitations-section">
+                            <h3><i class="fas fa-info-circle"></i> Data Sources, Methodology & Limitations</h3>
+
+                            <div class="methodology-grid">
+                                <div class="methodology-card">
+                                    <h4><i class="fas fa-database"></i> Data Source</h4>
+                                    <p><strong>Provider:</strong> Open-Meteo Historical Weather API</p>
+                                    <p><strong>Data Type:</strong> ERA5 Climate Reanalysis</p>
+                                    <p><strong>Coverage:</strong> 5 years of historical data (2019-2024)</p>
+                                    <p><strong>Resolution:</strong> Daily aggregates</p>
+                                    <p class="note"><i class="fas fa-exclamation-circle"></i> Data ends 5 days before present (not real-time)</p>
+                                </div>
+
+                                <div class="methodology-card">
+                                    <h4><i class="fas fa-check-circle"></i> Included Parameters</h4>
+                                    <ul class="param-list">
+                                        <li><i class="fas fa-thermometer-half"></i> Temperature (daily max/min)</li>
+                                        <li><i class="fas fa-cloud-rain"></i> Precipitation</li>
+                                        <li><i class="fas fa-snowflake"></i> Snowfall</li>
+                                        <li><i class="fas fa-wind"></i> Wind Speed (max daily)</li>
+                                    </ul>
+                                </div>
+
+                                <div class="methodology-card warning">
+                                    <h4><i class="fas fa-exclamation-triangle"></i> NOT Included (Data Unavailable)</h4>
+                                    <ul class="param-list missing">
+                                        <li><i class="fas fa-tint"></i> Humidity / Relative Humidity</li>
+                                        <li><i class="fas fa-compass"></i> Wind Direction</li>
+                                        <li><i class="fas fa-cloud"></i> Cloud Cover</li>
+                                        <li><i class="fas fa-eye"></i> Visibility / Fog</li>
+                                        <li><i class="fas fa-tachometer-alt"></i> Atmospheric Pressure</li>
+                                        <li><i class="fas fa-sun"></i> UV Index / Solar Radiation</li>
+                                    </ul>
+                                </div>
+
+                                <div class="methodology-card important">
+                                    <h4><i class="fas fa-shield-alt"></i> Important Limitations</h4>
+                                    <ul class="limitations-list">
+                                        <li><i class="fas fa-exclamation"></i> Historical data may not predict future conditions</li>
+                                        <li><i class="fas fa-exclamation"></i> 5-year sample does not capture long-term climate trends</li>
+                                        <li><i class="fas fa-exclamation"></i> Rare extreme events beyond this period not captured</li>
+                                        <li><i class="fas fa-exclamation"></i> Data is modeled (reanalysis), not direct weather station observations</li>
+                                        <li><i class="fas fa-exclamation"></i> Local microclimates may vary significantly from area averages</li>
+                                        <li><i class="fas fa-exclamation"></i> Weather thresholds are generalized, not climate-specific</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="disclaimer-box">
+                                <h4><i class="fas fa-gavel"></i> Usage Disclaimer</h4>
+                                <p>This weather analysis is provided <strong>for general planning purposes only</strong> and should not be used as the sole basis for critical business, construction, or life-safety decisions.</p>
+                                <p><strong>Recommended Actions:</strong></p>
+                                <ul>
+                                    <li>Consult professional meteorologists for critical decisions</li>
+                                    <li>Monitor short-term weather forecasts continuously during project execution</li>
+                                    <li>Maintain appropriate insurance coverage for weather-related risks</li>
+                                    <li>Develop comprehensive weather contingency plans</li>
+                                </ul>
+                                <p class="legal-note">⚠️ Xyloclime Pro and its data providers are not responsible for damages or losses arising from use of this analysis. See full Terms of Service for complete legal disclaimers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Workable Days Calculator Modal -->
+        <div id="advancedCalcModal" class="modal-overlay hidden">
+            <div class="modal-container large-modal">
+                <div class="modal-header">
+                    <h2><i class="fas fa-chart-line"></i> Advanced Workable Days Calculator</h2>
+                    <button id="closeAdvancedCalc" class="modal-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="advanced-calc-intro">
+                        <p><i class="fas fa-info-circle"></i> Define custom weather criteria to calculate precise workable days for your specific project needs.</p>
+                    </div>
+
+                    <div class="advanced-calc-section">
+                        <h3><i class="fas fa-sliders-h"></i> Weather Criteria</h3>
+                        <div class="criteria-grid">
+                            <div class="criteria-item">
+                                <label>Max Acceptable Rain (mm/day)</label>
+                                <input type="number" id="maxRainThreshold" value="5" min="0" max="100" step="0.5">
+                                <small>Days with more rain are considered unworkable</small>
+                            </div>
+                            <div class="criteria-item">
+                                <label>Max Acceptable Wind (km/h)</label>
+                                <input type="number" id="maxWindThreshold" value="50" min="0" max="150" step="5">
+                                <small>Days with higher wind are considered unworkable</small>
+                            </div>
+                            <div class="criteria-item">
+                                <label>Min Temperature (°<span class="temp-unit-display">F</span>)</label>
+                                <input type="number" id="minTempThreshold" value="32" min="-40" max="100" step="1">
+                                <small>Days below this are considered too cold</small>
+                            </div>
+                            <div class="criteria-item">
+                                <label>Max Temperature (°<span class="temp-unit-display">F</span>)</label>
+                                <input type="number" id="maxTempThreshold" value="95" min="0" max="130" step="1">
+                                <small>Days above this are considered too hot</small>
+                            </div>
+                            <div class="criteria-item">
+                                <label>Max Snow Accumulation (cm/day)</label>
+                                <input type="number" id="maxSnowThreshold" value="2" min="0" max="50" step="0.5">
+                                <small>Days with more snow are unworkable</small>
+                            </div>
+                            <div class="criteria-item">
+                                <label>Require Consecutive Days</label>
+                                <input type="number" id="consecutiveDays" value="1" min="1" max="14" step="1">
+                                <small>Minimum consecutive workable days needed</small>
+                            </div>
+                        </div>
+                        <button id="calculateWorkableDays" class="btn-calculate">
+                            <i class="fas fa-calculator"></i> Calculate Workable Days
+                        </button>
+                    </div>
+
+                    <div class="advanced-calc-results hidden" id="advancedCalcResults">
+                        <h3><i class="fas fa-check-circle"></i> Workable Days Analysis</h3>
+                        <div class="workable-summary-grid">
+                            <div class="workable-stat">
+                                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                                <div class="stat-value" id="totalWorkableDays">--</div>
+                                <div class="stat-label">Workable Days</div>
+                            </div>
+                            <div class="workable-stat">
+                                <div class="stat-icon"><i class="fas fa-calendar-times"></i></div>
+                                <div class="stat-value" id="totalUnworkableDays">--</div>
+                                <div class="stat-label">Unworkable Days</div>
+                            </div>
+                            <div class="workable-stat">
+                                <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                                <div class="stat-value" id="workablePercentage">--%</div>
+                                <div class="stat-label">Workability Rate</div>
+                            </div>
+                            <div class="workable-stat">
+                                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                                <div class="stat-value" id="longestWorkableStreak">--</div>
+                                <div class="stat-label">Longest Streak (days)</div>
+                            </div>
+                        </div>
+                        <div class="workable-timeline" id="workableTimeline">
+                            <!-- Timeline will be generated here -->
+                        </div>
+                        <div class="save-template-section">
+                            <h4><i class="fas fa-save"></i> Save This Configuration</h4>
+                            <div class="template-save-form">
+                                <input type="text" id="templateName" placeholder="Template name (e.g., 'Outdoor Construction')">
+                                <button id="saveTemplate" class="btn-action">
+                                    <i class="fas fa-save"></i> Save Template
+                                </button>
+                            </div>
+                            <div class="saved-templates" id="savedTemplates">
+                                <h5>Saved Templates</h5>
+                                <div id="templatesList">No templates saved yet</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Comparison Modal -->
+        <div id="compareProjectsModal" class="modal-overlay hidden">
+            <div class="modal-container xl-modal">
+                <div class="modal-header">
+                    <h2><i class="fas fa-columns"></i> Compare Projects</h2>
+                    <button id="closeCompareProjects" class="modal-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="compare-intro">
+                        <p><i class="fas fa-info-circle"></i> Select up to 3 projects to compare side-by-side.</p>
+                    </div>
+
+                    <div class="project-selector-grid">
+                        <div class="compare-project-selector">
+                            <label>Project 1</label>
+                            <select id="compareProject1" class="compare-select">
+                                <option value="">Select project...</option>
+                            </select>
+                        </div>
+                        <div class="compare-project-selector">
+                            <label>Project 2</label>
+                            <select id="compareProject2" class="compare-select">
+                                <option value="">Select project...</option>
+                            </select>
+                        </div>
+                        <div class="compare-project-selector">
+                            <label>Project 3 (Optional)</label>
+                            <select id="compareProject3" class="compare-select">
+                                <option value="">Select project...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="runComparison" class="btn-calculate">
+                        <i class="fas fa-chart-bar"></i> Run Comparison
+                    </button>
+
+                    <div class="comparison-results hidden" id="comparisonResults">
+                        <h3><i class="fas fa-chart-bar"></i> Comparison Results</h3>
+                        <div class="comparison-table-container">
+                            <table class="comparison-table" id="comparisonTable">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th id="compareHeader1">Project 1</th>
+                                        <th id="compareHeader2">Project 2</th>
+                                        <th id="compareHeader3" class="hidden">Project 3</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparisonTableBody">
+                                    <!-- Comparison rows will be generated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="comparison-insights" id="comparisonInsights">
+                            <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                            <ul id="comparisonInsightsList">
+                                <!-- Insights will be generated here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal-overlay hidden">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2><i class="fas fa-cog"></i> Settings</h2>
+                    <button id="closeSettingsModal" class="modal-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h3><i class="fas fa-thermometer-half"></i> Temperature Unit</h3>
+                        <p class="setting-description">Choose how temperatures are displayed throughout the application</p>
+                        <div class="settings-group">
+                            <div class="temp-unit-selector">
+                                <button class="temp-unit-option" id="settingTempF" data-unit="F">
+                                    <div class="unit-icon"><i class="fas fa-temperature-high"></i></div>
+                                    <div class="unit-label">Fahrenheit</div>
+                                    <div class="unit-symbol">°F</div>
+                                    <div class="unit-badge">Default</div>
+                                </button>
+                                <button class="temp-unit-option" id="settingTempC" data-unit="C">
+                                    <div class="unit-icon"><i class="fas fa-temperature-low"></i></div>
+                                    <div class="unit-label">Celsius</div>
+                                    <div class="unit-symbol">°C</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-database"></i> Data & Storage</h3>
+                        <p class="setting-description">Manage your local data and preferences</p>
+                        <div class="settings-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <strong>Saved Projects</strong>
+                                    <span id="projectCount" class="setting-value">0 projects</span>
+                                </div>
+                                <button class="btn-setting-action" id="clearProjectsBtn">
+                                    <i class="fas fa-trash-alt"></i> Clear All
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <strong>Terms Acceptance</strong>
+                                    <span id="termsAcceptanceDate" class="setting-value">Not set</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-info-circle"></i> About</h3>
+                        <div class="settings-group">
+                            <div class="about-info">
+                                <div class="about-item">
+                                    <strong>Version:</strong> Xyloclime Pro v1.0 ENHANCED
+                                </div>
+                                <div class="about-item">
+                                    <strong>Data Source:</strong> Open-Meteo Historical Weather API
+                                </div>
+                                <div class="about-item">
+                                    <strong>Purpose:</strong> Planning & Analysis Only
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveSettingsBtn" class="btn-save-settings">
+                        <i class="fas fa-check"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <footer class="app-footer">
             <div class="footer-content">
                 <div class="footer-disclaimer">
-                    <p><strong>Disclaimer:</strong> Meteoryx Pro provides weather analysis for planning purposes only. Not for life-safety decisions. See <a href="#" class="footer-link" id="footerTermsLink">Terms of Service</a> for complete details.</p>
+                    <p><strong>Disclaimer:</strong> Xyloclime Pro provides weather analysis for planning purposes only. Not for life-safety decisions.</p>
                 </div>
                 <div class="footer-info">
-                    <span>Meteoryx Pro v1.0</span>
+                    <span>Xyloclime Pro v1.0 ENHANCED</span>
                     <span>•</span>
                     <span>Data: Open-Meteo Historical Weather API</span>
                     <span>•</span>
@@ -448,6 +1253,20 @@
         </footer>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Firebase SDK -->
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- Firebase Firestore (Database) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase Storage (for PDFs) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- Firebase Configuration (your config goes here) -->
+    <script src="firebase-config.js?v=2.1.0"></script>
+
+    <!-- Main Application -->
+    <script src="app.js?v=2.1.0"></script>
 </body>
 </html>
