@@ -493,20 +493,20 @@ class XyloclimePro {
         console.log('[METEORYX] Initializing application...');
         this.sessionManager.logAction('app_init', { version: '1.0.0' });
 
-        // Check terms acceptance
-        if (!this.termsManager.hasAcceptedTerms()) {
-            this.showTermsScreen();
-        } else {
-            this.showMainApp();
-        }
+        // Don't show any screen yet - let AuthManager decide based on login state
+        // AuthManager's onAuthStateChanged will handle the flow:
+        // No user -> Login screen
+        // User but no terms -> Terms screen
+        // User with terms -> Main app
 
-        // Initialize main app components
+        // Initialize main app components (but keep hidden until auth resolves)
         this.initializeMap();
         this.bindEvents();
-        this.loadSavedProjects();
         this.setDefaultDates();
         this.updateAcceptanceDate();
         this.updateTempUnitUI();
+
+        // Note: loadSavedProjects() is called by AuthManager after login
     }
 
     showTermsScreen() {
@@ -550,8 +550,10 @@ class XyloclimePro {
         if (this.map) {
             setTimeout(() => {
                 this.map.invalidateSize();
-                console.log('[MAP] Size invalidated to fix rendering');
-            }, 100);
+                // Reset view to default center and zoom
+                this.map.setView([39.8283, -98.5795], 4);
+                console.log('[MAP] Size invalidated and view reset');
+            }, 250);
         }
     }
 
