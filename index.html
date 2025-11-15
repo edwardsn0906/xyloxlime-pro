@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meteoryx Pro - Professional Weather Intelligence</title>
+    <meta name="description" content="Premium weather analysis platform with advanced historical predictions and cost impact calculations">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- External Libraries with Subresource Integrity -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"
+            integrity="sha512-Y51n9mtKTVBh3Jbx5pZSJNDDMyY+yGe77DGtBPzRlgsf/YLCh13kSZ3JmfHGzYFCmOndraf0sQgfM654b7dJ3w=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+            integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+            integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer"
+          rel="stylesheet">
+</head>
+<body>
+    <!-- Terms of Service Acceptance Screen -->
+    <div id="termsScreen" class="terms-screen">
+        <div class="terms-container">
+            <div class="terms-header">
+                <div class="logo-large">
+                    <div class="logo-icon-large">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h1>METEORYX PRO</h1>
+                    <p class="tagline">Professional Weather Intelligence Platform</p>
+                </div>
+            </div>
+
+            <div class="terms-content">
+                <div class="critical-notice">
+                    <div class="notice-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="notice-content">
+                        <h2>IMPORTANT NOTICE - PLEASE READ CAREFULLY</h2>
+                        <p>Meteoryx Pro provides weather analysis based on historical data patterns. Before using this platform, you must understand and agree to these critical terms:</p>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <h3><i class="fas fa-shield-alt"></i> What Meteoryx Pro IS:</h3>
+                    <ul class="check-list">
+                        <li><i class="fas fa-check"></i> A planning tool based on historical weather patterns</li>
+                        <li><i class="fas fa-check"></i> A statistical analysis platform for informed decision-making</li>
+                        <li><i class="fas fa-check"></i> A resource for understanding historical weather trends</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section warning">
+                    <h3><i class="fas fa-times-circle"></i> What Meteoryx Pro IS NOT:</h3>
+                    <ul class="x-list">
+                        <li><i class="fas fa-times"></i> A substitute for official weather forecasts</li>
+                        <li><i class="fas fa-times"></i> Suitable for life-safety or critical decisions</li>
+                        <li><i class="fas fa-times"></i> A guarantee of future weather conditions</li>
+                        <li><i class="fas fa-times"></i> Intended for aviation, marine, or emergency use</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h3><i class="fas fa-clipboard-check"></i> Required Acknowledgments</h3>
+                    <p class="section-intro">You MUST acknowledge each of the following before proceeding:</p>
+
+                    <div class="acknowledgment-grid">
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack1" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Weather predictions are estimates, not guarantees.</strong>
+                                I understand that historical data does not guarantee future weather conditions and actual conditions may vary significantly.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack2" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Not for life-safety critical decisions.</strong>
+                                I will not use Meteoryx Pro for aviation, marine navigation, emergency response, or any life-safety critical applications.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack3" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Independent verification required.</strong>
+                                I will verify all critical information with current forecasts from official sources and professional meteorologists.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack4" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Assumption of risk.</strong>
+                                I accept full responsibility for all decisions made based on Meteoryx Pro data and assume all associated risks.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack5" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Service provided "AS-IS" without warranty.</strong>
+                                I understand the service is provided without warranties of accuracy, reliability, or fitness for any particular purpose.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack6" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Limited liability.</strong>
+                                I understand that Meteoryx Pro's liability is limited and they are not responsible for damages or losses arising from my use of the service.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack7" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Data accuracy limitations.</strong>
+                                I acknowledge that data may be inaccurate, incomplete, delayed, or contain errors, and is dependent on third-party sources.
+                            </span>
+                        </label>
+
+                        <label class="acknowledgment-item">
+                            <input type="checkbox" id="ack8" class="ack-checkbox">
+                            <span class="checkbox-custom"></span>
+                            <span class="ack-text">
+                                <strong>Terms of Service agreement.</strong>
+                                I have read, understood, and agree to the complete <a href="#" id="viewFullTerms">Terms of Service</a> and all disclaimers.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="terms-actions">
+                    <button id="acceptTermsBtn" class="btn-accept" disabled>
+                        <i class="fas fa-check-circle"></i>
+                        I Agree - Enter Meteoryx Pro
+                    </button>
+                    <button id="declineTermsBtn" class="btn-decline">
+                        <i class="fas fa-times-circle"></i>
+                        I Do Not Agree
+                    </button>
+                </div>
+
+                <div class="terms-footer">
+                    <p><i class="fas fa-info-circle"></i> By clicking "I Agree," you acknowledge that you have read and understood all terms and agree to be legally bound by them.</p>
+                    <p class="version-info">Terms Version 1.0 | Last Updated: January 2025</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Terms Modal -->
+    <div id="fullTermsModal" class="modal-overlay hidden">
+        <div class="modal-container large">
+            <div class="modal-header">
+                <h2>Meteoryx Pro - Complete Terms of Service</h2>
+                <button id="closeFullTerms" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-document">
+                    <p><strong>Last Updated: January 2025 | Version 1.0</strong></p>
+
+                    <h3>1. SERVICE DESCRIPTION</h3>
+                    <p>Meteoryx Pro is a weather analysis platform that provides historical weather pattern analysis and predictive insights based on past meteorological data. The service is designed for <strong>planning and informational purposes only</strong>.</p>
+
+                    <h3>2. CRITICAL DISCLAIMERS</h3>
+                    <p><strong>WEATHER IS INHERENTLY UNPREDICTABLE.</strong> Historical weather patterns do not guarantee future conditions. Meteoryx Pro predictions are estimates based on statistical analysis and should be treated as preliminary planning tools only.</p>
+
+                    <h3>3. LIMITATION OF LIABILITY</h3>
+                    <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, our total liability shall not exceed the greater of (a) the amount you paid for the service in the 12 months prior to the claim, or (b) $100 USD.</p>
+                    <p>We shall not be liable for indirect, incidental, consequential damages, lost profits, business interruption, project delays, or any weather-related losses.</p>
+
+                    <h3>4. DISCLAIMER OF WARRANTIES</h3>
+                    <p>Meteoryx Pro is provided "AS-IS" and "AS-AVAILABLE" without warranties of any kind. We disclaim all warranties including merchantability, fitness for a particular purpose, accuracy, reliability, and uninterrupted operation.</p>
+
+                    <h3>5. USER RESPONSIBILITIES</h3>
+                    <p>You must independently verify all critical information, obtain current forecasts from official sources, and consult professional meteorologists for important decisions. You assume all risk for decisions made based on Meteoryx Pro data.</p>
+
+                    <h3>6. PROHIBITED USES</h3>
+                    <p>DO NOT use Meteoryx Pro for: life-safety decisions, aviation, marine navigation, emergency response, medical decisions, financial derivatives, legal proceedings, or construction safety determinations.</p>
+
+                    <h3>7. INDEMNIFICATION</h3>
+                    <p>You agree to indemnify, defend, and hold harmless Meteoryx Pro from any claims, damages, losses, liabilities, and expenses arising from your use or misuse of the service.</p>
+
+                    <p class="terms-note"><strong>NOTE:</strong> This is a summary. The complete Terms of Service should be reviewed by consulting the TERMS_OF_SERVICE.md document provided with this application.</p>
+
+                    <div class="important-notice">
+                        <h4>⚠️ FINAL IMPORTANT NOTICE</h4>
+                        <p>Meteoryx Pro provides statistical analysis based on historical weather patterns. Actual weather conditions may vary significantly. ALWAYS obtain current forecasts from official sources (NOAA, NWS, etc.) and consult professional meteorologists for critical decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden Until Terms Accepted) -->
+    <div id="mainApp" class="main-app hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <span class="logo-text">METEORYX PRO</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <select id="projectSelector" class="project-selector">
+                    <option value="">Select Project</option>
+                    <option value="new">+ New Project</option>
+                </select>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="notificationsBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">0</span>
+                </button>
+                <button class="header-btn" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <div class="user-menu-btn" id="userMenuBtn">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Liability Disclaimer Banner (Always Visible) -->
+        <div class="liability-banner">
+            <div class="banner-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="banner-text">
+                <strong>⚠️ WEATHER PREDICTIONS ARE ESTIMATES ONLY</strong> -
+                This analysis is based on historical data and should not be used for life-safety decisions or as sole basis for critical business decisions. Verify all information independently.
+                <a href="#" id="viewTermsLink" class="banner-link">View Terms</a>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li class="nav-item active" data-tab="dashboard">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </li>
+                        <li class="nav-item" data-tab="projects">
+                            <i class="fas fa-folder"></i>
+                            <span>Projects</span>
+                        </li>
+                        <li class="nav-item" data-tab="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="saved-projects">
+                    <h3>Saved Projects</h3>
+                    <div id="savedProjectsList" class="projects-list">
+                        <!-- Projects populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="disclaimer-mini">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Data for planning only</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Project Setup Panel -->
+                <div id="setupPanel" class="setup-panel">
+                    <div class="panel-header">
+                        <h2>New Weather Analysis Project</h2>
+                        <p>Select location and date range to analyze historical weather patterns</p>
+                    </div>
+
+                    <div class="setup-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectName">Project Name</label>
+                                <input type="text" id="projectName" placeholder="Enter project name" maxlength="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="locationSearch">Location Search</label>
+                                <input type="text" id="locationSearch" placeholder="Search for address or city" maxlength="200">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">Start Date</label>
+                                <input type="date" id="startDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">End Date</label>
+                                <input type="date" id="endDate">
+                            </div>
+                        </div>
+
+                        <div class="map-container">
+                            <div id="map" class="map"></div>
+                            <div class="coordinates-display">
+                                <span>Latitude: <span id="selectedLat">--</span></span>
+                                <span>Longitude: <span id="selectedLng">--</span></span>
+                            </div>
+                        </div>
+
+                        <button id="analyzeBtn" class="analyze-btn">
+                            <i class="fas fa-bolt"></i>
+                            Analyze Weather Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Panel -->
+                <div id="dashboardPanel" class="dashboard-panel hidden">
+                    <!-- Content similar to original but with Meteoryx Pro branding -->
+                    <div class="project-info-header">
+                        <div class="project-info-main">
+                            <h2 id="projectInfoName">Project Name</h2>
+                            <div class="project-info-details">
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span id="projectInfoLocation">Location</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span id="projectInfoDates">Date Range</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="backToNewProject" class="btn-back">
+                            <i class="fas fa-plus"></i> New Analysis
+                        </button>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="summary-cards">
+                        <div class="summary-card frost">
+                            <div class="card-icon"><i class="fas fa-snowflake"></i></div>
+                            <div class="card-content">
+                                <h3>Freezing Days</h3>
+                                <div class="card-value" id="freezingDays">--</div>
+                                <div class="card-subtitle">Avg per year</div>
+                            </div>
+                        </div>
+                        <div class="summary-card rain">
+                            <div class="card-icon"><i class="fas fa-cloud-rain"></i></div>
+                            <div class="card-content">
+                                <h3>Rainy Days</h3>
+                                <div class="card-value" id="rainyDays">--</div>
+                                <div class="card-subtitle">Avg per year</div>
+                            </div>
+                        </div>
+                        <div class="summary-card snow">
+                            <div class="card-icon"><i class="fas fa-snowman"></i></div>
+                            <div class="card-content">
+                                <h3>Snowy Days</h3>
+                                <div class="card-value" id="snowyDays">--</div>
+                                <div class="card-subtitle">Avg per year</div>
+                            </div>
+                        </div>
+                        <div class="summary-card optimal">
+                            <div class="card-icon"><i class="fas fa-sun"></i></div>
+                            <div class="card-content">
+                                <h3>Optimal Days</h3>
+                                <div class="card-value" id="optimalDays">--</div>
+                                <div class="card-subtitle">Best conditions</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="analytics-section">
+                        <div class="chart-panel">
+                            <h3>Daily Weather Trends</h3>
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Data Disclaimer in Reports -->
+                    <div class="report-disclaimer">
+                        <i class="fas fa-info-circle"></i>
+                        <p><strong>Historical Weather Analysis - Not a Guarantee</strong><br>
+                        Based on <span id="yearsAnalyzed">5</span> years of past data. Future conditions may vary significantly. This is for planning purposes only.</p>
+                    </div>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="loading-spinner hidden">
+                    <div class="spinner"></div>
+                    <p>Analyzing historical weather data...</p>
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer Disclaimer (Always Visible) -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-disclaimer">
+                    <p><strong>Disclaimer:</strong> Meteoryx Pro provides weather analysis for planning purposes only. Not for life-safety decisions. See <a href="#" class="footer-link" id="footerTermsLink">Terms of Service</a> for complete details.</p>
+                </div>
+                <div class="footer-info">
+                    <span>Meteoryx Pro v1.0</span>
+                    <span>•</span>
+                    <span>Data: Open-Meteo Historical Weather API</span>
+                    <span>•</span>
+                    <span id="userAcceptanceDate"></span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
