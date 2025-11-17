@@ -5536,10 +5536,73 @@ class XyloclimePro {
         }
 
         try {
+            console.log('[PROJECT] Loading project:', project.name);
+
+            // Restore project state
             this.currentProject = project;
             this.weatherData = project.historicalData;
+
+            // Restore selected location if available
+            if (project.location) {
+                this.selectedLocation = project.location;
+
+                // Update map marker and view
+                if (this.selectedMarker) {
+                    this.map.removeLayer(this.selectedMarker);
+                }
+                this.selectedMarker = L.marker([project.location.lat, project.location.lng]).addTo(this.map);
+                this.map.setView([project.location.lat, project.location.lng], 10);
+
+                // Update location display in form
+                document.getElementById('selectedLat').textContent = project.location.lat.toFixed(6);
+                document.getElementById('selectedLng').textContent = project.location.lng.toFixed(6);
+            }
+
+            // Restore form fields
+            const projectNameInput = document.getElementById('projectName');
+            if (projectNameInput) {
+                projectNameInput.value = project.name || '';
+            }
+
+            const locationSearchInput = document.getElementById('locationSearch');
+            if (locationSearchInput && project.locationName) {
+                locationSearchInput.value = project.locationName;
+            }
+
+            const startDateInput = document.getElementById('startDate');
+            if (startDateInput && project.startDate) {
+                startDateInput.value = project.startDate;
+            }
+
+            const endDateInput = document.getElementById('endDate');
+            if (endDateInput && project.endDate) {
+                endDateInput.value = project.endDate;
+            }
+
+            // Update dashboard with analysis data
             this.updateDashboard(project.analysis);
 
+            // Update risk display if risk score exists
+            if (project.riskScore !== undefined) {
+                this.updateRiskDisplay(project.riskScore);
+            } else if (project.analysis) {
+                // Recalculate risk score if not stored
+                const riskScore = this.calculateRiskScore(project.analysis);
+                this.updateRiskDisplay(riskScore);
+                // Save the calculated risk score
+                project.riskScore = riskScore;
+                this.saveProject(project);
+            }
+
+            // Display data quality info if available
+            if (project.analysis) {
+                this.displayDataQualityInfo(project.analysis);
+            }
+
+            // Charts are already rendered by updateDashboard() -> createAllCharts()
+            // No need to call renderCharts separately
+
+            // Switch to dashboard view
             document.getElementById('setupPanel').classList.add('hidden');
             document.getElementById('dashboardPanel').classList.remove('hidden');
 
@@ -5549,9 +5612,10 @@ class XyloclimePro {
                 selector.value = projectId;
             }
 
-            this.sessionManager.logAction('project_loaded', { projectId });
+            console.log('[PROJECT] Project loaded successfully:', project.name);
+            this.sessionManager.logAction('project_loaded', { projectId, projectName: project.name });
         } catch (error) {
-            console.error('Failed to load project:', error);
+            console.error('[PROJECT] Failed to load project:', error);
             alert('Failed to load project. The data may be corrupted. Please try creating a new project.');
             this.showSetupPanel();
         }
