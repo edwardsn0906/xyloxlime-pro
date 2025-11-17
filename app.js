@@ -903,13 +903,16 @@ class XyloclimePro {
 
         container.classList.remove('hidden');
 
-        // Scroll the suggestions into view if needed
+        // Scroll the search box to top of viewport so dropdown is always visible below it
         setTimeout(() => {
-            container.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'nearest'
-            });
+            const searchInput = document.getElementById('locationSearch');
+            if (searchInput) {
+                searchInput.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
         }, 10);
     }
 
