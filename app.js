@@ -3314,11 +3314,34 @@ class XyloclimePro {
             riskLevelEl.style.color = riskScore.riskColor;
         }
 
-        // Update risk breakdown bars
-        this.updateRiskBar('precipRiskBar', 'precipRiskScore', riskScore.breakdown.precipitation);
-        this.updateRiskBar('tempRiskBar', 'tempRiskScore', riskScore.breakdown.temperature);
-        this.updateRiskBar('windRiskBar', 'windRiskScore', riskScore.breakdown.wind);
-        this.updateRiskBar('seasonRiskBar', 'seasonRiskScore', riskScore.breakdown.seasonal);
+        // Calculate relative contributions (percentages that add up to 100%)
+        const precip = riskScore.breakdown.precipitation * 0.30; // weighted value
+        const temp = riskScore.breakdown.temperature * 0.25;
+        const wind = riskScore.breakdown.wind * 0.20;
+        const seasonal = riskScore.breakdown.seasonal * 0.25;
+        const total = precip + temp + wind + seasonal;
+
+        // Calculate percentages of total risk
+        const precipPercent = total > 0 ? Math.round((precip / total) * 100) : 25;
+        const tempPercent = total > 0 ? Math.round((temp / total) * 100) : 25;
+        const windPercent = total > 0 ? Math.round((wind / total) * 100) : 25;
+        const seasonPercent = total > 0 ? Math.round((seasonal / total) * 100) : 25;
+
+        console.log('[RISK] Relative contributions:', { precip: precipPercent, temp: tempPercent, wind: windPercent, seasonal: seasonPercent });
+
+        // Update risk breakdown bars with relative percentages
+        this.updateRiskBar('precipRiskBar', 'precipRiskScore', precipPercent);
+        this.updateRiskBar('tempRiskBar', 'tempRiskScore', tempPercent);
+        this.updateRiskBar('windRiskBar', 'windRiskScore', windPercent);
+        this.updateRiskBar('seasonRiskBar', 'seasonRiskScore', seasonPercent);
+
+        // Create pie chart for risk breakdown
+        this.createRiskPieChart({
+            precipitation: precipPercent,
+            temperature: tempPercent,
+            wind: windPercent,
+            seasonal: seasonPercent
+        });
 
         // Update recommendations
         const recommendationsList = document.getElementById('riskRecommendationsList');
@@ -3335,21 +3358,96 @@ class XyloclimePro {
 
         if (bar) {
             bar.style.width = value + '%';
-            // Color based on risk level
-            if (value <= 25) {
-                bar.style.background = 'linear-gradient(90deg, #27ae60 0%, #2ecc71 100%)';
-            } else if (value <= 50) {
-                bar.style.background = 'linear-gradient(90deg, #f39c12 0%, #f1c40f 100%)';
-            } else if (value <= 75) {
-                bar.style.background = 'linear-gradient(90deg, #e67e22 0%, #d35400 100%)';
-            } else {
-                bar.style.background = 'linear-gradient(90deg, #e74c3c 0%, #c0392b 100%)';
-            }
+            // Use fixed colors for each risk type instead of value-based colors
+            const colors = {
+                precipRiskBar: 'linear-gradient(90deg, #3498db 0%, #2980b9 100%)', // Blue for precipitation
+                tempRiskBar: 'linear-gradient(90deg, #e67e22 0%, #d35400 100%)',   // Orange for temperature
+                windRiskBar: 'linear-gradient(90deg, #1abc9c 0%, #16a085 100%)',   // Teal for wind
+                seasonRiskBar: 'linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%)' // Purple for seasonal
+            };
+            bar.style.background = colors[barId] || 'linear-gradient(90deg, #00d4ff 0%, #0099cc 100%)';
         }
 
         if (score) {
             score.textContent = value + '%';
         }
+    }
+
+    createRiskPieChart(breakdown) {
+        const canvas = document.getElementById('riskPieChart');
+        if (!canvas) {
+            console.warn('[RISK] Risk pie chart canvas not found');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+
+        // Destroy existing chart if it exists
+        if (this.charts.riskPie) {
+            this.charts.riskPie.destroy();
+        }
+
+        this.charts.riskPie = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Precipitation', 'Temperature', 'Wind', 'Seasonal'],
+                datasets: [{
+                    data: [
+                        breakdown.precipitation,
+                        breakdown.temperature,
+                        breakdown.wind,
+                        breakdown.seasonal
+                    ],
+                    backgroundColor: [
+                        '#3498db', // Blue for precipitation
+                        '#e67e22', // Orange for temperature
+                        '#1abc9c', // Teal for wind
+                        '#9b59b6'  // Purple for seasonal
+                    ],
+                    borderColor: '#0a1929',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#e8f4f8',
+                            font: {
+                                size: 12,
+                                family: "'Rajdhani', sans-serif"
+                            },
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 27, 42, 0.95)',
+                        titleColor: '#00d4ff',
+                        bodyColor: '#e8f4f8',
+                        borderColor: '#00d4ff',
+                        borderWidth: 1,
+                        padding: 12,
+                        bodyFont: {
+                            size: 14
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                return `${label}: ${value}% of total risk`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        console.log('[RISK] Pie chart created with relative contributions');
     }
 
     // ========================================================================
