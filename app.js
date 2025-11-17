@@ -902,6 +902,15 @@ class XyloclimePro {
         });
 
         container.classList.remove('hidden');
+
+        // Scroll the suggestions into view if needed
+        setTimeout(() => {
+            container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest'
+            });
+        }, 10);
     }
 
     hideSuggestions() {
