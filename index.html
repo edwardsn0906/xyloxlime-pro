@@ -341,8 +341,16 @@
             </div>
         </div>
 
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="meteoryxApp.toggleMobileSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay" onclick="meteoryxApp.closeMobileSidebar()"></div>
+
         <div class="main-container">
-            <aside class="sidebar">
+            <aside class="sidebar" id="sidebar">
                 <nav class="sidebar-nav">
                     <ul>
                         <li class="nav-item active" data-tab="dashboard">

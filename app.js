@@ -142,24 +142,47 @@ class DatabaseManager {
         }
 
         try {
-            const snapshot = await this.db.collection('projects')
-                .where('userId', '==', this.currentUserId)
-                .orderBy('updatedAt', 'desc')
-                .limit(50)
-                .get();
+            console.log('[DATABASE] Querying projects for user:', this.currentUserId);
+
+            // Try query with orderBy first
+            let snapshot;
+            try {
+                snapshot = await this.db.collection('projects')
+                    .where('userId', '==', this.currentUserId)
+                    .orderBy('updatedAt', 'desc')
+                    .limit(100) // Increased from 50
+                    .get();
+            } catch (orderByError) {
+                // If orderBy fails (e.g., missing index or updatedAt field), fall back to basic query
+                console.warn('[DATABASE] OrderBy query failed, using basic query:', orderByError.message);
+                snapshot = await this.db.collection('projects')
+                    .where('userId', '==', this.currentUserId)
+                    .limit(100)
+                    .get();
+            }
 
             const projects = [];
             snapshot.forEach(doc => {
+                const data = doc.data();
+                console.log('[DATABASE] Project found:', doc.id, data.name, 'updatedAt:', data.updatedAt);
                 projects.push({
                     id: doc.id,
-                    ...doc.data()
+                    ...data
                 });
             });
 
-            console.log('[DATABASE] Loaded', projects.length, 'projects');
+            // Sort manually in case query didn't sort
+            projects.sort((a, b) => {
+                const aTime = a.updatedAt?.toMillis?.() || a.updatedAt || 0;
+                const bTime = b.updatedAt?.toMillis?.() || b.updatedAt || 0;
+                return bTime - aTime; // Descending
+            });
+
+            console.log('[DATABASE] Successfully loaded', projects.length, 'projects');
             return projects;
         } catch (error) {
             console.error('[DATABASE] Error loading projects:', error);
+            console.error('[DATABASE] Error details:', error.message, error.code);
             return [];
         }
     }
@@ -5576,19 +5599,40 @@ class XyloclimePro {
         this.updateProjectSelector();
 
         if (this.projects.length === 0) {
-            container.innerHTML = '<p style="color: var(--steel-silver); font-size: 0.9rem; padding: 1rem;">No saved projects yet</p>';
+            container.innerHTML = `
+                <p style="color: var(--steel-silver); font-size: 0.9rem; padding: 1rem; text-align: center;">
+                    No saved projects yet
+                </p>
+                <button onclick="meteoryxApp.loadProjectsFromCloud()"
+                        style="width: 100%; padding: 0.75rem; background: var(--gradient-button); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600; margin-top: 0.5rem;">
+                    <i class="fas fa-sync-alt"></i> Refresh Projects
+                </button>
+            `;
             return;
         }
 
-        this.projects.slice(0, 10).forEach(project => {
+        // Show more projects on mobile (20) vs desktop (10)
+        const isMobile = window.innerWidth <= 768;
+        const displayLimit = isMobile ? 20 : 10;
+        const showAll = this.showAllProjects || false;
+
+        const projectsToShow = showAll ? this.projects : this.projects.slice(0, displayLimit);
+
+        console.log('[UI] Displaying', projectsToShow.length, 'of', this.projects.length, 'projects');
+
+        projectsToShow.forEach(project => {
             const item = document.createElement('div');
             item.className = 'project-item';
             item.style.cssText = 'padding: 0.8rem; background: rgba(30, 58, 95, 0.3); border-radius: 8px; cursor: pointer; margin-bottom: 0.5rem; transition: all 0.2s;';
             item.innerHTML = `
                 <div style="color: var(--electric-cyan); font-weight: 600; margin-bottom: 0.3rem;">${this.sanitizeHTML(project.name)}</div>
-                <div style="color: var(--steel-silver); font-size: 0.85rem;">${project.startDate} - ${project.endDate}</div>
+                <div style="color: var(--steel-silver); font-size: 0.85rem;">${project.startDate || 'N/A'} - ${project.endDate || 'N/A'}</div>
             `;
-            item.addEventListener('click', () => this.loadProject(project.id));
+            item.addEventListener('click', () => {
+                this.loadProject(project.id);
+                // Close mobile sidebar after selecting a project
+                this.closeMobileSidebar();
+            });
             item.addEventListener('mouseenter', () => {
                 item.style.background = 'rgba(0, 212, 255, 0.2)';
             });
@@ -5597,6 +5641,49 @@ class XyloclimePro {
             });
             container.appendChild(item);
         });
+
+        // Add "Show More" / "Show All" button if there are more projects
+        if (this.projects.length > displayLimit) {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = 'margin-top: 1rem; display: flex; gap: 0.5rem;';
+
+            if (!showAll) {
+                const showAllBtn = document.createElement('button');
+                showAllBtn.textContent = `Show All (${this.projects.length})`;
+                showAllBtn.style.cssText = 'flex: 1; padding: 0.75rem; background: var(--gradient-button); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;';
+                showAllBtn.onclick = () => {
+                    this.showAllProjects = true;
+                    this.loadSavedProjects();
+                };
+                buttonContainer.appendChild(showAllBtn);
+            } else {
+                const showLessBtn = document.createElement('button');
+                showLessBtn.textContent = 'Show Less';
+                showLessBtn.style.cssText = 'flex: 1; padding: 0.75rem; background: rgba(30, 58, 95, 0.6); border: 2px solid var(--electric-cyan); border-radius: 8px; color: var(--electric-cyan); cursor: pointer; font-weight: 600;';
+                showLessBtn.onclick = () => {
+                    this.showAllProjects = false;
+                    this.loadSavedProjects();
+                };
+                buttonContainer.appendChild(showLessBtn);
+            }
+
+            // Add refresh button
+            const refreshBtn = document.createElement('button');
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            refreshBtn.title = 'Refresh projects from cloud';
+            refreshBtn.style.cssText = 'width: 50px; padding: 0.75rem; background: rgba(30, 58, 95, 0.6); border: 2px solid var(--electric-cyan); border-radius: 8px; color: var(--electric-cyan); cursor: pointer;';
+            refreshBtn.onclick = () => this.loadProjectsFromCloud();
+            buttonContainer.appendChild(refreshBtn);
+
+            container.appendChild(buttonContainer);
+        } else {
+            // Just show refresh button
+            const refreshBtn = document.createElement('button');
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            refreshBtn.style.cssText = 'width: 100%; margin-top: 1rem; padding: 0.75rem; background: rgba(30, 58, 95, 0.6); border: 2px solid var(--electric-cyan); border-radius: 8px; color: var(--electric-cyan); cursor: pointer; font-weight: 600;';
+            refreshBtn.onclick = () => this.loadProjectsFromCloud();
+            container.appendChild(refreshBtn);
+        }
     }
 
     updateProjectSelector() {
@@ -5757,6 +5844,46 @@ class XyloclimePro {
 
     showSettings() {
         alert('Settings panel coming soon! For now, configure via browser localStorage.');
+    }
+
+    // ========================================================================
+    // MOBILE SIDEBAR TOGGLE
+    // ========================================================================
+
+    toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const menuBtn = document.getElementById('mobileMenuBtn');
+
+        if (sidebar && overlay && menuBtn) {
+            const isOpen = sidebar.classList.contains('mobile-open');
+
+            if (isOpen) {
+                // Close sidebar
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            } else {
+                // Open sidebar
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('active');
+                menuBtn.innerHTML = '<i class="fas fa-times"></i>';
+                console.log('[UI] Mobile sidebar opened');
+            }
+        }
+    }
+
+    closeMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const menuBtn = document.getElementById('mobileMenuBtn');
+
+        if (sidebar && overlay && menuBtn) {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            console.log('[UI] Mobile sidebar closed');
+        }
     }
 }
 
