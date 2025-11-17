@@ -1,0 +1,23 @@
+{
+  "name": "xyloclime-pro",
+  "version": "1.0.0",
+  "description": "Professional weather analysis platform",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "weather",
+    "saas",
+    "climate",
+    "analysis"
+  ],
+  "author": "Xyloclime Pro",
+  "license": "UNLICENSED",
+  "private": true
+}
