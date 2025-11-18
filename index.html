@@ -455,10 +455,19 @@
                                 </button>
                             </div>
                         </div>
-                        <button id="analyzeBtn" class="analyze-btn">
-                            <i class="fas fa-bolt"></i>
-                            Analyze Weather Data
-                        </button>
+                        <div class="action-buttons-group">
+                            <button id="analyzeBtn" class="analyze-btn">
+                                <i class="fas fa-bolt"></i>
+                                Analyze Weather Data
+                            </button>
+                            <div class="or-divider">
+                                <span>OR</span>
+                            </div>
+                            <button id="loadSampleBtn" class="sample-btn">
+                                <i class="fas fa-play-circle"></i>
+                                Try a Sample Project
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1309,6 +1318,111 @@
             </div>
         </div>
 
+        <!-- Sample Projects Modal -->
+        <div id="sampleProjectsModal" class="modal-overlay hidden">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2><i class="fas fa-play-circle"></i> Try a Sample Project</h2>
+                    <button id="closeSampleModal" class="modal-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="sample-intro">Load a pre-configured project to explore Xyloclime Pro's features instantly. No setup required!</p>
+
+                    <div class="sample-projects-grid">
+                        <div class="sample-project-card" data-sample-id="commercial-concrete-miami">
+                            <div class="sample-card-header">
+                                <div class="sample-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="sample-risk-badge medium-risk">
+                                    Medium Risk
+                                </div>
+                            </div>
+                            <h3>Miami Concrete Project</h3>
+                            <p class="sample-description">Commercial office foundation work during spring months with moderate weather challenges.</p>
+                            <div class="sample-stats">
+                                <div class="sample-stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Miami, FL</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Feb - May 2024</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>72.5% Workable</span>
+                                </div>
+                            </div>
+                            <button class="load-sample-btn" data-sample-id="commercial-concrete-miami">
+                                <i class="fas fa-play"></i> Load Project
+                            </button>
+                        </div>
+
+                        <div class="sample-project-card" data-sample-id="roofing-seattle">
+                            <div class="sample-card-header">
+                                <div class="sample-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="sample-risk-badge low-risk">
+                                    Low Risk
+                                </div>
+                            </div>
+                            <h3>Seattle Roofing Project</h3>
+                            <p class="sample-description">Commercial roofing during summer dry season with favorable working conditions.</p>
+                            <div class="sample-stats">
+                                <div class="sample-stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Seattle, WA</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Jun - Sep 2024</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>85.2% Workable</span>
+                                </div>
+                            </div>
+                            <button class="load-sample-btn" data-sample-id="roofing-seattle">
+                                <i class="fas fa-play"></i> Load Project
+                            </button>
+                        </div>
+
+                        <div class="sample-project-card" data-sample-id="highway-paving-phoenix">
+                            <div class="sample-card-header">
+                                <div class="sample-icon">
+                                    <i class="fas fa-road"></i>
+                                </div>
+                                <div class="sample-risk-badge low-risk">
+                                    Very Low Risk
+                                </div>
+                            </div>
+                            <h3>Phoenix Highway Paving</h3>
+                            <p class="sample-description">Asphalt resurfacing in desert climate with excellent weather reliability.</p>
+                            <div class="sample-stats">
+                                <div class="sample-stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Phoenix, AZ</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Oct - Dec 2024</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>94.7% Workable</span>
+                                </div>
+                            </div>
+                            <button class="load-sample-btn" data-sample-id="highway-paving-phoenix">
+                                <i class="fas fa-play"></i> Load Project
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer class="app-footer">
             <div class="footer-content">
                 <div class="footer-disclaimer">
@@ -1349,6 +1463,9 @@
 
     <!-- Interactive Tutorial -->
     <script src="tutorial.js?v=1.0.0"></script>
+
+    <!-- Sample Projects Data -->
+    <script src="sample-data.js?v=1.0.0"></script>
 
     <!-- Main Application -->
     <script src="app.js?v=2.1.0"></script>

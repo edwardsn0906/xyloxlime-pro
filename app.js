@@ -1484,6 +1484,32 @@ class XyloclimePro {
             });
         }
 
+        // Sample projects modal
+        const loadSampleBtn = document.getElementById('loadSampleBtn');
+        if (loadSampleBtn) {
+            loadSampleBtn.addEventListener('click', () => {
+                document.getElementById('sampleProjectsModal').classList.remove('hidden');
+            });
+        }
+
+        const closeSampleModal = document.getElementById('closeSampleModal');
+        if (closeSampleModal) {
+            closeSampleModal.addEventListener('click', () => {
+                document.getElementById('sampleProjectsModal').classList.add('hidden');
+            });
+        }
+
+        // Load sample project buttons
+        document.querySelectorAll('.load-sample-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sampleId = e.currentTarget.dataset.sampleId;
+                if (window.sampleDataManager) {
+                    window.sampleDataManager.loadSampleIntoApp(sampleId, this);
+                    document.getElementById('sampleProjectsModal').classList.add('hidden');
+                }
+            });
+        });
+
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
