@@ -1504,7 +1504,7 @@ class XyloclimePro {
         if (saveSettingsBtn) {
             saveSettingsBtn.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
-                alert('Settings saved successfully!');
+                window.toastManager.success('Settings saved successfully!', 'Settings Saved');
             });
         }
 
@@ -1512,12 +1512,12 @@ class XyloclimePro {
         const clearProjectsBtn = document.getElementById('clearProjectsBtn');
         if (clearProjectsBtn) {
             clearProjectsBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to delete all saved projects? This cannot be undone.')) {
+                if (confirm('⚠️ WARNING: Delete ALL Projects?\n\nThis will permanently delete all your saved projects. This action cannot be undone.\n\nAre you absolutely sure?')) {
                     this.projects = [];
                     localStorage.removeItem('xyloclime_projects');
                     this.loadSavedProjects();
                     this.updateSettingsInfo();
-                    alert('All projects have been deleted.');
+                    window.toastManager.success('All projects have been deleted', 'Projects Cleared');
                 }
             });
         }
@@ -1629,7 +1629,7 @@ class XyloclimePro {
 
     openCostCalculator() {
         if (!this.currentProject) {
-            alert('Please create a project first by clicking "Analyze Weather Data"');
+            window.toastManager.info('Create a project first by clicking "Analyze Weather Data"', 'No Project Selected');
             return;
         }
 
@@ -1724,12 +1724,12 @@ class XyloclimePro {
 
     openAdvancedCalculator() {
         if (!this.currentProject) {
-            alert('Please create a project first by clicking "Analyze Weather Data"');
+            window.toastManager.info('Create a project first by clicking "Analyze Weather Data"', 'No Project Selected');
             return;
         }
 
         if (!this.weatherData || !Array.isArray(this.weatherData)) {
-            alert('Weather data is not available. Please run the analysis again.');
+            window.toastManager.warning('Weather data is not available. Please run the analysis again.', 'Data Not Available');
             return;
         }
 
@@ -1929,7 +1929,7 @@ class XyloclimePro {
         const templateName = document.getElementById('templateName').value.trim();
 
         if (!templateName) {
-            alert('Please enter a template name');
+            window.toastManager.warning('Please enter a template name', 'Name Required');
             return;
         }
 
@@ -1955,7 +1955,7 @@ class XyloclimePro {
 
         console.log('[ADVANCED CALC] Template saved:', templateName);
 
-        alert(`Template "${templateName}" saved successfully!`);
+        window.toastManager.success(`Template "${templateName}" saved successfully!`, 'Template Saved');
         document.getElementById('templateName').value = '';
 
         this.loadSavedTemplates();
@@ -2000,7 +2000,7 @@ class XyloclimePro {
         document.getElementById('consecutiveDays').value = template.criteria.consecutiveDays;
 
         console.log('[ADVANCED CALC] Template loaded:', template.name);
-        alert(`Template "${template.name}" loaded!`);
+        window.toastManager.success(`Template "${template.name}" loaded!`, 'Template Applied');
     }
 
     deleteTemplate(index) {
@@ -2022,7 +2022,7 @@ class XyloclimePro {
 
     openCompareProjects() {
         if (this.projects.length < 2) {
-            alert('You need at least 2 saved projects to compare.\n\nCreate more projects first!');
+            window.toastManager.info('You need at least 2 saved projects to compare. Create more projects first!', 'Not Enough Projects');
             return;
         }
 
@@ -2058,7 +2058,7 @@ class XyloclimePro {
         const project3Index = document.getElementById('compareProject3').value;
 
         if (!project1Index || !project2Index) {
-            alert('Please select at least 2 projects to compare');
+            window.toastManager.warning('Please select at least 2 projects to compare', 'Selection Required');
             return;
         }
 
@@ -2212,7 +2212,7 @@ class XyloclimePro {
         this.sessionManager.logAction('analysis_started', {});
 
         if (!this.selectedLocation) {
-            alert('Please select a location on the map or search for an address.');
+            window.toastManager.warning('Please select a location on the map or search for an address first', 'Location Required');
             return;
         }
 
@@ -2222,20 +2222,24 @@ class XyloclimePro {
 
         const nameValidation = this.validateProjectName(projectName);
         if (!nameValidation.valid) {
-            alert(nameValidation.error);
+            window.toastManager.error(nameValidation.error, 'Invalid Project Name');
             return;
         }
 
         if (!startDate || !endDate) {
-            alert('Please select start and end dates.');
+            window.toastManager.warning('Please select both start and end dates for your project', 'Dates Required');
             return;
         }
 
         const dateValidation = this.validateDates(startDate, endDate);
         if (!dateValidation.valid) {
-            alert(dateValidation.error);
+            window.toastManager.error(dateValidation.error, 'Invalid Date Range');
             return;
         }
+
+        // Show loading indicators
+        const progressInterval = window.LoadingManager.showProgress();
+        window.LoadingManager.setButtonLoading('analyzeBtn', true);
 
         this.showLoading();
 
@@ -2279,13 +2283,26 @@ class XyloclimePro {
             document.getElementById('dashboardPanel').classList.remove('hidden');
             document.getElementById('loadingSpinner').classList.add('hidden');
 
+            // Hide loading indicators
+            window.LoadingManager.hideProgress(progressInterval);
+            window.LoadingManager.setButtonLoading('analyzeBtn', false);
+
+            // Show success toast
+            window.toastManager.success(`Weather analysis complete for "${this.currentProject.name}"`, 'Analysis Complete', 3000);
+
             this.sessionManager.logAction('analysis_completed', {
                 projectId: this.currentProject.id
             });
 
         } catch (error) {
             console.error('Weather analysis failed:', error);
-            alert(`Failed to analyze weather data. Error: ${error.message}`);
+
+            // Hide loading indicators
+            window.LoadingManager.hideProgress(progressInterval);
+            window.LoadingManager.setButtonLoading('analyzeBtn', false);
+
+            // Show error toast
+            window.toastManager.error(`Failed to analyze weather data: ${error.message}`, 'Analysis Failed', 7000);
             this.showSetupPanel();
 
             this.sessionManager.logAction('analysis_failed', {
@@ -5601,9 +5618,10 @@ class XyloclimePro {
             this.sessionManager.logAction('project_saved', { projectId: savedProject.id });
 
             console.log('[APP] Project saved to cloud:', savedProject.name);
+            // Success toast is shown in analysis completion, not here (to avoid duplicate notifications)
         } catch (error) {
             console.error('Failed to save project:', error);
-            alert('Warning: Project could not be saved. Please check your internet connection.');
+            window.toastManager.error('Project could not be saved. Please check your internet connection.', 'Save Failed', 7000);
         }
     }
 
