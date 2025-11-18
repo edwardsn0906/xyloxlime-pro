@@ -2443,6 +2443,11 @@ class XyloclimePro {
             // Display smart recommendations (premium feature)
             this.displaySmartRecommendations(analysis, this.currentProject);
 
+            // Load bid support calculator (premium feature)
+            if (window.bidCalculator) {
+                window.bidCalculator.loadProjectData(analysis, this.currentProject);
+            }
+
             document.getElementById('setupPanel').classList.add('hidden');
             document.getElementById('dashboardPanel').classList.remove('hidden');
             document.getElementById('loadingSpinner').classList.add('hidden');

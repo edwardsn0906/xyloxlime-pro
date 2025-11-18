@@ -681,6 +681,87 @@
                         </div>
                     </div>
 
+                    <!-- BID SUPPORT CALCULATOR (Premium Feature) -->
+                    <div class="bid-calculator-section premium-feature" id="bidCalculator" style="display: none;">
+                        <div class="section-header">
+                            <h3>
+                                <i class="fas fa-calculator"></i> Bid Support Calculator
+                                <span class="premium-badge">Premium</span>
+                            </h3>
+                            <p class="section-description">Calculate weather contingency costs and markup recommendations for your bid</p>
+                        </div>
+
+                        <div class="bid-input-grid">
+                            <div class="bid-input-group">
+                                <label for="bidBaseLabor">
+                                    <i class="fas fa-users"></i> Base Labor Cost
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="bidBaseLabor" placeholder="0" min="0" step="1000">
+                                </div>
+                            </div>
+
+                            <div class="bid-input-group">
+                                <label for="bidBaseMaterials">
+                                    <i class="fas fa-boxes"></i> Base Materials Cost
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="bidBaseMaterials" placeholder="0" min="0" step="1000">
+                                </div>
+                            </div>
+
+                            <div class="bid-input-group">
+                                <label for="bidBaseEquipment">
+                                    <i class="fas fa-truck"></i> Base Equipment Cost
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="bidBaseEquipment" placeholder="0" min="0" step="1000">
+                                </div>
+                            </div>
+
+                            <div class="bid-input-group">
+                                <label for="bidDailyOverhead">
+                                    <i class="fas fa-building"></i> Daily Overhead Cost
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="bidDailyOverhead" value="2000" min="0" step="100">
+                                </div>
+                                <small>Typical range: $1,500 - $5,000/day</small>
+                            </div>
+
+                            <div class="bid-input-group">
+                                <label for="bidDelayPenalty">
+                                    <i class="fas fa-exclamation-triangle"></i> Daily Delay Penalty (if any)
+                                </label>
+                                <div class="input-with-currency">
+                                    <span class="currency">$</span>
+                                    <input type="number" id="bidDelayPenalty" placeholder="0" min="0" step="100">
+                                </div>
+                                <small>Leave at 0 if no liquidated damages</small>
+                            </div>
+
+                            <div class="bid-input-group">
+                                <label for="bidLaborMultiplier">
+                                    <i class="fas fa-percentage"></i> Labor Inefficiency Multiplier
+                                </label>
+                                <input type="number" id="bidLaborMultiplier" value="1.5" min="1" max="3" step="0.1">
+                                <small>1.5 = 50% less efficient during weather delays</small>
+                            </div>
+                        </div>
+
+                        <button id="calculateBidContingency" class="btn-calculate-bid">
+                            <i class="fas fa-calculator"></i> Calculate Weather Contingency
+                        </button>
+
+                        <div id="bidResults" class="bid-results-container hidden">
+                            <!-- Results populated by JavaScript -->
+                        </div>
+                    </div>
+
                     <!-- Threshold Definitions -->
                     <div class="definitions-section">
                         <h3><i class="fas fa-info-circle"></i> Weather Threshold Definitions</h3>
@@ -1466,6 +1547,9 @@
 
     <!-- Sample Projects Data -->
     <script src="sample-data.js?v=1.0.0"></script>
+
+    <!-- Bid Support Calculator -->
+    <script src="bid-calculator.js?v=1.0.0"></script>
 
     <!-- Main Application -->
     <script src="app.js?v=2.1.0"></script>
