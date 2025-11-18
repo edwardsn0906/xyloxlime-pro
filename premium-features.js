@@ -404,8 +404,10 @@ class SmartRecommendations {
 
     analyzeWindRisk(analysis, recommendations) {
         const highWindDays = analysis.highWindDays || 0;
+        const hasWindData = analysis.avgWindSpeed !== undefined && analysis.avgWindSpeed !== null;
 
-        if (highWindDays > 3) {
+        // Only show wind recommendations if we have actual wind data
+        if (hasWindData && highWindDays > 3) {
             recommendations.important.push({
                 icon: 'fa-wind',
                 title: 'High Wind Days Expected',
@@ -517,37 +519,41 @@ class SmartRecommendations {
     }
 
     calculateMonthlyRisk(analysis, startDate, endDate) {
-        // Simplified monthly risk calculation
+        // Use actual monthly breakdown from analysis if available
         const months = [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
-        const startMonth = startDate.getMonth();
-        const endMonth = endDate.getMonth();
-
-        // Simple heuristic: Spring/Fall best, Winter worst
-        const monthRisks = {
-            0: 8, 1: 8, 2: 5, 3: 3, 4: 2, 5: 4,  // Jan-Jun
-            6: 5, 7: 4, 8: 3, 9: 2, 10: 5, 11: 7  // Jul-Dec
-        };
-
         let bestMonth = null;
         let worstMonth = null;
-        let bestRisk = 10;
-        let worstRisk = 0;
+        let bestWorkablePercent = -1;
+        let worstWorkablePercent = 101;
 
-        for (let m = startMonth; m <= (endMonth < startMonth ? endMonth + 12 : endMonth); m++) {
-            const monthIndex = m % 12;
-            const risk = monthRisks[monthIndex];
+        // If we have monthly breakdown data, use it
+        if (analysis.monthlyBreakdown && Array.isArray(analysis.monthlyBreakdown)) {
+            analysis.monthlyBreakdown.forEach(monthData => {
+                const workablePercent = (monthData.workable / monthData.total) * 100;
 
-            if (risk < bestRisk) {
-                bestRisk = risk;
-                bestMonth = { name: months[monthIndex], risk };
+                if (workablePercent > bestWorkablePercent) {
+                    bestWorkablePercent = workablePercent;
+                    bestMonth = { name: monthData.month, workablePercent };
+                }
+                if (workablePercent < worstWorkablePercent) {
+                    worstWorkablePercent = workablePercent;
+                    worstMonth = { name: monthData.month, workablePercent };
+                }
+            });
+
+            // Don't show if they're the same month OR if there's only one month
+            if (bestMonth && worstMonth && bestMonth.name === worstMonth.name) {
+                // If only one month, don't show best/worst
+                return { bestMonth: null, worstMonth: null };
             }
-            if (risk > worstRisk) {
-                worstRisk = risk;
-                worstMonth = { name: months[monthIndex], risk };
+
+            // Don't show if difference is negligible (<10%)
+            if (Math.abs(bestWorkablePercent - worstWorkablePercent) < 10) {
+                return { bestMonth: null, worstMonth: null };
             }
         }
 

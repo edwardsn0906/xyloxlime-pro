@@ -4696,22 +4696,37 @@ class XyloclimePro {
         }
 
         if (bestPeriod) {
-            // Convert historical dates to project year for display
+            // Convert historical dates to project timeline for display
             const historicalStart = new Date(bestPeriod.startDate);
             const historicalEnd = new Date(bestPeriod.endDate);
 
-            // Create dates in the project year
-            const projectYear = projectStart.getFullYear();
-            const displayStart = new Date(projectYear, historicalStart.getMonth(), historicalStart.getDate());
-            const displayEnd = new Date(projectYear, historicalEnd.getMonth(), historicalEnd.getDate());
+            // Start with project start year
+            let displayYear = projectStart.getFullYear();
+            const displayStart = new Date(displayYear, historicalStart.getMonth(), historicalStart.getDate());
 
-            // If end is before start, it crosses into next year
-            if (displayEnd < displayStart) {
-                displayEnd.setFullYear(projectYear + 1);
+            // If the projected date is before project start, move to next year
+            if (displayStart < projectStart) {
+                displayStart.setFullYear(displayYear + 1);
+                displayYear++;
             }
 
-            const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const endDate = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            // Create end date in same or next year
+            const displayEnd = new Date(displayYear, historicalEnd.getMonth(), historicalEnd.getDate());
+
+            // If end is before start within same year, it crosses into next year
+            if (displayEnd < displayStart) {
+                displayEnd.setFullYear(displayYear + 1);
+            }
+
+            // Ensure both dates are within project timeline
+            if (displayStart > projectEnd || displayEnd < projectStart) {
+                // Period is outside project timeline, skip it
+                if (bestPeriodEl) bestPeriodEl.textContent = 'N/A';
+                if (bestReasonEl) bestReasonEl.textContent = 'Optimal period falls outside project timeline.';
+                console.log('[PERIODS] Best period outside project timeline, skipping');
+            } else {
+                const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const endDate = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
             if (bestPeriodEl) {
                 bestPeriodEl.textContent = `${startDate} - ${endDate}`;
@@ -4744,25 +4759,41 @@ class XyloclimePro {
             }
 
             console.log('[PERIODS] Best period:', startDate, '-', endDate, 'Score:', bestScore);
+            }
         }
 
         if (worstPeriod) {
-            // Convert historical dates to project year for display
+            // Convert historical dates to project timeline for display
             const historicalStart = new Date(worstPeriod.startDate);
             const historicalEnd = new Date(worstPeriod.endDate);
 
-            // Create dates in the project year
-            const projectYear = projectStart.getFullYear();
-            const displayStart = new Date(projectYear, historicalStart.getMonth(), historicalStart.getDate());
-            const displayEnd = new Date(projectYear, historicalEnd.getMonth(), historicalEnd.getDate());
+            // Start with project start year
+            let displayYear = projectStart.getFullYear();
+            const displayStart = new Date(displayYear, historicalStart.getMonth(), historicalStart.getDate());
 
-            // If end is before start, it crosses into next year
-            if (displayEnd < displayStart) {
-                displayEnd.setFullYear(projectYear + 1);
+            // If the projected date is before project start, move to next year
+            if (displayStart < projectStart) {
+                displayStart.setFullYear(displayYear + 1);
+                displayYear++;
             }
 
-            const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const endDate = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            // Create end date in same or next year
+            const displayEnd = new Date(displayYear, historicalEnd.getMonth(), historicalEnd.getDate());
+
+            // If end is before start within same year, it crosses into next year
+            if (displayEnd < displayStart) {
+                displayEnd.setFullYear(displayYear + 1);
+            }
+
+            // Ensure both dates are within project timeline
+            if (displayStart > projectEnd || displayEnd < projectStart) {
+                // Period is outside project timeline, skip it
+                if (worstPeriodEl) worstPeriodEl.textContent = 'N/A';
+                if (worstReasonEl) worstReasonEl.textContent = 'Challenging period falls outside project timeline.';
+                console.log('[PERIODS] Worst period outside project timeline, skipping');
+            } else {
+                const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const endDate = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
             if (worstPeriodEl) {
                 worstPeriodEl.textContent = `${startDate} - ${endDate}`;
@@ -4793,6 +4824,7 @@ class XyloclimePro {
             }
 
             console.log('[PERIODS] Worst period:', startDate, '-', endDate, 'Score:', worstScore);
+            }
         }
     }
 
