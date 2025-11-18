@@ -16,6 +16,7 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
     <link rel="stylesheet" href="styles.css?v=2.1.0">
+    <link rel="stylesheet" href="ux-improvements.css?v=1.0.0">
 
     <!-- External Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
@@ -405,7 +406,7 @@
                                     <span class="label-hint">(Start typing for suggestions, or click map)</span>
                                 </label>
                                 <div class="location-search-container">
-                                    <input type="text" id="locationSearch" placeholder="Start typing: address, city, zip code..." maxlength="200" autocomplete="off" spellcheck="false">
+                                    <input type="text" id="locationSearch" placeholder="City, State or ZIP code (e.g., 'Miami, FL' or '33101')" maxlength="200" autocomplete="off" spellcheck="false">
                                     <button type="button" id="searchLocationBtn" class="btn-search-location" title="Search Location">
                                         <i class="fas fa-search"></i>
                                     </button>
@@ -1285,8 +1286,14 @@
     <!-- Firebase Storage (for PDFs) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <!-- Firebase Configuration (your config goes here) -->
     <script src="firebase-config.js?v=2.1.0"></script>
+
+    <!-- UX Enhancements -->
+    <script src="ux-enhancements.js?v=1.0.0"></script>
 
     <!-- Main Application -->
     <script src="app.js?v=2.1.0"></script>
