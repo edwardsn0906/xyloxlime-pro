@@ -814,6 +814,12 @@ class XyloclimePro {
         document.getElementById('selectedLat').textContent = lat.toFixed(6);
         document.getElementById('selectedLng').textContent = lng.toFixed(6);
 
+        // Show copy button when coordinates are selected
+        const copyBtn = document.getElementById('copyCoordinatesBtn');
+        if (copyBtn) {
+            copyBtn.style.display = 'inline-block';
+        }
+
         this.reverseGeocode(lat, lng);
         this.sessionManager.logAction('location_selected', { lat, lng });
     }
@@ -1348,6 +1354,17 @@ class XyloclimePro {
         document.getElementById('analyzeBtn').addEventListener('click', () => {
             this.analyzeWeatherData();
         });
+
+        // Copy coordinates button
+        const copyCoordinatesBtn = document.getElementById('copyCoordinatesBtn');
+        if (copyCoordinatesBtn) {
+            copyCoordinatesBtn.addEventListener('click', () => {
+                if (this.selectedLocation) {
+                    const coordinates = `${this.selectedLocation.lat.toFixed(6)}, ${this.selectedLocation.lng.toFixed(6)}`;
+                    window.UXUtils.copyToClipboard(coordinates, 'Coordinates copied to clipboard!');
+                }
+            });
+        }
 
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -5442,7 +5459,7 @@ class XyloclimePro {
 
     async exportToExcel() {
         if (!this.currentProject) {
-            alert('Please create a project first');
+            window.toastManager.info('Create a project first by running a weather analysis', 'No Project Selected');
             return;
         }
 
@@ -5586,9 +5603,11 @@ class XyloclimePro {
             setTimeout(() => document.body.removeChild(successMsg), 3000);
 
         } catch (error) {
-            document.body.removeChild(loadingMsg);
+            if (document.body.contains(loadingMsg)) {
+                document.body.removeChild(loadingMsg);
+            }
             console.error('Excel export error:', error);
-            alert('Error generating Excel file. Please try again.');
+            window.toastManager.error('Error generating Excel file. Please try again.', 'Export Failed', 7000);
         }
     }
 
@@ -5781,7 +5800,7 @@ class XyloclimePro {
     loadProject(projectId) {
         const project = this.projects.find(p => p.id === projectId);
         if (!project) {
-            alert('Project not found. It may have been deleted.');
+            window.toastManager.warning('Project not found. It may have been deleted.', 'Project Not Found');
             return;
         }
 
@@ -5864,9 +5883,13 @@ class XyloclimePro {
 
             console.log('[PROJECT] Project loaded successfully:', project.name);
             this.sessionManager.logAction('project_loaded', { projectId, projectName: project.name });
+
+            // Show success toast
+            window.toastManager.success(`Project "${project.name}" loaded successfully`, 'Project Loaded', 3000);
+
         } catch (error) {
             console.error('[PROJECT] Failed to load project:', error);
-            alert('Failed to load project. The data may be corrupted. Please try creating a new project.');
+            window.toastManager.error('Failed to load project. The data may be corrupted. Try creating a new project.', 'Load Failed', 7000);
             this.showSetupPanel();
         }
     }

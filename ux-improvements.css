@@ -495,3 +495,29 @@ button:disabled::after,
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ========================================
+   COPY TO CLIPBOARD BUTTON
+   ======================================== */
+
+.btn-copy-coordinates {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid var(--electric-cyan);
+    color: var(--electric-cyan);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+}
+
+.btn-copy-coordinates:hover {
+    background: rgba(0, 212, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+}
+
+.btn-copy-coordinates:active {
+    transform: translateY(0);
+}
