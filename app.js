@@ -529,7 +529,125 @@ class XyloclimePro {
         this.updateAcceptanceDate();
         this.updateTempUnitUI();
 
+        // Initialize premium features
+        this.initializePremiumFeatures();
+
         // Note: loadSavedProjects() is called by AuthManager after login
+    }
+
+    initializePremiumFeatures() {
+        // Initialize project templates library
+        if (window.ProjectTemplatesLibrary) {
+            this.templatesLibrary = new window.ProjectTemplatesLibrary();
+            this.renderTemplateSelector();
+            console.log('[PREMIUM] Templates library initialized');
+        }
+
+        // Initialize smart recommendations engine
+        if (window.SmartRecommendations) {
+            this.recommendationsEngine = new window.SmartRecommendations();
+            console.log('[PREMIUM] Smart recommendations engine initialized');
+        }
+    }
+
+    renderTemplateSelector() {
+        const container = document.getElementById('templateSelector');
+        if (!container || !this.templatesLibrary) return;
+
+        const templates = this.templatesLibrary.getAllTemplates();
+
+        container.innerHTML = templates.map(template => `
+            <div class="template-card" data-template-id="${template.id}">
+                <div class="template-card-icon">
+                    <i class="fas ${template.icon}"></i>
+                </div>
+                <div class="template-card-name">${template.name}</div>
+                <div class="template-card-description">${template.description}</div>
+            </div>
+        `).join('');
+
+        // Add click handlers
+        container.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const templateId = card.dataset.templateId;
+                this.selectTemplate(templateId);
+            });
+        });
+    }
+
+    selectTemplate(templateId) {
+        // Visual feedback
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.querySelector(`[data-template-id="${templateId}"]`)?.classList.add('selected');
+
+        // Store selected template
+        this.selectedTemplate = templateId;
+
+        // Get template details
+        const template = this.templatesLibrary.getTemplate(templateId);
+        if (!template) return;
+
+        // Auto-fill project name if empty
+        const nameInput = document.getElementById('projectName');
+        if (nameInput && !nameInput.value) {
+            nameInput.value = template.name;
+        }
+
+        // Show success toast
+        window.toastManager.success(`Template "${template.name}" selected! Weather criteria optimized for this project type.`, 'Template Applied', 4000);
+
+        console.log('[PREMIUM] Template selected:', templateId);
+    }
+
+    displaySmartRecommendations(analysis, project) {
+        if (!this.recommendationsEngine) return;
+
+        const recommendations = this.recommendationsEngine.generateRecommendations(analysis, project);
+
+        const section = document.getElementById('smartRecommendationsSection');
+        if (!section) return;
+
+        // Display each category
+        this.renderRecommendationCategory('criticalRecommendations', recommendations.critical, 'critical');
+        this.renderRecommendationCategory('importantRecommendations', recommendations.important, 'important');
+        this.renderRecommendationCategory('helpfulRecommendations', recommendations.helpful, 'helpful');
+        this.renderRecommendationCategory('insightsRecommendations', recommendations.insights, 'insight');
+
+        // Show section if there are any recommendations
+        const hasRecommendations = recommendations.critical.length + recommendations.important.length +
+                                    recommendations.helpful.length + recommendations.insights.length > 0;
+
+        if (hasRecommendations) {
+            section.style.display = 'block';
+            console.log('[PREMIUM] Smart recommendations displayed');
+        }
+    }
+
+    renderRecommendationCategory(containerId, recommendations, className) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (recommendations.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = recommendations.map(rec => `
+            <div class="recommendation-item ${className}">
+                <div class="recommendation-header">
+                    <div class="recommendation-icon">
+                        <i class="fas ${rec.icon}"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <div class="recommendation-title">${rec.title}</div>
+                        <div class="recommendation-message">${rec.message}</div>
+                        <div class="recommendation-action">${rec.action}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     showTermsScreen() {
@@ -2295,6 +2413,9 @@ class XyloclimePro {
             this.displayDataQualityInfo(analysis);
 
             this.updateDashboard(analysis);
+
+            // Display smart recommendations (premium feature)
+            this.displaySmartRecommendations(analysis, this.currentProject);
 
             document.getElementById('setupPanel').classList.add('hidden');
             document.getElementById('dashboardPanel').classList.remove('hidden');

@@ -400,6 +400,21 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- PROJECT TEMPLATES (Premium Feature) -->
+                        <div class="form-group-full premium-feature">
+                            <label>
+                                <i class="fas fa-layer-group"></i> Project Templates
+                                <span class="premium-badge">Premium</span>
+                                <span class="label-hint">(Pre-configured weather criteria for your industry)</span>
+                            </label>
+                            <div id="templateSelector" class="template-selector">
+                                <!-- Templates will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="locationSearch">
                                     <i class="fas fa-map-marker-alt"></i> Location Search
@@ -623,6 +638,37 @@
                             <ul id="riskRecommendationsList">
                                 <li>Analyzing weather patterns...</li>
                             </ul>
+                        </div>
+                    </div>
+
+                    <!-- SMART RECOMMENDATIONS (Premium Feature) -->
+                    <div class="smart-recommendations-section premium-feature" id="smartRecommendationsSection" style="display: none;">
+                        <div class="section-header">
+                            <h3>
+                                <i class="fas fa-brain"></i> Smart Recommendations
+                                <span class="premium-badge">AI-Powered</span>
+                            </h3>
+                            <p class="section-subtitle">Actionable insights based on your project's weather analysis</p>
+                        </div>
+
+                        <!-- Critical Recommendations -->
+                        <div id="criticalRecommendations" class="recommendations-category critical-category">
+                            <!-- Populated by JavaScript -->
+                        </div>
+
+                        <!-- Important Recommendations -->
+                        <div id="importantRecommendations" class="recommendations-category important-category">
+                            <!-- Populated by JavaScript -->
+                        </div>
+
+                        <!-- Helpful Tips -->
+                        <div id="helpfulRecommendations" class="recommendations-category helpful-category">
+                            <!-- Populated by JavaScript -->
+                        </div>
+
+                        <!-- Insights -->
+                        <div id="insightsRecommendations" class="recommendations-category insights-category">
+                            <!-- Populated by JavaScript -->
                         </div>
                     </div>
 
@@ -1297,6 +1343,9 @@
 
     <!-- UX Enhancements -->
     <script src="ux-enhancements.js?v=1.0.0"></script>
+
+    <!-- Premium Features -->
+    <script src="premium-features.js?v=1.0.0"></script>
 
     <!-- Main Application -->
     <script src="app.js?v=2.1.0"></script>
