@@ -333,7 +333,10 @@ class SmartRecommendations {
     analyzeRainRisk(analysis, recommendations) {
         const rainyDays = analysis.rainyDays || 0;
         const heavyRainDays = analysis.heavyRainDays || 0;
-        const totalDays = analysis.totalDays || 90;
+        // CRITICAL FIX: Must use actual project duration, not default 90
+        const totalDays = analysis.totalDays || analysis.actualProjectDays || 365;
+
+        console.log(`[RECOMMENDATIONS] Rain analysis: ${rainyDays} rainy days / ${totalDays} total days = ${Math.round(rainyDays/totalDays*100)}%`);
 
         if (heavyRainDays > totalDays * 0.1) {
             recommendations.critical.push({
@@ -349,7 +352,7 @@ class SmartRecommendations {
             recommendations.important.push({
                 icon: 'fa-umbrella',
                 title: 'Frequent Rain Expected',
-                message: `${rainyDays} rainy days expected (${Math.round(rainyDays/totalDays*100)}% of project duration)`,
+                message: `${rainyDays} rainy days expected (${Math.round(rainyDays/totalDays*100)}% of project duration). Note: Light rain days (<10mm) are workable with standard precautions.`,
                 action: 'Plan for drainage, equipment protection, and alternate tasks',
                 priority: 'medium'
             });

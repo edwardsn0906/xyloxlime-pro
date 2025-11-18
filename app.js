@@ -3441,28 +3441,52 @@ class XyloclimePro {
         const tempRisk = Math.min(100, tempExtremeRatio * 400);
 
         // 3. Wind Risk (20% weight)
-        // Based on workable conditions (realistic feasibility)
-        const workableDays = parseInt(analysis.workableDays || analysis.optimalDays);
-        const workableRatio = workableDays / totalDays;
-        const windRisk = Math.max(0, 100 - (workableRatio * 200));
+        // Check if we have actual wind data
+        const hasWindData = analysis.avgWindSpeed !== undefined && analysis.avgWindSpeed !== null && !isNaN(analysis.avgWindSpeed);
+        let windRisk = 0;
+
+        if (hasWindData) {
+            // Use actual wind data if available
+            const highWindDays = parseInt(analysis.highWindDays) || 0;
+            const windDaysRatio = highWindDays / totalDays;
+            windRisk = Math.min(100, windDaysRatio * 500); // High wind days drive risk
+            console.log(`[RISK] Wind: ${highWindDays} high wind days = ${windRisk.toFixed(1)} risk`);
+        } else {
+            // No wind data available - set to null for special handling
+            windRisk = null;
+            console.log('[RISK] Wind: No data available, setting risk to null');
+        }
 
         // 4. Seasonal Risk (25% weight)
         // Based on overall favorable conditions (realistic feasibility)
+        const workableDays = parseInt(analysis.workableDays || analysis.optimalDays);
         const favorableRatio = workableDays / totalDays;
         const seasonRisk = Math.max(0, 100 - (favorableRatio * 250));
 
         // Calculate weighted total score
-        const totalScore = Math.round(
-            (precipRisk * 0.30) +
-            (tempRisk * 0.25) +
-            (windRisk * 0.20) +
-            (seasonRisk * 0.25)
-        );
+        // If wind data unavailable, redistribute its 20% weight to other factors proportionally
+        let totalScore;
+        if (windRisk === null) {
+            // Redistribute wind's 20% weight: precip gets +6.7%, temp +6.7%, seasonal +6.6%
+            totalScore = Math.round(
+                (precipRisk * 0.367) +  // 30% + 6.7%
+                (tempRisk * 0.317) +    // 25% + 6.7%
+                (seasonRisk * 0.316)    // 25% + 6.6%
+            );
+            console.log('[RISK] Wind data unavailable, redistributing weight');
+        } else {
+            totalScore = Math.round(
+                (precipRisk * 0.30) +
+                (tempRisk * 0.25) +
+                (windRisk * 0.20) +
+                (seasonRisk * 0.25)
+            );
+        }
 
         console.log(`[RISK] Total Score: ${totalScore}/100`, {
             precip: Math.round(precipRisk),
             temp: Math.round(tempRisk),
-            wind: Math.round(windRisk),
+            wind: windRisk !== null ? Math.round(windRisk) : 'N/A',
             season: Math.round(seasonRisk)
         });
 
@@ -3499,9 +3523,10 @@ class XyloclimePro {
             breakdown: {
                 precipitation: Math.round(precipRisk),
                 temperature: Math.round(tempRisk),
-                wind: Math.round(windRisk),
+                wind: windRisk !== null ? Math.round(windRisk) : null,
                 seasonal: Math.round(seasonRisk)
             },
+            hasWindData,
             recommendations
         };
     }
@@ -3573,31 +3598,46 @@ class XyloclimePro {
         // Calculate relative contributions (percentages that add up to 100%)
         const precip = riskScore.breakdown.precipitation * 0.30; // weighted value
         const temp = riskScore.breakdown.temperature * 0.25;
-        const wind = riskScore.breakdown.wind * 0.20;
         const seasonal = riskScore.breakdown.seasonal * 0.25;
+
+        // Handle wind data - may be null if unavailable
+        const hasWindData = riskScore.breakdown.wind !== null && riskScore.breakdown.wind !== undefined;
+        const wind = hasWindData ? riskScore.breakdown.wind * 0.20 : 0;
         const total = precip + temp + wind + seasonal;
 
         // Calculate percentages of total risk
-        const precipPercent = total > 0 ? Math.round((precip / total) * 100) : 25;
-        const tempPercent = total > 0 ? Math.round((temp / total) * 100) : 25;
-        const windPercent = total > 0 ? Math.round((wind / total) * 100) : 25;
-        const seasonPercent = total > 0 ? Math.round((seasonal / total) * 100) : 25;
+        let precipPercent, tempPercent, windPercent, seasonPercent;
+
+        if (hasWindData) {
+            // Normal calculation with all 4 factors
+            precipPercent = total > 0 ? Math.round((precip / total) * 100) : 25;
+            tempPercent = total > 0 ? Math.round((temp / total) * 100) : 25;
+            windPercent = total > 0 ? Math.round((wind / total) * 100) : 25;
+            seasonPercent = total > 0 ? Math.round((seasonal / total) * 100) : 25;
+        } else {
+            // Recalculate without wind - redistribute percentages among 3 factors
+            precipPercent = total > 0 ? Math.round((precip / total) * 100) : 33;
+            tempPercent = total > 0 ? Math.round((temp / total) * 100) : 33;
+            windPercent = null; // Will be handled specially
+            seasonPercent = total > 0 ? Math.round((seasonal / total) * 100) : 34;
+            console.log('[RISK] Wind data unavailable - excluding from percentage calculations');
+        }
 
         console.log('[RISK] Relative contributions:', { precip: precipPercent, temp: tempPercent, wind: windPercent, seasonal: seasonPercent });
 
         // Update risk breakdown bars with relative percentages
         this.updateRiskBar('precipRiskBar', 'precipRiskScore', precipPercent);
         this.updateRiskBar('tempRiskBar', 'tempRiskScore', tempPercent);
-        this.updateRiskBar('windRiskBar', 'windRiskScore', windPercent);
+        this.updateRiskBar('windRiskBar', 'windRiskScore', hasWindData ? windPercent : 'N/A');
         this.updateRiskBar('seasonRiskBar', 'seasonRiskScore', seasonPercent);
 
         // Create pie chart for risk breakdown
         this.createRiskPieChart({
             precipitation: precipPercent,
             temperature: tempPercent,
-            wind: windPercent,
+            wind: hasWindData ? windPercent : null,
             seasonal: seasonPercent
-        });
+        }, hasWindData);
 
         // Update recommendations
         const recommendationsList = document.getElementById('riskRecommendationsList');
@@ -3613,23 +3653,38 @@ class XyloclimePro {
         const score = document.getElementById(scoreId);
 
         if (bar) {
-            bar.style.width = value + '%';
-            // Use fixed colors for each risk type instead of value-based colors
-            const colors = {
-                precipRiskBar: 'linear-gradient(90deg, #3498db 0%, #2980b9 100%)', // Blue for precipitation
-                tempRiskBar: 'linear-gradient(90deg, #e67e22 0%, #d35400 100%)',   // Orange for temperature
-                windRiskBar: 'linear-gradient(90deg, #1abc9c 0%, #16a085 100%)',   // Teal for wind
-                seasonRiskBar: 'linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%)' // Purple for seasonal
-            };
-            bar.style.background = colors[barId] || 'linear-gradient(90deg, #00d4ff 0%, #0099cc 100%)';
+            // Handle N/A values (missing data)
+            if (value === 'N/A' || value === null) {
+                bar.style.width = '0%';
+                bar.style.background = 'rgba(255, 255, 255, 0.1)'; // Dimmed appearance
+            } else {
+                bar.style.width = value + '%';
+                // Use fixed colors for each risk type instead of value-based colors
+                const colors = {
+                    precipRiskBar: 'linear-gradient(90deg, #3498db 0%, #2980b9 100%)', // Blue for precipitation
+                    tempRiskBar: 'linear-gradient(90deg, #e67e22 0%, #d35400 100%)',   // Orange for temperature
+                    windRiskBar: 'linear-gradient(90deg, #1abc9c 0%, #16a085 100%)',   // Teal for wind
+                    seasonRiskBar: 'linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%)' // Purple for seasonal
+                };
+                bar.style.background = colors[barId] || 'linear-gradient(90deg, #00d4ff 0%, #0099cc 100%)';
+            }
         }
 
         if (score) {
-            score.textContent = value + '%';
+            // Display "Data unavailable" for N/A values
+            if (value === 'N/A' || value === null) {
+                score.textContent = 'Data unavailable';
+                score.style.fontSize = '0.85em';
+                score.style.fontStyle = 'italic';
+            } else {
+                score.textContent = value + '%';
+                score.style.fontSize = ''; // Reset to default
+                score.style.fontStyle = ''; // Reset to default
+            }
         }
     }
 
-    createRiskPieChart(breakdown) {
+    createRiskPieChart(breakdown, hasWindData = true) {
         const canvas = document.getElementById('riskPieChart');
         if (!canvas) {
             console.warn('[RISK] Risk pie chart canvas not found');
@@ -3643,23 +3698,47 @@ class XyloclimePro {
             this.charts.riskPie.destroy();
         }
 
+        // Build chart data based on whether wind data is available
+        let labels, data, colors;
+
+        if (hasWindData && breakdown.wind !== null) {
+            // Include all 4 factors
+            labels = ['Precipitation', 'Temperature', 'Wind', 'Seasonal'];
+            data = [
+                breakdown.precipitation,
+                breakdown.temperature,
+                breakdown.wind,
+                breakdown.seasonal
+            ];
+            colors = [
+                '#3498db', // Blue for precipitation
+                '#e67e22', // Orange for temperature
+                '#1abc9c', // Teal for wind
+                '#9b59b6'  // Purple for seasonal
+            ];
+        } else {
+            // Exclude wind - only show 3 factors
+            labels = ['Precipitation', 'Temperature', 'Seasonal'];
+            data = [
+                breakdown.precipitation,
+                breakdown.temperature,
+                breakdown.seasonal
+            ];
+            colors = [
+                '#3498db', // Blue for precipitation
+                '#e67e22', // Orange for temperature
+                '#9b59b6'  // Purple for seasonal
+            ];
+            console.log('[RISK] Wind data unavailable - excluding from pie chart');
+        }
+
         this.charts.riskPie = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Precipitation', 'Temperature', 'Wind', 'Seasonal'],
+                labels: labels,
                 datasets: [{
-                    data: [
-                        breakdown.precipitation,
-                        breakdown.temperature,
-                        breakdown.wind,
-                        breakdown.seasonal
-                    ],
-                    backgroundColor: [
-                        '#3498db', // Blue for precipitation
-                        '#e67e22', // Orange for temperature
-                        '#1abc9c', // Teal for wind
-                        '#9b59b6'  // Purple for seasonal
-                    ],
+                    data: data,
+                    backgroundColor: colors,
                     borderColor: '#0a1929',
                     borderWidth: 3
                 }]
@@ -4457,7 +4536,7 @@ class XyloclimePro {
 
         // Weather risks
         if (analysis.rainyDays > duration * 0.25) {
-            summary += ` <strong>Rain Risk:</strong> Expect approximately ${analysis.rainyDays} rainy days (${rainyPercent}% of project duration), which is above historical averages. Plan for water management and weather-protected work areas.`;
+            summary += ` <strong>Rain Risk:</strong> Expect approximately ${analysis.rainyDays} rainy days (${rainyPercent}% of project duration), which is above historical averages. Note: Many rainy days with light precipitation (<10mm) are included in workable days counts, as work can continue with standard rain precautions. Plan for water management and weather-protected work areas.`;
         }
 
         if (analysis.snowyDays > 5) {
@@ -4745,7 +4824,9 @@ class XyloclimePro {
             if (bestPeriod.snowyDays === 0) {
                 reasons.push('no snow');
             }
-            if (bestPeriod.highWindDays === 0) {
+            // Only mention wind if we have actual wind data
+            const hasWindData = analysis.avgWindSpeed !== undefined && analysis.avgWindSpeed !== null && !isNaN(analysis.avgWindSpeed);
+            if (hasWindData && bestPeriod.highWindDays === 0) {
                 reasons.push('calm winds');
             }
             if (bestPeriod.freezingDays === 0 && bestPeriod.heatDays === 0) {
