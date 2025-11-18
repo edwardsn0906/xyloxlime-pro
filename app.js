@@ -850,7 +850,21 @@ class XyloclimePro {
         this.hideSuggestions();
 
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(sanitizedQuery)}&limit=5&addressdetails=1`, {
+            // Detect if query is a ZIP code (US postal code)
+            const isZipCode = this.isUSZipCode(sanitizedQuery);
+            let searchUrl;
+
+            if (isZipCode) {
+                // Use structured query for ZIP codes with country code for better results
+                console.log('[SEARCH] Detected ZIP code:', sanitizedQuery);
+                searchUrl = `https://nominatim.openstreetmap.org/search?format=json&postalcode=${encodeURIComponent(sanitizedQuery)}&country=United States&limit=5&addressdetails=1`;
+            } else {
+                // Regular location search
+                console.log('[SEARCH] Regular location search:', sanitizedQuery);
+                searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(sanitizedQuery)}&limit=5&addressdetails=1`;
+            }
+
+            const response = await fetch(searchUrl, {
                 headers: {
                     'User-Agent': 'Xyloclime Pro Weather Analysis Platform'
                 }
@@ -861,30 +875,63 @@ class XyloclimePro {
             }
 
             const data = await response.json();
+            console.log('[SEARCH] Found', data.length, 'results');
 
             if (data.length > 0) {
-                if (data.length === 1) {
+                // Filter out non-US results for ZIP codes to avoid confusion
+                let results = data;
+                if (isZipCode) {
+                    results = data.filter(r => {
+                        const address = r.address || {};
+                        return address.country_code === 'us' ||
+                               address.country === 'United States' ||
+                               r.display_name.includes('United States');
+                    });
+                    console.log('[SEARCH] Filtered to', results.length, 'US results');
+                }
+
+                if (results.length === 0) {
+                    this.showSearchStatus('ZIP code not found in United States. Try: "12345" or "City, State"', 'error');
+                    return;
+                }
+
+                if (results.length === 1) {
                     // Only one result, select it immediately
-                    const result = data[0];
+                    const result = results[0];
                     const lat = parseFloat(result.lat);
                     const lng = parseFloat(result.lon);
 
-                    this.map.setView([lat, lng], 10);
+                    this.map.setView([lat, lng], isZipCode ? 12 : 10); // Zoom closer for ZIP codes
                     this.selectLocation(lat, lng);
-                    this.showSearchStatus('Location found!', 'success');
+
+                    const locationName = isZipCode ?
+                        `${sanitizedQuery}, ${result.address?.state || result.address?.county || 'USA'}` :
+                        result.display_name;
+                    document.getElementById('locationSearch').value = locationName;
+
+                    this.showSearchStatus(isZipCode ? 'ZIP code found!' : 'Location found!', 'success');
                     setTimeout(() => this.hideSearchStatus(), 2000);
                 } else {
                     // Multiple results, show suggestions
-                    this.showSuggestions(data);
+                    this.showSuggestions(results);
                     this.hideSearchStatus();
                 }
             } else {
-                this.showSearchStatus('Location not found. Try: "City, State" or "Street, City"', 'error');
+                const errorMsg = isZipCode ?
+                    'ZIP code not found. Try: "12345" or "City, State"' :
+                    'Location not found. Try: "City, State" or "ZIP code"';
+                this.showSearchStatus(errorMsg, 'error');
             }
         } catch (error) {
-            console.error('Location search failed:', error);
+            console.error('[SEARCH] Location search failed:', error);
             this.showSearchStatus('Search failed. Please check your connection and try again.', 'error');
         }
+    }
+
+    isUSZipCode(query) {
+        // Match 5-digit ZIP codes or ZIP+4 format (12345 or 12345-6789)
+        const zipPattern = /^\d{5}(-\d{4})?$/;
+        return zipPattern.test(query.trim());
     }
 
     showSuggestions(results) {
