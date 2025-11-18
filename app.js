@@ -4797,11 +4797,12 @@ class XyloclimePro {
 
     async exportProfessionalPDF() {
         if (!this.currentProject) {
-            alert('Please create a project first');
+            window.toastManager.warning('Please create a project first before exporting to PDF', 'No Project Available');
             return;
         }
 
-        alert('Generating professional PDF report...\n\nThis will include:\n✓ Cover page with project info\n✓ Executive summary\n✓ Weather analysis charts\n✓ Statistical data tables\n✓ Cost breakdown (if calculated)\n✓ Recommendations\n\nNote: Chart rendering coming soon!\n\nFor now, this creates a comprehensive text-based report.');
+        // Show loading toast
+        window.toastManager.info('Generating comprehensive PDF report with executive summary, risk assessment, and recommendations...', 'Creating PDF Report', 5000);
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -4836,77 +4837,142 @@ class XyloclimePro {
         doc.setTextColor(255, 179, 32);
         doc.text('⚠ NOTICE: For planning purposes only. Not for life-safety decisions.', 105, 270, { align: 'center' });
 
-        // Page 2 - Executive Summary
+        // Page 2 - Enhanced Executive Summary
         doc.addPage();
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, 210, 297, 'F');
 
         yPos = 20;
         doc.setTextColor(0, 212, 255);
-        doc.setFontSize(18);
+        doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('Executive Summary', 20, yPos);
 
-        yPos += 10;
+        // Project Overview Box
+        yPos += 12;
+        doc.setFillColor(245, 248, 250);
+        doc.rect(20, yPos, 170, 32, 'F');
+        doc.setDrawColor(0, 212, 255);
+        doc.setLineWidth(0.5);
+        doc.rect(20, yPos, 170, 32);
+
+        yPos += 8;
         doc.setFontSize(10);
         doc.setTextColor(60, 60, 60);
-        doc.setFont(undefined, 'normal');
-
-        const summaryText = `Based on ${analysis.yearsAnalyzed} years of historical weather data, this report provides comprehensive weather intelligence for ${project.name}.`;
-        doc.text(doc.splitTextToSize(summaryText, 170), 20, yPos);
-
-        // Weather Metrics
-        yPos += 20;
-        doc.setFontSize(14);
-        doc.setTextColor(0, 212, 255);
         doc.setFont(undefined, 'bold');
-        doc.text('Key Weather Metrics', 20, yPos);
+        doc.text('Project Duration:', 25, yPos);
+        doc.setFont(undefined, 'normal');
+        doc.text(`${analysis.totalDays} days (${project.startDate} to ${project.endDate})`, 75, yPos);
 
-        yPos += 10;
+        yPos += 7;
+        doc.setFont(undefined, 'bold');
+        doc.text('Analysis Period:', 25, yPos);
+        doc.setFont(undefined, 'normal');
+        doc.text(`${analysis.yearsAnalyzed || 5} years of historical data (2019-2024)`, 75, yPos);
+
+        yPos += 7;
+        doc.setFont(undefined, 'bold');
+        doc.text('Risk Assessment:', 25, yPos);
+        const riskScore = project.riskScore || this.calculateRiskScore(analysis);
+        const riskLevel = riskScore <= 30 ? 'LOW' : riskScore <= 60 ? 'MEDIUM' : 'HIGH';
+        const riskColor = riskScore <= 30 ? [16, 185, 129] : riskScore <= 60 ? [251, 191, 36] : [239, 68, 68];
+        doc.setTextColor(...riskColor);
+        doc.setFont(undefined, 'bold');
+        doc.text(`${riskLevel} RISK (Score: ${riskScore}/100)`, 75, yPos);
+
+        // Key Findings Section
+        yPos += 20;
+        doc.setTextColor(0, 212, 255);
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text('Key Findings', 20, yPos);
+
+        yPos += 8;
         doc.setFontSize(10);
         doc.setTextColor(60, 60, 60);
         doc.setFont(undefined, 'normal');
 
-        const metrics = [
-            `Temperature Range: ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')} to ${this.formatTemp(parseFloat(analysis.avgTempMax), 'C')}`,
-            `Workable Days: ${analysis.workableDays || analysis.optimalDays} days (realistic feasibility)`,
-            `Ideal Days: ${analysis.idealDays || 0} days (perfect conditions)`,
-            `Rainy Days (Expected): ${analysis.rainyDays} days`,
-            `Heavy Rain Days: ${analysis.heavyRainDays || 0} days (work-stopping)`,
-            `Snow Days (Expected): ${analysis.snowyDays} days`,
-            `Freezing Days: ${analysis.freezingDays} days`,
-            `Total Precipitation: ${this.formatPrecip(analysis.totalPrecip)}`,
-            `Historical Data Period: ${analysis.yearsAnalyzed} years`
-        ];
+        const workablePercent = ((analysis.workableDays / analysis.totalDays) * 100).toFixed(1);
+        const findings = [
+            `${analysis.workableDays} workable days identified (${workablePercent}% of total project duration)`,
+            `${analysis.nonWorkableDays} non-workable days expected due to adverse weather conditions`,
+            `Average temperature: ${this.formatTemp(analysis.averageTemp, 'C')} ${analysis.averageTemp < 5 ? '(Cold weather protocols required)' : ''}`,
+            `Total precipitation forecast: ${this.formatPrecip(analysis.totalPrecipitation)} over project duration`,
+            `${analysis.extremeEvents ? analysis.extremeEvents.length : 0} extreme weather events anticipated`,
+            analysis.totalSnowfall > 0 ? `Snow accumulation expected: ${this.formatPrecip(analysis.totalSnowfall)}` : null
+        ].filter(Boolean);
 
-        metrics.forEach(metric => {
-            doc.text(`• ${metric}`, 25, yPos);
-            yPos += 7;
+        findings.forEach(finding => {
+            const lines = doc.splitTextToSize(`• ${finding}`, 165);
+            doc.text(lines, 25, yPos);
+            yPos += 7 * lines.length;
         });
 
-        // Recommendations
-        yPos += 10;
-        doc.setFontSize(14);
+        // Risk Assessment Detail
+        yPos += 8;
         doc.setTextColor(0, 212, 255);
+        doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
-        doc.text('Recommendations', 20, yPos);
+        doc.text('Weather Risk Assessment', 20, yPos);
 
-        yPos += 10;
+        yPos += 8;
         doc.setFontSize(10);
         doc.setTextColor(60, 60, 60);
         doc.setFont(undefined, 'normal');
 
-        const recommendations = [
-            'Schedule critical activities during optimal weather windows',
-            'Implement weather monitoring and contingency protocols',
-            'Maintain 10-15% schedule float for weather delays',
-            'Prepare site drainage and erosion control measures',
-            'Monitor 10-day forecasts for tactical adjustments'
-        ];
+        let riskAssessment = '';
+        if (riskScore <= 30) {
+            riskAssessment = `LOW RISK: Weather conditions are generally favorable for this project. Expected ${workablePercent}% workability provides good schedule reliability. Standard weather monitoring protocols are recommended.`;
+        } else if (riskScore <= 60) {
+            riskAssessment = `MEDIUM RISK: Moderate weather challenges expected during this project. With ${workablePercent}% workability, implement enhanced weather monitoring and maintain 15-20% schedule contingency for weather delays.`;
+        } else {
+            riskAssessment = `HIGH RISK: Significant weather challenges anticipated for this project period. Only ${workablePercent}% of days considered workable. Robust weather contingency planning essential. Consider 25-30% schedule buffer and alternative work strategies.`;
+        }
 
-        recommendations.forEach(rec => {
-            doc.text(doc.splitTextToSize(`• ${rec}`, 165), 25, yPos);
-            yPos += 14;
+        const assessmentLines = doc.splitTextToSize(riskAssessment, 170);
+        doc.text(assessmentLines, 20, yPos);
+        yPos += 7 * assessmentLines.length;
+
+        // Critical Recommendations
+        yPos += 10;
+        doc.setTextColor(0, 212, 255);
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text('Critical Recommendations', 20, yPos);
+
+        yPos += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+        doc.setFont(undefined, 'normal');
+
+        // Get smart recommendations if available
+        let recommendations = [];
+        if (window.SmartRecommendations) {
+            const smartRecs = new window.SmartRecommendations();
+            const allRecs = smartRecs.generateRecommendations(analysis, project);
+            // Combine critical and important recommendations
+            recommendations = [
+                ...allRecs.critical.map(r => `[CRITICAL] ${r}`),
+                ...allRecs.important.slice(0, 3).map(r => `[IMPORTANT] ${r}`)
+            ];
+        }
+
+        // Fallback to generic recommendations if smart recs not available
+        if (recommendations.length === 0) {
+            recommendations = [
+                `[CRITICAL] Maintain ${riskScore > 60 ? '25-30%' : riskScore > 30 ? '15-20%' : '10-15%'} schedule contingency for weather delays`,
+                '[IMPORTANT] Schedule weather-sensitive activities during optimal periods identified in monthly breakdown',
+                '[IMPORTANT] Implement daily weather monitoring with 10-day forecast reviews',
+                analysis.totalPrecipitation > 200 ? '[CRITICAL] Prepare comprehensive drainage and erosion control measures' : null,
+                analysis.extremeEvents && analysis.extremeEvents.length > 5 ? '[CRITICAL] Develop extreme weather response protocols and safety procedures' : null,
+                '[IMPORTANT] Coordinate with subcontractors on weather-contingent work sequences'
+            ].filter(Boolean);
+        }
+
+        recommendations.slice(0, 6).forEach(rec => {
+            const lines = doc.splitTextToSize(`• ${rec}`, 165);
+            doc.text(lines, 25, yPos);
+            yPos += 7 * lines.length + 2;
         });
 
         // Page 3 - Detailed Analysis
@@ -4954,7 +5020,7 @@ class XyloclimePro {
         const filename = `XyloclimePro_${project.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(filename);
 
-        alert(`✅ PDF Report Generated Successfully!\n\nFilename: ${filename}\n\nThe report has been downloaded to your default downloads folder.`);
+        window.toastManager.success(`Professional PDF report generated and downloaded: ${filename}`, 'PDF Export Complete', 6000);
     }
 
     // ========================================================================
