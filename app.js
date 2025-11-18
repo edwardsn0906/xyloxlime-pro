@@ -2613,13 +2613,27 @@ class XyloclimePro {
                 totalSnowfall: this.sum(daily.snowfall_sum),
 
                 // Count event days for THIS YEAR
-                freezingDays: daily.temperature_2m_min.filter(t => t !== null && t <= 0).length,
-                rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,
-                heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 10).length, // NEW: Work-stopping rain
-                snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 0).length,
-                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w > 50).length,
-                extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37.7).length,
-                extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -17.7).length,
+                // TEMPERATURE CATEGORIES (construction-specific thresholds):
+                // - Light freezing (0 to -5°C): Workable with cold-weather precautions
+                // - Extreme cold (< -5°C): NOT workable - work stoppage required
+                // - Extreme heat (> 37°C): NOT workable - safety risk
+                allFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t <= 0).length,  // All days at/below freezing
+                lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -5 && t <= 0).length,  // Workable with precautions
+                extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -5).length,  // Work stoppage
+                extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37).length,  // Work stoppage
+
+                // PRECIPITATION CATEGORIES:
+                // - Light rain (1-10mm): Workable with rain gear/drainage
+                // - Heavy rain (> 10mm): Work stoppage
+                // - Snow (> 10mm): Work stoppage
+                rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,  // All rainy days
+                heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 10).length,  // Work-stopping rain
+                snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow (>10mm)
+
+                // WIND CATEGORIES:
+                // - Moderate wind (50-60 km/h): Challenging but workable
+                // - High wind (> 60 km/h): NOT workable for elevated work
+                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w > 60).length,  // Work stoppage
 
                 // WORKABILITY TIERS - Three levels of work feasibility
 
@@ -2636,17 +2650,27 @@ class XyloclimePro {
                            temp_min > 0 && t < 37.7 && precip < 5 && wind < 50;
                 }).length,
 
-                // Tier 2: WORKABLE DAYS (NEW - realistic construction feasibility)
+                // Tier 2: WORKABLE DAYS (realistic construction feasibility)
                 // Work can continue with normal cold-weather/rain precautions
-                // - Temp: Light freezing OK (>-5°C), not extreme heat (<37°C)
-                // - Rain: Light rain OK (<10mm - heavy rain stops work)
-                // - Wind: Moderate winds OK (<60 km/h)
+                // CLEAR RULES:
+                // ✓ Workable: Light freezing (>-5°C), light rain (<10mm), moderate wind (<60 km/h)
+                // ✗ NOT Workable: Extreme cold (≤-5°C), heavy rain (≥10mm), high wind (≥60 km/h), extreme heat (≥37°C), snow (>10mm)
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
+                    const snow = daily.snowfall_sum[i];
                     const wind = daily.windspeed_10m_max[i];
-                    return t !== null && temp_min !== null && precip !== null && wind !== null &&
-                           temp_min > -5 && t < 37 && precip < 10 && wind < 60;
+
+                    // Check for work-stopping conditions
+                    const hasExtremeCold = temp_min !== null && temp_min <= -5;
+                    const hasExtremeHeat = t !== null && t >= 37;
+                    const hasHeavyRain = precip !== null && precip >= 10;
+                    const hasSnow = snow !== null && snow > 10;
+                    const hasHighWind = wind !== null && wind >= 60;
+
+                    // Day is workable if NO work-stopping conditions present
+                    return t !== null && temp_min !== null &&
+                           !hasExtremeCold && !hasExtremeHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
                 }).length
             };
 
@@ -2667,13 +2691,14 @@ class XyloclimePro {
         const avgSnowfallPerYear = this.average(yearlyStats.map(y => y.totalSnowfall));
 
         // Average event days PER YEAR
-        const freezingDays = Math.round(this.average(yearlyStats.map(y => y.freezingDays)));
+        const allFreezingDays = Math.round(this.average(yearlyStats.map(y => y.allFreezingDays)));
+        const lightFreezingDays = Math.round(this.average(yearlyStats.map(y => y.lightFreezingDays)));
+        const extremeColdDays = Math.round(this.average(yearlyStats.map(y => y.extremeColdDays)));
+        const extremeHeatDays = Math.round(this.average(yearlyStats.map(y => y.extremeHeatDays)));
         const rainyDays = Math.round(this.average(yearlyStats.map(y => y.rainyDays)));
         const heavyRainDays = Math.round(this.average(yearlyStats.map(y => y.heavyRainDays)));
         const snowyDays = Math.round(this.average(yearlyStats.map(y => y.snowyDays)));
         const highWindDays = Math.round(this.average(yearlyStats.map(y => y.highWindDays)));
-        const extremeHeatDays = Math.round(this.average(yearlyStats.map(y => y.extremeHeatDays)));
-        const extremeColdDays = Math.round(this.average(yearlyStats.map(y => y.extremeColdDays)));
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
 
@@ -2703,14 +2728,20 @@ class XyloclimePro {
             totalPrecip: avgPrecipPerYear.toFixed(1),
             totalSnowfall: (avgSnowfallPerYear / 10).toFixed(1), // Convert mm to cm
 
-            // Event days
-            freezingDays,
-            rainyDays,
-            heavyRainDays,
-            snowyDays,
-            highWindDays,
-            extremeHeatDays,
-            extremeColdDays,
+            // Event days - Temperature
+            allFreezingDays,          // All days at/below freezing (informational)
+            lightFreezingDays,        // Days with 0 to -5°C (workable with precautions)
+            extremeColdDays,          // Days below -5°C (NOT workable)
+            extremeHeatDays,          // Days above 37°C (NOT workable)
+            freezingDays: allFreezingDays,  // Backward compatibility
+
+            // Event days - Precipitation
+            rainyDays,                // All rainy days (>1mm)
+            heavyRainDays,            // Heavy rain (>10mm) - work stoppage
+            snowyDays,                // Snowy days (>10mm) - work stoppage
+
+            // Event days - Wind
+            highWindDays,             // High wind (>60 km/h) - work stoppage
 
             // Workability tiers
             idealDays,
@@ -4521,10 +4552,17 @@ class XyloclimePro {
 
         summary += `<p><strong>Historical Analysis:</strong> Based on ${analysis.yearsAnalyzed} years of historical weather data for this exact calendar period, our analysis reveals the following conditions:</p>`;
 
+        // Add workability criteria explanation
+        summary += `<p><strong>Work Feasibility Criteria:</strong> This analysis uses construction-specific thresholds to classify days as "Workable" or "Not Workable":<br>
+        <strong>✓ Workable with precautions:</strong> Light freezing (0 to -5°C), light rain (<10mm), moderate wind (<60 km/h)<br>
+        <strong>✗ Work stoppage required:</strong> Extreme cold (≤-5°C), heavy rain (≥10mm), snow (>10mm), high wind (≥60 km/h), extreme heat (≥37°C)</p>`;
+
         // Weather assessment - using workable days for realistic feasibility
         const rainyPercent = Math.round((analysis.rainyDays / duration) * 100);
         const workablePercent = Math.round((analysis.workableDays / duration) * 100);
         const idealPercent = Math.round((analysis.idealDays / duration) * 100);
+        const extremeColdPercent = Math.round((analysis.extremeColdDays / duration) * 100);
+        const lightFreezingPercent = Math.round((analysis.lightFreezingDays / duration) * 100);
 
         if (workablePercent > 75) {
             summary += `<p><strong>Favorable Conditions:</strong> Excellent news! Approximately ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable with normal construction precautions. Of these, ${analysis.idealDays} days (${idealPercent}%) are forecast to have ideal conditions. This is significantly favorable for project execution.`;
@@ -4543,8 +4581,15 @@ class XyloclimePro {
             summary += ` <strong>Snow Advisory:</strong> Historical patterns indicate ${analysis.snowyDays} days with snow accumulation. Winter construction protocols and heated enclosures may be necessary.`;
         }
 
-        if (analysis.freezingDays > 10) {
-            summary += ` <strong>Cold Weather Alert:</strong> ${analysis.freezingDays} freezing days expected. Concrete curing, material storage, and worker safety measures must be implemented.`;
+        // Explain freezing vs extreme cold
+        if (analysis.allFreezingDays > 10) {
+            if (analysis.extremeColdDays > 5) {
+                summary += ` <strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} freezing days expected (${analysis.extremeColdDays} days with extreme cold ≤-5°C requiring work stoppage, ${analysis.lightFreezingDays} days with light freezing 0 to -5°C workable with cold-weather precautions). Concrete curing, material storage, and worker safety measures must be implemented.`;
+            } else {
+                summary += ` <strong>Cold Weather Info:</strong> ${analysis.allFreezingDays} freezing days expected, but only ${analysis.extremeColdDays} require work stoppage (≤-5°C). ${analysis.lightFreezingDays} days with light freezing (0 to -5°C) are workable with standard cold-weather precautions.`;
+            }
+        } else if (analysis.extremeColdDays > 0) {
+            summary += ` <strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (work stoppage required). Plan for heated enclosures and cold-weather protocols.`;
         }
 
         summary += `</p>`;
@@ -4739,16 +4784,29 @@ class XyloclimePro {
 
             const startDate = window[0].date;
             const endDate = window[window.length - 1].date;
+
+            // Validate event counts don't exceed period length
+            const totalEventDays = rainyDays + snowyDays + freezingDays + heatDays + highWindDays;
+            if (totalEventDays > windowSize * 3) {  // Allow some overlap but catch impossible counts
+                console.warn(`[PERIODS] Suspicious event count: ${totalEventDays} events in ${windowSize} days`);
+            }
+            if (rainyDays > windowSize || snowyDays > windowSize || freezingDays > windowSize ||
+                heatDays > windowSize || highWindDays > windowSize || optimalDaysCount > windowSize) {
+                console.error(`[PERIODS] IMPOSSIBLE EVENT COUNT: rainy=${rainyDays}, snowy=${snowyDays}, ` +
+                    `freezing=${freezingDays}, heat=${heatDays}, wind=${highWindDays}, ` +
+                    `optimal=${optimalDaysCount} in ${windowSize}-day period`);
+            }
+
             const periodInfo = {
                 startDate,
                 endDate,
                 score,
-                rainyDays,
-                snowyDays,
-                highWindDays,
-                freezingDays,
-                heatDays,
-                optimalDays: optimalDaysCount  // Fixed: Count unique optimal days instead of subtracting violations
+                rainyDays: Math.min(rainyDays, windowSize),  // Cap at window size
+                snowyDays: Math.min(snowyDays, windowSize),
+                highWindDays: Math.min(highWindDays, windowSize),
+                freezingDays: Math.min(freezingDays, windowSize),
+                heatDays: Math.min(heatDays, windowSize),
+                optimalDays: Math.min(optimalDaysCount, windowSize)  // Cap at window size
             };
 
             // Track best period
@@ -4779,6 +4837,12 @@ class XyloclimePro {
             const historicalStart = new Date(bestPeriod.startDate);
             const historicalEnd = new Date(bestPeriod.endDate);
 
+            // Validate that we have exactly 14 days in the source data
+            const daysDiff = Math.round((historicalEnd - historicalStart) / (1000 * 60 * 60 * 24));
+            if (daysDiff !== 13) {
+                console.error(`[PERIODS] Invalid period length: ${daysDiff + 1} days instead of 14`);
+            }
+
             // Start with project start year
             let displayYear = projectStart.getFullYear();
             const displayStart = new Date(displayYear, historicalStart.getMonth(), historicalStart.getDate());
@@ -4789,13 +4853,9 @@ class XyloclimePro {
                 displayYear++;
             }
 
-            // Create end date in same or next year
-            const displayEnd = new Date(displayYear, historicalEnd.getMonth(), historicalEnd.getDate());
-
-            // If end is before start within same year, it crosses into next year
-            if (displayEnd < displayStart) {
-                displayEnd.setFullYear(displayYear + 1);
-            }
+            // Calculate end date as exactly 13 days after start (14-day period total)
+            const displayEnd = new Date(displayStart);
+            displayEnd.setDate(displayStart.getDate() + 13);
 
             // Ensure both dates are within project timeline
             if (displayStart > projectEnd || displayEnd < projectStart) {
@@ -4806,6 +4866,10 @@ class XyloclimePro {
             } else {
                 const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const endDate = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                // Verify display dates are exactly 14 days apart
+                const displayDiff = Math.round((displayEnd - displayStart) / (1000 * 60 * 60 * 24));
+                console.log(`[PERIODS] Best period: ${startDate} - ${endDate} (${displayDiff + 1} days)`);
 
             if (bestPeriodEl) {
                 bestPeriodEl.textContent = `${startDate} - ${endDate}`;
@@ -4848,6 +4912,12 @@ class XyloclimePro {
             const historicalStart = new Date(worstPeriod.startDate);
             const historicalEnd = new Date(worstPeriod.endDate);
 
+            // Validate that we have exactly 14 days in the source data
+            const daysDiff = Math.round((historicalEnd - historicalStart) / (1000 * 60 * 60 * 24));
+            if (daysDiff !== 13) {
+                console.error(`[PERIODS] Invalid worst period length: ${daysDiff + 1} days instead of 14`);
+            }
+
             // Start with project start year
             let displayYear = projectStart.getFullYear();
             const displayStart = new Date(displayYear, historicalStart.getMonth(), historicalStart.getDate());
@@ -4858,13 +4928,9 @@ class XyloclimePro {
                 displayYear++;
             }
 
-            // Create end date in same or next year
-            const displayEnd = new Date(displayYear, historicalEnd.getMonth(), historicalEnd.getDate());
-
-            // If end is before start within same year, it crosses into next year
-            if (displayEnd < displayStart) {
-                displayEnd.setFullYear(displayYear + 1);
-            }
+            // Calculate end date as exactly 13 days after start (14-day period total)
+            const displayEnd = new Date(displayStart);
+            displayEnd.setDate(displayStart.getDate() + 13);
 
             // Ensure both dates are within project timeline
             if (displayStart > projectEnd || displayEnd < projectStart) {
@@ -4875,6 +4941,10 @@ class XyloclimePro {
             } else {
                 const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const endDate = displayEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                // Verify display dates are exactly 14 days apart
+                const displayDiff = Math.round((displayEnd - displayStart) / (1000 * 60 * 60 * 24));
+                console.log(`[PERIODS] Worst period: ${startDate} - ${endDate} (${displayDiff + 1} days)`);
 
             if (worstPeriodEl) {
                 worstPeriodEl.textContent = `${startDate} - ${endDate}`;
