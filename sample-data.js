@@ -60,6 +60,23 @@ class SampleDataManager {
                 riskScore: 18,
                 historicalData: this.generatePhoenixPavingData(),
                 analysis: this.generatePhoenixPavingAnalysis()
+            },
+            'excavation-chicago': {
+                id: 'sample-excavation-chicago',
+                name: 'Chicago Distribution Center - Site Preparation',
+                location: {
+                    lat: 41.8781,
+                    lng: -87.6298
+                },
+                locationName: 'Chicago, IL',
+                startDate: '2024-11-20',
+                endDate: '2025-02-28',
+                createdAt: '2024-10-15T11:00:00Z',
+                isPrediction: true,
+                templateId: 'excavation',
+                riskScore: 68,
+                historicalData: this.generateChicagoExcavationData(),
+                analysis: this.generateChicagoExcavationAnalysis()
             }
         };
     }
@@ -214,8 +231,100 @@ class SampleDataManager {
     }
 
     // ========================================================================
+    // CHICAGO EXCAVATION PROJECT DATA
+    // ========================================================================
+
+    generateChicagoExcavationData() {
+        // Simulated 100 days of weather data for Chicago (Nov-Feb winter)
+        const dates = this.generateDateRange('2024-11-20', '2025-02-28');
+
+        return {
+            latitude: 41.8781,
+            longitude: -87.6298,
+            daily: {
+                time: dates,
+                temperature_2m_max: this.generateTemperatureData(dates.length, -8, 8, 5), // Cold winter temps
+                temperature_2m_min: this.generateTemperatureData(dates.length, -15, 2, 4),
+                precipitation_sum: this.generatePrecipitationData(dates.length, 0.25, [8, 12, 10, 8]), // Nov, Dec, Jan, Feb
+                snowfall_sum: this.generateSnowfallData(dates.length, 0.15, [15, 25, 30, 20]), // Heavy snow in Dec-Jan
+                windspeed_10m_max: this.generateWindData(dates.length, 20, 50, 10) // Windy city!
+            }
+        };
+    }
+
+    generateChicagoExcavationAnalysis() {
+        return {
+            totalDays: 100,
+            actualProjectDays: 100,
+            workableDays: 58,
+            nonWorkableDays: 42,
+            workablePercentage: 58.3,
+            avgTempMax: -0.5,
+            avgTempMin: -7.2,
+            totalPrecip: 95.6,
+            totalSnowfall: 48.3,
+            avgWindSpeed: 32.8,
+            maxWindSpeed: 52.1,
+            extremeEvents: [
+                { year: 2020, type: 'Heavy Snow', value: '35mm snowfall', severity: 'High' },
+                { year: 2021, type: 'Extreme Cold', value: '-18°C minimum', severity: 'High' },
+                { year: 2023, type: 'High Wind', value: '55 km/h sustained', severity: 'Moderate' }
+            ],
+            rainyDays: 22,
+            heavyRainDays: 8,
+            snowyDays: 18,
+            heavySnowDays: 6,
+            allFreezingDays: 78,
+            lightFreezingDays: 45,
+            extremeColdDays: 33, // ≤-5°C - work stopping cold
+            extremeHeatDays: 0,
+            highWindDays: 38, // ≥30 km/h
+            idealDays: 12,
+            optimalDays: 12,
+            freezingDays: 78,
+            yearsAnalyzed: 5,
+            dataQuality: 0.99,
+            dataQualityWarnings: [],
+            rainyDaysMin: 18,
+            rainyDaysMax: 26,
+            rainyDaysConfidence: 4,
+            precipMin: 82.3,
+            precipMax: 108.9,
+            monthlyBreakdown: [
+                { month: 'November', monthIndex: 10, avgDaysInMonth: 10, heavyRainDays: 1, workStoppingColdDays: 2, heavySnowDays: 0, workableDays: 7, idealDays: 3, workablePercent: 70, riskScore: 30 },
+                { month: 'December', monthIndex: 11, avgDaysInMonth: 31, heavyRainDays: 2, workStoppingColdDays: 10, heavySnowDays: 2, workableDays: 17, idealDays: 3, workablePercent: 55, riskScore: 45 },
+                { month: 'January', monthIndex: 0, avgDaysInMonth: 31, heavyRainDays: 3, workStoppingColdDays: 14, heavySnowDays: 3, workableDays: 15, idealDays: 4, workablePercent: 48, riskScore: 65 },
+                { month: 'February', monthIndex: 1, avgDaysInMonth: 28, heavyRainDays: 2, workStoppingColdDays: 7, heavySnowDays: 1, workableDays: 19, idealDays: 2, workablePercent: 68, riskScore: 36 }
+            ]
+        };
+    }
+
+    // ========================================================================
     // DATA GENERATION UTILITIES
     // ========================================================================
+
+    generateSnowfallData(count, baseChance, monthlyIntensity) {
+        const snowfall = [];
+        const daysPerMonth = Math.ceil(count / monthlyIntensity.length);
+
+        for (let i = 0; i < count; i++) {
+            const monthIndex = Math.floor(i / daysPerMonth);
+            const intensity = monthlyIntensity[monthIndex] || 5;
+
+            // Random chance of snow with realistic clustering
+            if (Math.random() < baseChance) {
+                // Some days have heavy snow
+                const amount = Math.random() < 0.15
+                    ? intensity * (1.2 + Math.random() * 1.5) // Heavy snow
+                    : Math.random() * intensity; // Normal snow
+                snowfall.push(parseFloat(amount.toFixed(1)));
+            } else {
+                snowfall.push(0);
+            }
+        }
+
+        return snowfall;
+    }
 
     generateDateRange(startDate, endDate) {
         const dates = [];
@@ -352,6 +461,11 @@ class SampleDataManager {
                 5000
             );
         }
+
+        // Scroll to top to show results
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        console.log('[SAMPLE] Sample project loaded:', sample.name);
 
         return true;
     }

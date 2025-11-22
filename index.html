@@ -7,7 +7,7 @@
     <meta name="description" content="Premium weather analysis platform with advanced analytics and cost calculations">
 
     <!-- Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' https://archive-api.open-meteo.com https://nominatim.openstreetmap.org https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' https://archive-api.open-meteo.com https://nominatim.openstreetmap.org https://www.ncei.noaa.gov https://weather.visualcrossing.com https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self';">
 
     <!-- Cache Control - Prevent aggressive browser caching -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -17,6 +17,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚡</text></svg>">
     <link rel="stylesheet" href="styles.css?v=2.1.0">
     <link rel="stylesheet" href="ux-improvements.css?v=1.0.0">
+    <link rel="stylesheet" href="enhanced-additions.css?v=1.0.0">
 
     <!-- External Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
@@ -412,6 +413,9 @@
                             <div id="templateSelector" class="template-selector">
                                 <!-- Templates will be populated by JavaScript -->
                             </div>
+                            <div id="templateInfoPanel" style="display: none; margin-top: 1rem;">
+                                <!-- Template info will be displayed here -->
+                            </div>
                         </div>
 
                         <div class="form-row">
@@ -519,82 +523,90 @@
                         </div>
                     </div>
 
-                    <!-- Enhanced Summary Cards -->
-                    <div class="summary-cards-grid">
-                        <div class="summary-card temp">
-                            <div class="card-icon"><i class="fas fa-temperature-high"></i></div>
-                            <div class="card-content">
-                                <h3>Avg Temperature</h3>
-                                <div class="card-value" id="avgTemp">--°C</div>
-                                <div class="card-subtitle">High: <span id="avgTempMax">--</span> / Low: <span id="avgTempMin">--</span></div>
+                    <!-- Compact Weather Metrics Tiles -->
+                    <div class="metrics-tiles-grid">
+                        <!-- Temperature -->
+                        <div class="metric-tile temp-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-temperature-high"></i>
+                                <span>Avg Temperature</span>
                             </div>
+                            <div class="tile-value" id="avgTemp">--°F</div>
+                            <div class="tile-detail">High: <span id="avgTempMax">--</span> / Low: <span id="avgTempMin">--</span></div>
                         </div>
-                        <div class="summary-card rain">
-                            <div class="card-icon"><i class="fas fa-cloud-rain"></i></div>
-                            <div class="card-content">
-                                <h3>Rainy Days</h3>
-                                <div class="card-value" id="rainyDays">--</div>
-                                <div class="card-subtitle">Total: <span id="totalPrecip">--</span></div>
-                                <div class="card-criteria">&gt;0.04 inches/day</div>
+
+                        <!-- Rainy Days -->
+                        <div class="metric-tile rain-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-cloud-rain"></i>
+                                <span>Rainy Days</span>
                             </div>
+                            <div class="tile-value" id="rainyDays">--</div>
+                            <div class="tile-detail">Total: <span id="totalPrecip">--</span></div>
+                            <div class="tile-criteria">>0.04 in/day</div>
                         </div>
-                        <div class="summary-card heavy-rain">
-                            <div class="card-icon"><i class="fas fa-cloud-showers-heavy"></i></div>
-                            <div class="card-content">
-                                <h3>Heavy Rain Days</h3>
-                                <div class="card-value" id="heavyRainDays">--</div>
-                                <div class="card-subtitle">Work-stopping rain</div>
-                                <div class="card-criteria">&gt;0.39 inches/day</div>
+
+                        <!-- Heavy Rain -->
+                        <div class="metric-tile heavy-rain-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-cloud-showers-heavy"></i>
+                                <span>Heavy Rain</span>
                             </div>
+                            <div class="tile-value" id="heavyRainDays">--</div>
+                            <div class="tile-detail">Work-stopping</div>
+                            <div class="tile-criteria">>0.39 in/day</div>
                         </div>
-                        <div class="summary-card snow">
-                            <div class="card-icon"><i class="fas fa-snowflake"></i></div>
-                            <div class="card-content">
-                                <h3>Snow Days</h3>
-                                <div class="card-value" id="snowyDays">--</div>
-                                <div class="card-subtitle">Total: <span id="totalSnow">--</span></div>
+
+                        <!-- Measurable Snow Days -->
+                        <div class="metric-tile snow-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-snowflake"></i>
+                                <span>Measurable Snow</span>
                             </div>
+                            <div class="tile-value" id="snowyDays">--</div>
+                            <div class="tile-detail">Total: <span id="totalSnow">--</span></div>
                         </div>
-                        <div class="summary-card wind">
-                            <div class="card-icon"><i class="fas fa-wind"></i></div>
-                            <div class="card-content">
-                                <h3>Wind Speed</h3>
-                                <div class="card-value" id="avgWind">--</div>
-                                <div class="card-subtitle">Max: <span id="maxWind">--</span> km/h</div>
+
+                        <!-- Wind Speed -->
+                        <div class="metric-tile wind-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-wind"></i>
+                                <span>Wind Speed</span>
                             </div>
+                            <div class="tile-value" id="avgWind">--</div>
+                            <div class="tile-detail">Max: <span id="maxWind">--</span></div>
+                            <div class="tile-criteria">≥30 km/h impact</div>
                         </div>
-                        <div class="summary-card humidity">
-                            <div class="card-icon"><i class="fas fa-tint"></i></div>
-                            <div class="card-content">
-                                <h3>Humidity</h3>
-                                <div class="card-value" id="avgHumidity">--%</div>
-                                <div class="card-subtitle">Average relative</div>
+
+                        <!-- Extreme Heat -->
+                        <div class="metric-tile heat-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-sun"></i>
+                                <span>Extreme Heat</span>
                             </div>
+                            <div class="tile-value" id="extremeHeatDays">--</div>
+                            <div class="tile-detail">Days over 100°F</div>
+                            <div class="tile-criteria">Reduces ideal days</div>
                         </div>
-                        <div class="summary-card optimal">
-                            <div class="card-icon"><i class="fas fa-sun"></i></div>
-                            <div class="card-content">
-                                <h3>Work Feasibility</h3>
-                                <div class="workability-tiers">
-                                    <div class="tier-item">
-                                        <span class="tier-label">Workable:</span>
-                                        <span class="card-value" id="workableDays">--</span>
-                                    </div>
-                                    <div class="tier-item">
-                                        <span class="tier-label">Ideal:</span>
-                                        <span class="card-value-small" id="idealDays">--</span>
-                                    </div>
-                                </div>
-                                <div class="card-subtitle">Ideal days are a subset of workable days</div>
+
+                        <!-- Workable Days -->
+                        <div class="metric-tile workable-tile">
+                            <div class="tile-header">
+                                <i class="fas fa-hard-hat"></i>
+                                <span>Workable Days</span>
                             </div>
+                            <div class="tile-value" id="workableDays">--</div>
+                            <div class="tile-detail">Ideal: <span id="idealDays">--</span></div>
                         </div>
-                        <div class="summary-card risk" id="riskScoreCard">
-                            <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
-                            <div class="card-content">
-                                <h3>Risk Score</h3>
-                                <div class="card-value risk-score" id="riskScore">--</div>
-                                <div class="card-subtitle risk-level" id="riskLevel">Calculating...</div>
+
+                        <!-- Risk Score -->
+                        <div class="metric-tile risk-tile" id="riskScoreCard">
+                            <div class="tile-header">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Risk Score</span>
                             </div>
+                            <div class="tile-value" id="riskScore">--</div>
+                            <div class="tile-detail risk-level" id="riskLevel">Calculating...</div>
                         </div>
                     </div>
 
@@ -625,22 +637,14 @@
                                     <div class="risk-score-text" id="windRiskScore">0%</div>
                                 </div>
                                 <div class="risk-item">
-                                    <div class="risk-category">Seasonal Risk</div>
+                                    <div class="risk-category">Schedule Flexibility Risk</div>
                                     <div class="risk-bar">
                                         <div class="risk-bar-fill" id="seasonRiskBar" style="width: 0%"></div>
                                     </div>
                                     <div class="risk-score-text" id="seasonRiskScore">0%</div>
                                 </div>
                             </div>
-                            <div class="risk-pie-chart-container">
-                                <h4 style="text-align: center; color: var(--electric-cyan); margin-bottom: 1rem;">
-                                    <i class="fas fa-chart-pie"></i> Risk Factor Breakdown
-                                </h4>
-                                <p style="text-align: center; color: var(--steel-silver); font-size: 0.9rem; margin-bottom: 1rem;">
-                                    Shows relative contribution of each factor to total risk
-                                </p>
-                                <canvas id="riskPieChart" style="max-width: 400px; margin: 0 auto;"></canvas>
-                            </div>
+                            <!-- Pie chart removed - risk bars show all necessary info -->
                         </div>
                         <div class="risk-recommendations" id="riskRecommendations">
                             <h4><i class="fas fa-lightbulb"></i> Risk Mitigation Recommendations</h4>
@@ -655,7 +659,6 @@
                         <div class="section-header">
                             <h3>
                                 <i class="fas fa-brain"></i> Smart Recommendations
-                                <span class="premium-badge">AI-Powered</span>
                             </h3>
                             <p class="section-subtitle">Actionable insights based on your project's weather analysis</p>
                         </div>
@@ -785,7 +788,7 @@
                                     <ul class="threshold-criteria">
                                         <li>Temperature: <strong>0°C to 37.7°C</strong> (32°F to 100°F)</li>
                                         <li>Precipitation: <strong>&lt;5mm/day</strong> (&lt;0.2 inches)</li>
-                                        <li>Wind Speed: <strong>&lt;50 km/h</strong> (&lt;31 mph)</li>
+                                        <li>Wind Speed: <strong>&lt;20 km/h</strong> (&lt;12 mph)</li>
                                     </ul>
                                 </div>
                             </div>
@@ -810,11 +813,11 @@
                                     </ul>
                                 </div>
                                 <div class="threshold-item">
-                                    <div class="threshold-label">SNOWY DAYS:</div>
-                                    <div class="threshold-desc">Days with snowfall accumulation</div>
+                                    <div class="threshold-label">MEASURABLE SNOW DAYS:</div>
+                                    <div class="threshold-desc">Days with measurable snowfall (excludes trace amounts)</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>&gt;0mm</strong> (any snowfall)</li>
-                                        <li>Heavy Snow: <strong>&gt;10mm</strong> (&gt;0.39 inches)</li>
+                                        <li>Threshold: <strong>&gt;1mm</strong> (&gt;0.04 inches) - filters out trace/flurries</li>
+                                        <li>Heavy Snow: <strong>&gt;10mm</strong> (&gt;0.39 inches) - work stoppage</li>
                                     </ul>
                                 </div>
                             </div>
@@ -831,11 +834,21 @@
                                     </ul>
                                 </div>
                                 <div class="threshold-item">
-                                    <div class="threshold-label">EXTREME COLD DAYS:</div>
-                                    <div class="threshold-desc">Very difficult conditions</div>
+                                    <div class="threshold-label">WORK-STOPPING COLD:</div>
+                                    <div class="threshold-desc">Construction-specific work stoppage threshold</div>
+                                    <ul class="threshold-criteria">
+                                        <li>Threshold: <strong>Minimum ≤-5°C</strong> (≤23°F)</li>
+                                        <li>Impact: Concrete pours stopped, major construction delays</li>
+                                        <li>Note: Used for contingency calculations in this tool</li>
+                                    </ul>
+                                </div>
+                                <div class="threshold-item">
+                                    <div class="threshold-label">EXTREME COLD (METEOROLOGICAL):</div>
+                                    <div class="threshold-desc">OSHA/meteorological extreme cold standard</div>
                                     <ul class="threshold-criteria">
                                         <li>Threshold: <strong>Minimum ≤-17.7°C</strong> (≤0°F)</li>
-                                        <li>Impact: Major work restrictions</li>
+                                        <li>Impact: Severe conditions, worker safety important</li>
+                                        <li>Note: Informational only - not used in calculations</li>
                                     </ul>
                                 </div>
                                 <div class="threshold-item">
@@ -853,18 +866,18 @@
                                 <h4>💨 Wind Metrics</h4>
                                 <div class="threshold-item">
                                     <div class="threshold-label">HIGH WIND DAYS:</div>
-                                    <div class="threshold-desc">Safety concerns for certain operations</div>
+                                    <div class="threshold-desc">Restricts crane operations, elevated work, material handling</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>&gt;50 km/h</strong> (&gt;31 mph)</li>
-                                        <li>Impact: Crane/scaffolding restrictions</li>
+                                        <li>Threshold: <strong>≥30 km/h</strong> (≥19 mph)</li>
+                                        <li>Impact: Crane/scaffolding restrictions, delays in elevated work</li>
                                     </ul>
                                 </div>
                                 <div class="threshold-item">
                                     <div class="threshold-label">VERY HIGH WIND:</div>
-                                    <div class="threshold-desc">Work stoppage likely</div>
+                                    <div class="threshold-desc">Severe restrictions or work stoppage</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>&gt;60 km/h</strong> (&gt;37 mph)</li>
-                                        <li>Impact: Most outdoor work stops</li>
+                                        <li>Threshold: <strong>≥40 km/h</strong> (≥25 mph)</li>
+                                        <li>Impact: Most outdoor work stops, safety hazard</li>
                                     </ul>
                                 </div>
                             </div>
@@ -924,6 +937,17 @@
                                     <div class="period-reason" id="worstReason">Adverse conditions likely</div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Breakdown for Concrete Pour Planning -->
+                    <div class="monthly-breakdown">
+                        <div class="monthly-header">
+                            <h3><i class="fas fa-calendar-alt"></i> Monthly Risk Analysis for Concrete Pours</h3>
+                            <p class="monthly-subtitle">Plan seasonal concrete work based on historical heavy rain and freezing patterns</p>
+                        </div>
+                        <div id="monthlyBreakdownContainer">
+                            <p class="summary-loading">Calculating monthly breakdown...</p>
                         </div>
                     </div>
 
@@ -1185,7 +1209,7 @@
                             </div>
                             <div class="criteria-item">
                                 <label>Max Acceptable Wind (km/h)</label>
-                                <input type="number" id="maxWindThreshold" value="50" min="0" max="150" step="5">
+                                <input type="number" id="maxWindThreshold" value="30" min="0" max="150" step="5">
                                 <small>Days with higher wind are considered unworkable</small>
                             </div>
                             <div class="criteria-item">
@@ -1375,6 +1399,42 @@
                     </div>
 
                     <div class="settings-section">
+                        <h3><i class="fas fa-key"></i> API Keys (Advanced)</h3>
+                        <p class="setting-description">✅ Visual Crossing already active by default! Enter your own key only if you want to use your personal API quota.</p>
+                        <div class="settings-group">
+                            <div class="setting-item api-key-item">
+                                <div class="setting-info">
+                                    <strong>Visual Crossing API Key (Optional)</strong>
+                                    <span class="setting-hint">Default shared key already configured • Leave blank to use shared key • Or get your own at <a href="https://www.visualcrossing.com/weather-api" target="_blank" style="color: var(--electric-cyan);">visualcrossing.com/weather-api</a></span>
+                                </div>
+                                <div class="api-key-input-wrapper">
+                                    <input
+                                        type="password"
+                                        id="visualCrossingApiKeyInput"
+                                        class="api-key-input"
+                                        placeholder="Leave empty to use default shared key (recommended)"
+                                    />
+                                    <button class="btn-toggle-visibility" id="toggleVisualCrossingKey" title="Show/Hide">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="api-key-status" id="visualCrossingApiStatus">
+                                    <i class="fas fa-check-circle"></i> <span id="visualCrossingStatusText">Using default shared API key - Visual Crossing active (80-100% accuracy) for all users</span>
+                                </div>
+                            </div>
+                            <div class="data-source-tier-info">
+                                <strong>Snow Data Source Priority:</strong>
+                                <ol class="data-tier-list">
+                                    <li><span class="tier-badge tier-1">Tier 1</span> NOAA Stations (US only) - 100% accuracy</li>
+                                    <li><span class="tier-badge tier-2">Tier 2</span> Visual Crossing (Global) - 80-100% accuracy <span class="free-tag">[Active by default!]</span></li>
+                                    <li><span class="tier-badge tier-3">Tier 3</span> ECMWF IFS (Global) - ~50% accuracy <span class="free-tag">[Fallback]</span></li>
+                                    <li><span class="tier-badge tier-4">Tier 4</span> ERA5 (Fallback) - ~4% accuracy <span class="free-tag">[Last resort]</span></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
                         <h3><i class="fas fa-info-circle"></i> About</h3>
                         <div class="settings-group">
                             <div class="about-info">
@@ -1382,7 +1442,7 @@
                                     <strong>Version:</strong> Xyloclime Pro v1.0 ENHANCED
                                 </div>
                                 <div class="about-item">
-                                    <strong>Data Source:</strong> Open-Meteo Historical Weather API
+                                    <strong>Data Sources:</strong> NOAA (US), Visual Crossing (Global), ECMWF IFS, ERA5
                                 </div>
                                 <div class="about-item">
                                     <strong>Purpose:</strong> Planning & Analysis Only
@@ -1499,6 +1559,36 @@
                                 <i class="fas fa-play"></i> Load Project
                             </button>
                         </div>
+
+                        <div class="sample-project-card" data-sample-id="excavation-chicago">
+                            <div class="sample-card-header">
+                                <div class="sample-icon">
+                                    <i class="fas fa-truck-monster"></i>
+                                </div>
+                                <div class="sample-risk-badge high-risk">
+                                    High Risk
+                                </div>
+                            </div>
+                            <h3>Chicago Winter Excavation</h3>
+                            <p class="sample-description">Site preparation and grading during winter months with significant weather challenges.</p>
+                            <div class="sample-stats">
+                                <div class="sample-stat">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Chicago, IL</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Nov 2024 - Feb 2025</span>
+                                </div>
+                                <div class="sample-stat">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>58.3% Workable</span>
+                                </div>
+                            </div>
+                            <button class="load-sample-btn" data-sample-id="excavation-chicago">
+                                <i class="fas fa-play"></i> Load Project
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1543,13 +1633,17 @@
     <script src="premium-features.js?v=1.0.0"></script>
 
     <!-- Interactive Tutorial -->
-    <script src="tutorial.js?v=1.0.0"></script>
+    <!-- DISABLED: Tutorial gets in the way -->
+    <!-- <script src="tutorial.js?v=1.0.0"></script> -->
 
     <!-- Sample Projects Data -->
     <script src="sample-data.js?v=1.0.0"></script>
 
     <!-- Bid Support Calculator -->
     <script src="bid-calculator.js?v=1.0.0"></script>
+
+    <!-- NOAA Global Station Network -->
+    <script src="noaa-network.js?v=2.0.0"></script>
 
     <!-- Main Application -->
     <script src="app.js?v=2.1.0"></script>

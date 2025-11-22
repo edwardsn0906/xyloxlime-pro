@@ -2649,16 +2649,8 @@ body {
 }
 
 .risk-breakdown-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    /* Pie chart removed - showing only risk bars */
     margin-bottom: 2rem;
-}
-
-@media (max-width: 1200px) {
-    .risk-breakdown-container {
-        grid-template-columns: 1fr;
-    }
 }
 
 .risk-breakdown-grid {

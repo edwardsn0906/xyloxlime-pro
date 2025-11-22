@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NOAA Integration Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e293b; color: #e2e8f0; }
+        .test { margin: 20px 0; padding: 15px; background: #334155; border-radius: 8px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        button { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2563eb; }
+        pre { background: #1e293b; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 NOAA Integration Test</h1>
+
+    <div class="test">
+        <h2>Test 1: Load Station Database</h2>
+        <button onclick="testStationLoad()">Test Station Loading</button>
+        <div id="test1Result"></div>
+    </div>
+
+    <div class="test">
+        <h2>Test 2: Find Nearest Station</h2>
+        <input type="text" id="testLat" placeholder="Latitude" value="39.7392" style="width: 120px; padding: 8px;">
+        <input type="text" id="testLng" placeholder="Longitude" value="-104.9903" style="width: 120px; padding: 8px;">
+        <button onclick="testFindStation()">Find Station</button>
+        <div id="test2Result"></div>
+    </div>
+
+    <div class="test">
+        <h2>Test 3: Fetch NOAA Data</h2>
+        <input type="text" id="stationId" placeholder="Station ID" value="USC00052223" style="width: 150px; padding: 8px;">
+        <input type="text" id="startDate" placeholder="Start Date" value="2024-01-01" style="width: 120px; padding: 8px;">
+        <input type="text" id="endDate" placeholder="End Date" value="2024-01-31" style="width: 120px; padding: 8px;">
+        <button onclick="testNOAAFetch()">Fetch Data</button>
+        <div id="test3Result"></div>
+    </div>
+
+    <script src="noaa-network.js"></script>
+    <script>
+        const noaaNetwork = new NOAAStationNetwork();
+
+        async function testStationLoad() {
+            const result = document.getElementById('test1Result');
+            result.innerHTML = '<p class="info">⏳ Loading station database...</p>';
+
+            try {
+                const success = await noaaNetwork.loadStations();
+                if (success) {
+                    const stats = await noaaNetwork.getStats();
+                    result.innerHTML = `
+                        <p class="success">✅ SUCCESS!</p>
+                        <pre>${JSON.stringify(stats, null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = '<p class="error">❌ Failed to load stations</p>';
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ ERROR: ${error.message}</p>`;
+            }
+        }
+
+        async function testFindStation() {
+            const result = document.getElementById('test2Result');
+            const lat = parseFloat(document.getElementById('testLat').value);
+            const lng = parseFloat(document.getElementById('testLng').value);
+
+            result.innerHTML = `<p class="info">⏳ Finding nearest station to ${lat}, ${lng}...</p>`;
+
+            try {
+                const station = await noaaNetwork.findNearestStation(lat, lng);
+                if (station) {
+                    result.innerHTML = `
+                        <p class="success">✅ FOUND STATION!</p>
+                        <pre>${JSON.stringify(station, null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = '<p class="error">❌ No station found within search radius</p>';
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ ERROR: ${error.message}</p>`;
+            }
+        }
+
+        async function testNOAAFetch() {
+            const result = document.getElementById('test3Result');
+            const stationId = document.getElementById('stationId').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            result.innerHTML = `<p class="info">⏳ Fetching NOAA data from ${stationId}...</p>`;
+
+            const url = `https://www.ncei.noaa.gov/access/services/data/v1?` +
+                       `dataset=daily-summaries&` +
+                       `dataTypes=SNOW,SNWD,TMAX,TMIN,PRCP&` +
+                       `stations=${stationId}&` +
+                       `startDate=${startDate}&` +
+                       `endDate=${endDate}&` +
+                       `format=json&` +
+                       `units=standard`;
+
+            try {
+                const response = await fetch(url, {
+                    signal: AbortSignal.timeout(30000)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                result.innerHTML = `
+                    <p class="success">✅ SUCCESS! Retrieved ${data.length} records</p>
+                    <p class="info">First 3 records:</p>
+                    <pre>${JSON.stringify(data.slice(0, 3), null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <p class="error">❌ FETCH FAILED: ${error.message}</p>
+                    <p class="info">URL attempted:</p>
+                    <pre>${url}</pre>
+                `;
+            }
+        }
+
+        // Auto-run Test 1 on load
+        window.addEventListener('load', () => {
+            console.log('[TEST] Page loaded, running automatic tests...');
+            testStationLoad();
+        });
+    </script>
+</body>
+</html>

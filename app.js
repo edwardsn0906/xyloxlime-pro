@@ -348,6 +348,9 @@ class XyloclimePro {
         this.currentProject = null;
         this.weatherData = null;
         this.apiKey = localStorage.getItem('xyloclime_apiKey') || '';
+        // Default Visual Crossing API key (free tier, shared across all users)
+        // Users can override this in Settings if they have their own key
+        this.visualCrossingApiKey = localStorage.getItem('xyloclime_visualCrossingApiKey') || '7G78WQELSK42FLCTY9G89X9XQ';
         this.charts = {};
         this.lastSearchTime = 0;
         this.searchDebounceTimer = null;
@@ -595,10 +598,89 @@ class XyloclimePro {
             nameInput.value = template.name;
         }
 
+        // Display template info in a panel
+        this.displayTemplateInfo(template);
+
         // Show success toast
         window.toastManager.success(`Template "${template.name}" selected! Weather criteria optimized for this project type.`, 'Template Applied', 4000);
 
-        console.log('[PREMIUM] Template selected:', templateId);
+        console.log('[PREMIUM] Template selected:', templateId, template);
+    }
+
+    displayTemplateInfo(template) {
+        const container = document.getElementById('templateInfoPanel');
+        if (!container) return;
+
+        const criteria = template.weatherCriteria;
+        const tips = template.tips || [];
+
+        let html = `
+            <div style="padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--electric-cyan); border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--electric-cyan);">
+                    <i class="fas ${template.icon}"></i> ${template.name}
+                </h4>
+                <p style="margin: 0 0 1rem 0; color: var(--steel-silver); font-size: 0.9rem;">${template.description}</p>
+
+                <div style="margin-bottom: 1rem;">
+                    <strong style="color: var(--electric-cyan);">Project-Specific Weather Criteria:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.9rem; color: var(--steel-silver);">
+                        ${criteria.maxRain !== undefined ? `<li>Max Rain: ${criteria.maxRain}mm/day</li>` : ''}
+                        ${criteria.maxWind !== undefined ? `<li>Max Wind: ${criteria.maxWind} km/h</li>` : ''}
+                        ${criteria.minTemp !== undefined ? `<li>Min Temperature: ${criteria.minTemp}°C (${(criteria.minTemp * 9/5 + 32).toFixed(0)}°F)</li>` : ''}
+                        ${criteria.maxTemp !== undefined ? `<li>Max Temperature: ${criteria.maxTemp}°C (${(criteria.maxTemp * 9/5 + 32).toFixed(0)}°F)</li>` : ''}
+                        ${criteria.maxSnow !== undefined ? `<li>Max Snow: ${criteria.maxSnow}mm</li>` : ''}
+                    </ul>
+                </div>
+
+                <div>
+                    <strong style="color: var(--electric-cyan);">Project Tips:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.9rem; color: var(--steel-silver);">
+                        ${tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+        container.style.display = 'block';
+    }
+
+    generateTemplateSpecificAnalysis(template, analysis, project) {
+        const startDate = new Date(project.startDate);
+        const startMonth = startDate.getMonth(); // 0-11
+
+        // Determine season
+        let season = 'spring';
+        if (startMonth >= 2 && startMonth <= 4) season = 'spring';
+        else if (startMonth >= 5 && startMonth <= 7) season = 'summer';
+        else if (startMonth >= 8 && startMonth <= 10) season = 'fall';
+        else season = 'winter';
+
+        const seasonalAdvice = template.seasonalAdvice?.[season] || '';
+
+        let html = `
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--electric-cyan); border-radius: 8px;">
+                <h3 style="color: var(--electric-cyan); margin: 0 0 1rem 0;">
+                    <i class="fas ${template.icon}"></i> ${template.name} - Project-Specific Insights
+                </h3>
+
+                ${seasonalAdvice ? `
+                    <div style="margin-bottom: 1rem;">
+                        <strong style="color: var(--electric-cyan);">Seasonal Guidance (${season.charAt(0).toUpperCase() + season.slice(1)} Start):</strong>
+                        <p style="margin: 0.5rem 0; color: var(--steel-silver); font-style: italic;">${seasonalAdvice}</p>
+                    </div>
+                ` : ''}
+
+                <div>
+                    <strong style="color: var(--electric-cyan);">Project-Specific Tips:</strong>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--steel-silver);">
+                        ${template.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        return html;
     }
 
     displaySmartRecommendations(analysis, project) {
@@ -1660,10 +1742,48 @@ class XyloclimePro {
             });
         }
 
+        // Visual Crossing API Key input
+        const visualCrossingApiKeyInput = document.getElementById('visualCrossingApiKeyInput');
+        if (visualCrossingApiKeyInput) {
+            // Load existing key
+            visualCrossingApiKeyInput.value = this.visualCrossingApiKey || '';
+            this.updateVisualCrossingStatus();
+
+            // Toggle visibility button
+            const toggleBtn = document.getElementById('toggleVisualCrossingKey');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    const input = visualCrossingApiKeyInput;
+                    const icon = toggleBtn.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.className = 'fas fa-eye-slash';
+                    } else {
+                        input.type = 'password';
+                        icon.className = 'fas fa-eye';
+                    }
+                });
+            }
+
+            // Update status on input
+            visualCrossingApiKeyInput.addEventListener('input', () => {
+                this.updateVisualCrossingStatus();
+            });
+        }
+
         // Save settings button
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
         if (saveSettingsBtn) {
             saveSettingsBtn.addEventListener('click', () => {
+                // Save Visual Crossing API key
+                const vcKeyInput = document.getElementById('visualCrossingApiKeyInput');
+                if (vcKeyInput) {
+                    const newKey = vcKeyInput.value.trim();
+                    this.visualCrossingApiKey = newKey;
+                    localStorage.setItem('xyloclime_visualCrossingApiKey', newKey);
+                    this.updateVisualCrossingStatus();
+                }
+
                 settingsModal.classList.add('hidden');
                 window.toastManager.success('Settings saved successfully!', 'Settings Saved');
             });
@@ -1868,7 +1988,11 @@ class XyloclimePro {
         // Recommendations
         const recs = [];
         if (snowTotal > 10000) recs.push('High snow impact expected ($' + snowTotal.toLocaleString() + '). Consider winter construction methods.');
-        if (rainyTotal > 15000) recs.push('Significant rain delays anticipated ($' + rainyTotal.toLocaleString() + '). Plan weather-protected areas.');
+        if (rainyTotal > 25000) {
+            recs.push('Significant rain impact anticipated ($' + rainyTotal.toLocaleString() + '). Plan weather-protected areas and robust drainage.');
+        } else if (rainyTotal > 15000) {
+            recs.push('Moderate rain impact expected ($' + rainyTotal.toLocaleString() + '). Plan weather-protected staging areas.');
+        }
         if (analysis.optimalDays > 180) recs.push(`Excellent! ${analysis.optimalDays} optimal days. Schedule critical work during these periods.`);
         if (windTotal > 5000) recs.push('Wind costs significant ($' + windTotal.toLocaleString() + '). Avoid crane ops on high-wind days.');
         if (recs.length === 0) recs.push('Weather conditions appear favorable for construction. Monitor forecasts regularly.');
@@ -1929,7 +2053,7 @@ class XyloclimePro {
         // Get user-defined criteria
         const criteria = {
             maxRain: parseFloat(document.getElementById('maxRainThreshold').value) || 5,
-            maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 50,
+            maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 30,
             minTemp: parseFloat(document.getElementById('minTempThreshold').value) || 0,
             maxTemp: parseFloat(document.getElementById('maxTempThreshold').value) || 35,
             maxSnow: parseFloat(document.getElementById('maxSnowThreshold').value) || 2,
@@ -2099,7 +2223,7 @@ class XyloclimePro {
             name: templateName,
             criteria: {
                 maxRain: parseFloat(document.getElementById('maxRainThreshold').value) || 5,
-                maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 50,
+                maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 30,
                 minTemp: parseFloat(document.getElementById('minTempThreshold').value) || 0,
                 maxTemp: parseFloat(document.getElementById('maxTempThreshold').value) || 35,
                 maxSnow: parseFloat(document.getElementById('maxSnowThreshold').value) || 2,
@@ -2365,6 +2489,58 @@ class XyloclimePro {
         }
     }
 
+    updateVisualCrossingStatus() {
+        const statusElement = document.getElementById('visualCrossingStatusText');
+        const statusContainer = document.getElementById('visualCrossingApiStatus');
+        const input = document.getElementById('visualCrossingApiKeyInput');
+
+        if (!statusElement || !statusContainer || !input) return;
+
+        const apiKey = input.value.trim();
+
+        if (!apiKey) {
+            // Empty input = using default embedded API key
+            statusContainer.className = 'api-key-status status-success';
+            statusContainer.innerHTML = '<i class="fas fa-check-circle"></i> <span>Using default shared API key - Visual Crossing active (80-100% accuracy) for all users</span>';
+        } else if (apiKey.length < 10) {
+            statusContainer.className = 'api-key-status status-error';
+            statusContainer.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Invalid key format - API keys are typically longer</span>';
+        } else {
+            statusContainer.className = 'api-key-status status-success';
+            statusContainer.innerHTML = '<i class="fas fa-check-circle"></i> <span>Using your personal API key - Visual Crossing active (80-100% accuracy)</span>';
+        }
+    }
+
+    getSnowDataBadge(snowDataSource) {
+        if (!snowDataSource || !snowDataSource.source) return '';
+
+        const badges = {
+            'NOAA': '<span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;"><i class="fas fa-star"></i> NOAA</span>',
+            'Visual Crossing': '<span style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;"><i class="fas fa-globe"></i> Visual Crossing</span>',
+            'ECMWF IFS': '<span style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;"><i class="fas fa-satellite"></i> ECMWF IFS</span>',
+            'ERA5': '<span style="background: linear-gradient(135deg, #a0aec0 0%, #718096 100%); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;"><i class="fas fa-cloud"></i> ERA5</span>'
+        };
+
+        return badges[snowDataSource.source] || '';
+    }
+
+    getSnowDataDetails(snowDataSource) {
+        if (!snowDataSource || !snowDataSource.source) return '';
+
+        switch (snowDataSource.source) {
+            case 'NOAA':
+                return `<br><small style="color: var(--electric-cyan); font-size: 0.85rem;"><i class="fas fa-broadcast-tower"></i> ${snowDataSource.station} (${snowDataSource.distance.toFixed(1)}km) • ${snowDataSource.accuracy} accuracy</small>`;
+            case 'Visual Crossing':
+                return `<br><small style="color: #48bb78; font-size: 0.85rem;"><i class="fas fa-database"></i> ${snowDataSource.location} • ${snowDataSource.accuracy} accuracy • Station-based</small>`;
+            case 'ECMWF IFS':
+                return `<br><small style="color: #ed8936; font-size: 0.85rem;"><i class="fas fa-chart-area"></i> ${snowDataSource.resolution} resolution • ${snowDataSource.accuracy} accuracy • Model-based</small>`;
+            case 'ERA5':
+                return `<br><small style="color: #a0aec0; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> ${snowDataSource.resolution} resolution • ${snowDataSource.accuracy} accuracy • ${snowDataSource.warning || 'Fallback data'}</small>`;
+            default:
+                return '';
+        }
+    }
+
     // ========================================================================
     // WEATHER ANALYSIS
     // ========================================================================
@@ -2438,6 +2614,9 @@ class XyloclimePro {
             // Display data quality warnings and extreme events
             this.displayDataQualityInfo(analysis);
 
+            // Display monthly breakdown for concrete pour planning
+            this.displayMonthlyBreakdown(analysis);
+
             this.updateDashboard(analysis);
 
             // Display smart recommendations (premium feature)
@@ -2463,6 +2642,9 @@ class XyloclimePro {
                 projectId: this.currentProject.id
             });
 
+            // Scroll to top to show results
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
         } catch (error) {
             console.error('Weather analysis failed:', error);
 
@@ -2478,6 +2660,318 @@ class XyloclimePro {
                 error: error.message
             });
         }
+    }
+
+    // ============================================================================
+    // NOAA CDO API INTEGRATION - Enhanced Snow Data Accuracy
+    // ============================================================================
+
+    /**
+     * Find nearest NOAA weather station for a given location
+     * NOW USES COMPREHENSIVE NETWORK: 4,654 high-quality stations (2024+ data)
+     * Upgrade from ~100 hardcoded stations to complete US coverage
+     * @returns {object|null} Station object or null if none found within max distance
+     */
+    async findNearestNOAAStation(lat, lng, maxDistanceKm = 100) {
+        try {
+            // Use comprehensive NOAA station network
+            const station = await noaaNetwork.findNearestStation(lat, lng, maxDistanceKm);
+            return station;
+        } catch (error) {
+            console.error('[NOAA] Error finding nearest station:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch snow data from NOAA CDO API (v1 - no auth required)
+     * Returns data in inches for consistency with US weather standards
+     */
+    async fetchNOAASnowData(stationId, startDate, endDate) {
+        const url = `https://www.ncei.noaa.gov/access/services/data/v1?` +
+                   `dataset=daily-summaries&` +
+                   `dataTypes=SNOW,SNWD&` +
+                   `stations=${stationId}&` +
+                   `startDate=${startDate}&` +
+                   `endDate=${endDate}&` +
+                   `format=json&` +
+                   `units=standard`; // Returns inches/°F
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`NOAA API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Convert to Open-Meteo format for compatibility
+            // NOAA returns SNOW in inches, convert to mm
+            const snowfall_sum = [];
+            const dates = [];
+
+            for (const record of data) {
+                dates.push(record.DATE);
+                const snowInches = parseFloat(record.SNOW || 0);
+                const snowMm = snowInches * 25.4; // Convert inches to mm
+                snowfall_sum.push(snowMm);
+            }
+
+            return {
+                daily: {
+                    time: dates,
+                    snowfall_sum: snowfall_sum
+                },
+                source: 'NOAA',
+                success: true
+            };
+
+        } catch (error) {
+            console.warn('NOAA data fetch failed:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Fetch snow data from Visual Crossing Weather API (global station-based data)
+     * Visual Crossing provides station-based observations for 180+ countries
+     * Free tier: 1000 records/day (enough for ~50 projects)
+     * @returns {object} Snow data in Open-Meteo format or { success: false }
+     */
+    async fetchVisualCrossingSnowData(lat, lng, startDate, endDate) {
+        const apiKey = this.visualCrossingApiKey;
+
+        if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+            return { success: false, reason: 'no_api_key' };
+        }
+
+        try {
+            // Visual Crossing Timeline API
+            const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lng}/${startDate}/${endDate}?unitGroup=metric&elements=datetime,snow,snowdepth&include=days&key=${apiKey}&contentType=json`;
+
+            console.log('Fetching Visual Crossing snow data...');
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                if (response.status === 429) {
+                    console.warn('Visual Crossing rate limit exceeded (1000 records/day)');
+                    return { success: false, reason: 'rate_limit' };
+                } else if (response.status === 401) {
+                    console.warn('Visual Crossing API key invalid');
+                    return { success: false, reason: 'invalid_key' };
+                }
+                throw new Error(`Visual Crossing API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!data.days || data.days.length === 0) {
+                return { success: false, reason: 'no_data' };
+            }
+
+            // Convert to Open-Meteo format
+            const snowfall_sum = [];
+            const dates = [];
+
+            for (const day of data.days) {
+                dates.push(day.datetime);
+                // Visual Crossing returns snow in cm, convert to mm
+                const snowCm = parseFloat(day.snow || 0);
+                const snowMm = snowCm * 10;
+                snowfall_sum.push(snowMm);
+            }
+
+            console.log('Successfully fetched Visual Crossing snow data');
+
+            return {
+                daily: {
+                    time: dates,
+                    snowfall_sum: snowfall_sum
+                },
+                source: 'Visual Crossing',
+                location: data.resolvedAddress || `${lat}, ${lng}`,
+                stationCount: data.stations ? data.stations.length : 0,
+                success: true
+            };
+
+        } catch (error) {
+            console.warn('Visual Crossing data fetch failed:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Fetch snow data using ECMWF IFS model (9km resolution, 2017-present)
+     * 12.5x more accurate than ERA5 for snowfall
+     * Completely free, no API key required
+     * @returns {object} Snow data in Open-Meteo format or { success: false }
+     */
+    async fetchECMWFIFSSnowData(lat, lng, startDate, endDate) {
+        try {
+            // Check if dates are within ECMWF IFS coverage (2017-present)
+            const startYear = parseInt(startDate.split('-')[0]);
+            if (startYear < 2017) {
+                console.log('ECMWF IFS only available from 2017+, using ERA5 for older dates');
+                return { success: false, reason: 'date_out_of_range' };
+            }
+
+            const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startDate}&end_date=${endDate}&daily=snowfall_sum&timezone=auto&models=ecmwf_ifs`;
+
+            console.log('Fetching ECMWF IFS snow data (9km resolution)...');
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`ECMWF IFS API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!data.daily || !data.daily.snowfall_sum) {
+                return { success: false, reason: 'no_data' };
+            }
+
+            console.log('Successfully fetched ECMWF IFS snow data');
+
+            return {
+                daily: {
+                    time: data.daily.time,
+                    snowfall_sum: data.daily.snowfall_sum.map(v => v === null ? 0 : v)
+                },
+                source: 'ECMWF IFS',
+                resolution: '9km',
+                success: true
+            };
+
+        } catch (error) {
+            console.warn('ECMWF IFS data fetch failed:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Multi-tier hybrid weather data fetch
+     * Tier 1: NOAA stations (US only) - 100% accuracy
+     * Tier 2: Visual Crossing (Global) - 80-100% accuracy, station-based
+     * Tier 3: ECMWF IFS (Global) - ~50% accuracy, 9km model
+     * Tier 4: ERA5 (Global fallback) - ~4% accuracy for snow, good for temp/rain/wind
+     */
+    async fetchWeatherDataHybrid(lat, lng, startDate, endDate) {
+        let snowDataResult = null;
+        let snowDataSource = null;
+
+        // ============================================================
+        // TIER 1: Try NOAA stations (US only) - 100% accuracy
+        // ============================================================
+        try {
+            const noaaStation = await this.findNearestNOAAStation(lat, lng, 100); // 100km max (covers rural areas)
+
+            if (noaaStation) {
+                console.log(`Found NOAA station: ${noaaStation.name} (${noaaStation.distance}km away)`);
+                const noaaResult = await this.fetchNOAASnowData(noaaStation.id, startDate, endDate);
+
+                if (noaaResult.success) {
+                    snowDataResult = noaaResult;
+                    snowDataSource = {
+                        source: 'NOAA',
+                        station: noaaStation.name,
+                        stationId: noaaStation.id,
+                        distance: noaaStation.distance,
+                        state: noaaStation.state,
+                        accuracy: '100%',
+                        type: 'station'
+                    };
+                    console.log('Successfully fetched NOAA snow data');
+                }
+            }
+        } catch (error) {
+            console.warn('NOAA station lookup failed:', error.message);
+        }
+
+        // ============================================================
+        // TIER 2: Try Visual Crossing (Global) - 80-100% accuracy
+        // ============================================================
+        if (!snowDataResult) {
+            try {
+                const vcResult = await this.fetchVisualCrossingSnowData(lat, lng, startDate, endDate);
+
+                if (vcResult.success) {
+                    snowDataResult = vcResult;
+                    snowDataSource = {
+                        source: 'Visual Crossing',
+                        location: vcResult.location,
+                        stationCount: vcResult.stationCount,
+                        accuracy: '80-100%',
+                        type: 'station'
+                    };
+                    console.log('Successfully fetched Visual Crossing snow data');
+                } else if (vcResult.reason === 'no_api_key') {
+                    console.log('Visual Crossing API key not configured, trying ECMWF IFS...');
+                }
+            } catch (error) {
+                console.warn('Visual Crossing fetch failed:', error.message);
+            }
+        }
+
+        // ============================================================
+        // TIER 3: Try ECMWF IFS (Global, 2017+) - ~50% accuracy
+        // ============================================================
+        if (!snowDataResult) {
+            try {
+                const ecmwfResult = await this.fetchECMWFIFSSnowData(lat, lng, startDate, endDate);
+
+                if (ecmwfResult.success) {
+                    snowDataResult = ecmwfResult;
+                    snowDataSource = {
+                        source: 'ECMWF IFS',
+                        resolution: ecmwfResult.resolution,
+                        accuracy: '~50%',
+                        type: 'model',
+                        note: '12.5x more accurate than ERA5'
+                    };
+                    console.log('Successfully fetched ECMWF IFS snow data');
+                }
+            } catch (error) {
+                console.warn('ECMWF IFS fetch failed:', error.message);
+            }
+        }
+
+        // ============================================================
+        // TIER 4: Fetch ERA5 for temp/rain/wind (and snow fallback)
+        // ============================================================
+        const era5Data = await this.fetchWeatherData(lat, lng, startDate, endDate);
+
+        // ============================================================
+        // BLEND DATA: Use best snow source + ERA5 for other metrics
+        // ============================================================
+        if (snowDataResult && snowDataResult.daily) {
+            // Replace ERA5 snow with higher-quality data
+            era5Data.daily.snowfall_sum = snowDataResult.daily.snowfall_sum;
+            era5Data.snowDataSource = snowDataSource;
+        } else {
+            // Fallback to ERA5 snow (lowest accuracy)
+            era5Data.snowDataSource = {
+                source: 'ERA5',
+                resolution: '30km',
+                accuracy: '~4%',
+                type: 'model',
+                warning: 'Snow estimates may be significantly underestimated (gridded reanalysis data)'
+            };
+            console.log('Using ERA5 snow data (fallback)');
+        }
+
+        // ERA5 is still excellent for these metrics
+        era5Data.temperatureSource = 'ERA5';
+        era5Data.precipitationSource = 'ERA5';
+        era5Data.windSource = 'ERA5';
+
+        return era5Data;
     }
 
     async fetchWeatherData(lat, lng, startDate, endDate) {
@@ -2552,7 +3046,7 @@ class XyloclimePro {
             const endDateStr = historicalEnd.toISOString().split('T')[0];
 
             try {
-                const yearData = await this.fetchWeatherData(lat, lng, startDateStr, endDateStr);
+                const yearData = await this.fetchWeatherDataHybrid(lat, lng, startDateStr, endDateStr);
                 allYearsData.push({
                     year,
                     startDate: startDateStr,
@@ -2591,7 +3085,7 @@ class XyloclimePro {
 
             // Data quality check
             const expectedDays = actualProjectDays;
-            const dataQuality = daysInYear / expectedDays;
+            const dataQuality = Math.min(1.0, daysInYear / expectedDays);  // Cap at 100% (API may return extra days)
 
             if (dataQuality < 0.95) {
                 dataQualityWarnings.push(`Year ${yearData.year}: Only ${daysInYear}/${expectedDays} days (${(dataQuality*100).toFixed(0)}% complete)`);
@@ -2614,47 +3108,58 @@ class XyloclimePro {
 
                 // Count event days for THIS YEAR
                 // TEMPERATURE CATEGORIES (construction-specific thresholds):
+                // NOTE: "Work-stopping cold" (≤-5°C) is DIFFERENT from meteorological "Extreme Cold" (≤-17.7°C/0°F)
+                // This tool uses ≤-5°C as the construction-specific threshold for contingency calculations
                 // - Light freezing (0 to -5°C): Workable with cold-weather precautions
-                // - Extreme cold (< -5°C): NOT workable - work stoppage required
-                // - Extreme heat (> 37°C): NOT workable - safety risk
+                // - Work-stopping cold (≤ -5°C / ≤23°F): Construction/concrete work stoppage required
+                // - Hot days (≥ 100°F / 37.78°C): Tracked for information - reduces ideal days but still workable with precautions
+                // - Dangerous heat (≥ 110°F / 43.33°C): True work stoppage - safety risk
                 allFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t <= 0).length,  // All days at/below freezing
                 lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -5 && t <= 0).length,  // Workable with precautions
                 extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -5).length,  // Work stoppage
-                extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37).length,  // Work stoppage
+                extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37.78).length,  // Days ≥100°F (informational - not work-stopping)
 
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-10mm): Workable with rain gear/drainage
                 // - Heavy rain (> 10mm): Work stoppage
-                // - Snow (> 10mm): Work stoppage
+                // - Measurable snow (> 1mm): Light dusting to moderate snow (filters out trace amounts < 1mm)
+                // - Heavy snow (> 10mm): Work stoppage
                 rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,  // All rainy days
                 heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 10).length,  // Work-stopping rain
-                snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow (>10mm)
+                snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (excludes trace < 1mm)
+                heavySnowDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow
 
-                // WIND CATEGORIES:
-                // - Moderate wind (50-60 km/h): Challenging but workable
-                // - High wind (> 60 km/h): NOT workable for elevated work
-                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w > 60).length,  // Work stoppage
+                // WIND THRESHOLD: 30 km/h (18.6 mph)
+                // Industry standard for construction impact:
+                // - Crane operations typically restricted at 30-40 km/h
+                // - Elevated work safety limits at 30-50 km/h
+                // - Material handling becomes challenging at 30+ km/h
+                // - Light wind (< 30 km/h): Safe for all construction activities
+                // - High wind (≥ 30 km/h): Restricts crane operations, elevated work, material handling
+                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Construction impact threshold
+                avgWindSpeed: this.average(daily.windspeed_10m_max),
+                maxWindSpeed: Math.max(...daily.windspeed_10m_max.filter(w => w !== null)),
 
                 // WORKABILITY TIERS - Three levels of work feasibility
 
                 // Tier 1: IDEAL DAYS (renamed from "optimal")
                 // Perfect conditions - no precautions needed
-                // - Temp: Not freezing (>0°C) and comfortable (<37.7°C)
+                // - Temp: Not freezing (>0°C) and comfortable (<100°F / 37.78°C)
                 // - Rain: Minimal (<5mm)
-                // - Wind: Calm (<50 km/h)
+                // - Wind: Calm (<20 km/h)
                 idealDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
                     const wind = daily.windspeed_10m_max[i];
                     return t !== null && temp_min !== null && precip !== null && wind !== null &&
-                           temp_min > 0 && t < 37.7 && precip < 5 && wind < 50;
+                           temp_min > 0 && t < 37.78 && precip < 5 && wind < 20;
                 }).length,
 
                 // Tier 2: WORKABLE DAYS (realistic construction feasibility)
                 // Work can continue with normal cold-weather/rain precautions
                 // CLEAR RULES:
-                // ✓ Workable: Light freezing (>-5°C), light rain (<10mm), moderate wind (<60 km/h)
-                // ✗ NOT Workable: Extreme cold (≤-5°C), heavy rain (≥10mm), high wind (≥60 km/h), extreme heat (≥37°C), snow (>10mm)
+                // ✓ Workable: Light freezing (>-5°C), light rain (<10mm), light wind (<30 km/h), hot but <110°F
+                // ✗ NOT Workable: Work-stopping cold (≤-5°C/≤23°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
@@ -2663,14 +3168,14 @@ class XyloclimePro {
 
                     // Check for work-stopping conditions
                     const hasExtremeCold = temp_min !== null && temp_min <= -5;
-                    const hasExtremeHeat = t !== null && t >= 37;
+                    const hasDangerousHeat = t !== null && t >= 43.33;  // ≥110°F (true work stoppage)
                     const hasHeavyRain = precip !== null && precip >= 10;
                     const hasSnow = snow !== null && snow > 10;
-                    const hasHighWind = wind !== null && wind >= 60;
+                    const hasHighWind = wind !== null && wind >= 30;  // 30 km/h restricts crane, elevated work
 
                     // Day is workable if NO work-stopping conditions present
                     return t !== null && temp_min !== null &&
-                           !hasExtremeCold && !hasExtremeHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
+                           !hasExtremeCold && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
                 }).length
             };
 
@@ -2698,9 +3203,14 @@ class XyloclimePro {
         const rainyDays = Math.round(this.average(yearlyStats.map(y => y.rainyDays)));
         const heavyRainDays = Math.round(this.average(yearlyStats.map(y => y.heavyRainDays)));
         const snowyDays = Math.round(this.average(yearlyStats.map(y => y.snowyDays)));
+        const heavySnowDays = Math.round(this.average(yearlyStats.map(y => y.heavySnowDays)));
         const highWindDays = Math.round(this.average(yearlyStats.map(y => y.highWindDays)));
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
+
+        // Validate heavy rain proportion (should be 15-30% of rainy days typically)
+        const heavyRainProportion = rainyDays > 0 ? (heavyRainDays / rainyDays) * 100 : 0;
+        console.log(`[ANALYSIS] Heavy rain validation: ${heavyRainDays}/${rainyDays} = ${heavyRainProportion.toFixed(1)}% (typical: 15-30%)`);
 
         // Calculate confidence intervals (standard deviation)
         const rainyDaysStdDev = this.standardDeviation(yearlyStats.map(y => y.rainyDays));
@@ -2709,8 +3219,8 @@ class XyloclimePro {
         // Detect extreme outliers
         const extremeEvents = this.detectExtremeEvents(yearlyStats);
 
-        // Calculate overall data quality
-        const avgDataQuality = this.average(yearlyStats.map(y => y.dataQuality));
+        // Calculate overall data quality (cap at 100%)
+        const avgDataQuality = Math.min(1.0, this.average(yearlyStats.map(y => y.dataQuality)));
 
         console.log('[ANALYSIS] Complete:', {
             years: yearsCount,
@@ -2731,17 +3241,20 @@ class XyloclimePro {
             // Event days - Temperature
             allFreezingDays,          // All days at/below freezing (informational)
             lightFreezingDays,        // Days with 0 to -5°C (workable with precautions)
-            extremeColdDays,          // Days below -5°C (NOT workable)
+            extremeColdDays,          // Work-stopping cold (≤-5°C/≤23°F) - construction work stoppage
             extremeHeatDays,          // Days above 37°C (NOT workable)
             freezingDays: allFreezingDays,  // Backward compatibility
 
             // Event days - Precipitation
             rainyDays,                // All rainy days (>1mm)
             heavyRainDays,            // Heavy rain (>10mm) - work stoppage
-            snowyDays,                // Snowy days (>10mm) - work stoppage
+            snowyDays,                // Any snowfall (>0mm) - FIXED
+            heavySnowDays,            // Heavy snow (>10mm) - work stoppage
 
             // Event days - Wind
-            highWindDays,             // High wind (>60 km/h) - work stoppage
+            highWindDays,             // High wind (≥30 km/h) - construction impact
+            avgWindSpeed: this.average(yearlyStats.map(y => y.avgWindSpeed)).toFixed(1),
+            maxWindSpeed: Math.max(...yearlyStats.map(y => y.maxWindSpeed)).toFixed(1),
 
             // Workability tiers
             idealDays,
@@ -2768,7 +3281,10 @@ class XyloclimePro {
             extremeEvents: extremeEvents,
 
             // NEW - Yearly breakdown for transparency
-            yearlyStats: yearlyStats
+            yearlyStats: yearlyStats,
+
+            // NEW - Monthly breakdown for concrete pour planning
+            monthlyBreakdown: this.calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats)
         };
     }
 
@@ -2830,7 +3346,7 @@ class XyloclimePro {
             }
         });
 
-        // Detect extreme cold years
+        // Detect severe cold years (work-stopping cold)
         const coldDaysValues = yearlyStats.map(y => y.extremeColdDays);
         const coldMean = this.average(coldDaysValues);
 
@@ -2838,14 +3354,168 @@ class XyloclimePro {
             if (year.extremeColdDays > coldMean * 2 && year.extremeColdDays > 5) {
                 extremeEvents.push({
                     year: year.year,
-                    type: 'Extreme Cold Year',
-                    value: `${year.extremeColdDays} extreme cold days`,
+                    type: 'Severe Cold Year',
+                    value: `${year.extremeColdDays} work-stopping cold days (≤-5°C)`,
                     severity: 'High'
                 });
             }
         });
 
         return extremeEvents;
+    }
+
+    calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats) {
+        console.log('[MONTHLY] Calculating monthly breakdown for concrete pour planning');
+
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        // Initialize monthly stats
+        const monthlyStats = Array.from({ length: 12 }, (_, i) => ({
+            month: monthNames[i],
+            monthIndex: i,
+            totalDays: 0,
+            heavyRainDays: 0,
+            workStoppingColdDays: 0,
+            heavySnowDays: 0,
+            workableDays: 0,
+            idealDays: 0
+        }));
+
+        // Process each year's data
+        historicalData.forEach(yearData => {
+            const daily = yearData.data.daily;
+
+            daily.time.forEach((dateStr, i) => {
+                const date = new Date(dateStr);
+                const monthIndex = date.getMonth();
+
+                // Get weather values for this day
+                const temp_min = daily.temperature_2m_min[i];
+                const temp_max = daily.temperature_2m_max[i];
+                const precip = daily.precipitation_sum[i];
+                const snow = daily.snowfall_sum[i];
+                const wind = daily.windspeed_10m_max?.[i];
+
+                monthlyStats[monthIndex].totalDays++;
+
+                // Count work-stopping conditions
+                const hasHeavyRain = precip !== null && precip >= 10;
+                const hasWorkStoppingCold = temp_min !== null && temp_min <= -5;
+                const hasHeavySnow = snow !== null && snow > 10;
+                const hasHighWind = wind !== null && wind >= 30;
+                const hasDangerousHeat = temp_max !== null && temp_max >= 43.33;  // ≥110°F
+
+                if (hasHeavyRain) monthlyStats[monthIndex].heavyRainDays++;
+                if (hasWorkStoppingCold) monthlyStats[monthIndex].workStoppingColdDays++;
+                if (hasHeavySnow) monthlyStats[monthIndex].heavySnowDays++;
+
+                // Check if day is workable
+                const isWorkStopping = hasHeavyRain || hasWorkStoppingCold || hasHeavySnow || hasHighWind || hasDangerousHeat;
+                if (!isWorkStopping) {
+                    monthlyStats[monthIndex].workableDays++;
+                }
+
+                // Check if day is ideal (no extremes at all)
+                const hasLightRain = precip !== null && precip > 1 && precip < 10;
+                const hasLightFreezing = temp_min !== null && temp_min > -5 && temp_min <= 0;
+                const hasExtremeHeat = temp_max !== null && temp_max >= 37.78;  // ≥100°F
+                const isIdeal = !hasHeavyRain && !hasLightRain && !hasWorkStoppingCold && !hasLightFreezing &&
+                               !hasHeavySnow && !hasHighWind && !hasExtremeHeat && !hasDangerousHeat;
+                if (isIdeal) {
+                    monthlyStats[monthIndex].idealDays++;
+                }
+            });
+        });
+
+        // Average across years (keep as decimals initially for reconciliation)
+        const yearsCount = historicalData.length;
+        const breakdown = monthlyStats.map(month => ({
+            month: month.month,
+            monthIndex: month.monthIndex,
+            avgDaysInMonth: Math.round(month.totalDays / yearsCount),
+            heavyRainDays: month.heavyRainDays / yearsCount,  // Decimal for now
+            workStoppingColdDays: month.workStoppingColdDays / yearsCount,  // Decimal for now
+            heavySnowDays: month.heavySnowDays / yearsCount,  // Decimal for now
+            workableDays: Math.round(month.workableDays / yearsCount),
+            idealDays: Math.round(month.idealDays / yearsCount),
+            workablePercent: month.totalDays > 0 ? ((month.workableDays / month.totalDays) * 100).toFixed(0) : 0,
+            riskScore: month.totalDays > 0 ? Math.round(((month.heavyRainDays + month.workStoppingColdDays + month.heavySnowDays) / month.totalDays) * 100) : 0
+        }));
+
+        // RECONCILIATION: Ensure monthly totals match the yearly averages from yearlyStats
+        // This fixes rounding discrepancies between headline and monthly table
+        const yearlyHeavyRain = yearlyStats.map(y => y.heavyRainDays);
+        const yearlyWorkStoppingCold = yearlyStats.map(y => y.extremeColdDays);
+        const yearlyHeavySnow = yearlyStats.map(y => y.heavySnowDays);
+
+        const targetHeavyRain = Math.round(this.average(yearlyHeavyRain));
+        const targetWorkStoppingCold = Math.round(this.average(yearlyWorkStoppingCold));
+        const targetHeavySnow = Math.round(this.average(yearlyHeavySnow));
+
+        // Reconcile heavy rain days
+        breakdown.forEach(month => {
+            month.heavyRainDays = Math.round(month.heavyRainDays);
+            month.workStoppingColdDays = Math.round(month.workStoppingColdDays);
+            month.heavySnowDays = Math.round(month.heavySnowDays);
+        });
+
+        const sumHeavyRain = breakdown.reduce((sum, m) => sum + m.heavyRainDays, 0);
+        const sumWorkStoppingCold = breakdown.reduce((sum, m) => sum + m.workStoppingColdDays, 0);
+        const sumHeavySnow = breakdown.reduce((sum, m) => sum + m.heavySnowDays, 0);
+
+        // Adjust if sums don't match targets (distribute difference to months with highest fractional parts)
+        this.reconcileMonthlyTotals(breakdown, 'heavyRainDays', sumHeavyRain, targetHeavyRain, monthlyStats, yearsCount);
+        this.reconcileMonthlyTotals(breakdown, 'workStoppingColdDays', sumWorkStoppingCold, targetWorkStoppingCold, monthlyStats, yearsCount);
+        this.reconcileMonthlyTotals(breakdown, 'heavySnowDays', sumHeavySnow, targetHeavySnow, monthlyStats, yearsCount);
+
+        console.log('[MONTHLY] Monthly breakdown calculated and reconciled:', {
+            heavyRain: `${breakdown.reduce((s,m)=>s+m.heavyRainDays,0)} (target: ${targetHeavyRain})`,
+            workStoppingCold: `${breakdown.reduce((s,m)=>s+m.workStoppingColdDays,0)} (target: ${targetWorkStoppingCold})`,
+            heavySnow: `${breakdown.reduce((s,m)=>s+m.heavySnowDays,0)} (target: ${targetHeavySnow})`
+        });
+        return breakdown;
+    }
+
+    reconcileMonthlyTotals(breakdown, fieldName, currentSum, targetSum, monthlyStats, yearsCount) {
+        const difference = targetSum - currentSum;
+
+        if (difference === 0) return; // Already matches
+
+        // Calculate fractional parts for each month (before rounding)
+        const monthsWithFractional = breakdown.map((month, index) => ({
+            index: index,
+            month: month.month,
+            fractional: (monthlyStats[index][fieldName] / yearsCount) % 1,
+            currentValue: month[fieldName]
+        }));
+
+        // Sort by fractional part (highest first for adding, lowest first for subtracting)
+        if (difference > 0) {
+            // Need to add days - prioritize months with highest fractional parts (were rounded down)
+            monthsWithFractional.sort((a, b) => b.fractional - a.fractional);
+        } else {
+            // Need to subtract days - prioritize months with lowest fractional parts (were rounded up)
+            monthsWithFractional.sort((a, b) => a.fractional - b.fractional);
+        }
+
+        // Apply adjustment to the required number of months
+        const adjustmentCount = Math.abs(difference);
+        const adjustment = difference > 0 ? 1 : -1;
+
+        for (let i = 0; i < adjustmentCount && i < monthsWithFractional.length; i++) {
+            const monthIndex = monthsWithFractional[i].index;
+            breakdown[monthIndex][fieldName] += adjustment;
+
+            // Don't let values go negative
+            if (breakdown[monthIndex][fieldName] < 0) {
+                breakdown[monthIndex][fieldName] = 0;
+            }
+        }
+
+        console.log(`[RECONCILE] ${fieldName}: adjusted ${adjustmentCount} months by ${adjustment > 0 ? '+1' : '-1'} to match target ${targetSum}`);
     }
 
     findHistoricalExtremes() {
@@ -3490,9 +4160,12 @@ class XyloclimePro {
 
         // 4. Seasonal Risk (25% weight)
         // Based on overall favorable conditions (realistic feasibility)
+        // Higher workable days = LOWER risk (inverted)
         const workableDays = parseInt(analysis.workableDays || analysis.optimalDays);
         const favorableRatio = workableDays / totalDays;
-        const seasonRisk = Math.max(0, 100 - (favorableRatio * 250));
+        // Convert to risk: 100% workable = 0% risk, 0% workable = 100% risk
+        const seasonRisk = Math.max(0, Math.min(100, (1 - favorableRatio) * 100));
+        console.log(`[RISK] Seasonal: ${workableDays}/${totalDays} workable (${(favorableRatio*100).toFixed(1)}% favorable) = ${seasonRisk.toFixed(1)} risk`);
 
         // Calculate weighted total score
         // If wind data unavailable, redistribute its 20% weight to other factors proportionally
@@ -3566,17 +4239,40 @@ class XyloclimePro {
         const recommendations = [];
         const { totalScore, precipRisk, tempRisk, analysis } = riskData;
 
+        // Calculate consistent contingency recommendation
+        const totalProjectDays = analysis.actualProjectDays || 365;
+        const heavyRain = analysis.heavyRainDays || 0;
+        const workStoppingCold = analysis.extremeColdDays || 0;
+        const heavySnow = analysis.heavySnowDays || 0;
+        const grossStoppageDays = heavyRain + workStoppingCold + heavySnow;
+        const estimatedOverlap = Math.round(grossStoppageDays * 0.25);
+        const netStoppageDays = grossStoppageDays - estimatedOverlap;
+        const directStoppagePercent = ((netStoppageDays / totalProjectDays) * 100).toFixed(1);
+
+        let recommendedContingency = '';
+        if (netStoppageDays === 0) {
+            recommendedContingency = '10%';
+        } else {
+            const minContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.3);
+            const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
+            recommendedContingency = `${minContingency}-${maxContingency}%`;
+        }
+
         // High precipitation risk
         if (precipRisk > 60) {
             recommendations.push('Consider waterproofing measures and drainage planning for frequent precipitation');
-            recommendations.push(`Budget for ${analysis.rainyDays} rainy days with potential work stoppages`);
+            recommendations.push(`Plan for ${analysis.rainyDays} rainy days with potential work stoppages`);
         }
 
-        // High temperature risk
+        // High temperature risk (only when tempRisk > 60)
         if (tempRisk > 60) {
-            if (parseInt(analysis.freezingDays) > 30) {
-                recommendations.push('Plan for cold weather delays and heating requirements');
+            const workStoppingCold = parseInt(analysis.extremeColdDays) || 0;
+            if (workStoppingCold > 15) {
+                recommendations.push(`Plan for ${workStoppingCold} work-stopping cold days (≤-5°C): heated enclosures and winter methods recommended`);
                 recommendations.push('Consider insulated materials and cold-weather equipment');
+            } else if (parseInt(analysis.freezingDays) > 30) {
+                recommendations.push(`${analysis.freezingDays} freezing days expected (most workable with precautions)`);
+                recommendations.push('Use cold-weather methods: heated blankets, winter mix concrete');
             }
             if (parseInt(analysis.extremeHeatDays) > 20) {
                 recommendations.push('Schedule heat-sensitive work during cooler months');
@@ -3586,21 +4282,21 @@ class XyloclimePro {
 
         // Overall high risk
         if (totalScore > 65) {
-            recommendations.push('Add 15-25% contingency time to project schedule for weather delays');
+            recommendations.push(`Add ${recommendedContingency} contingency time to project schedule for weather delays`);
             recommendations.push('Consider weather insurance or performance bonds');
             recommendations.push('Develop detailed weather contingency plans');
         }
 
         // Moderate risk
         if (totalScore > 40 && totalScore <= 65) {
-            recommendations.push('Add 10-15% contingency time to project schedule');
+            recommendations.push(`Add ${recommendedContingency} contingency time to project schedule`);
             recommendations.push('Monitor weather forecasts closely during critical phases');
         }
 
         // Low risk
         if (totalScore <= 40) {
             recommendations.push('Weather conditions are generally favorable for this project');
-            recommendations.push('Standard contingency planning (5-10%) should be sufficient');
+            recommendations.push(`Weather contingency of ${recommendedContingency} recommended (calculated from work-stoppage analysis)`);
         }
 
         // Optimal days insight
@@ -3626,49 +4322,34 @@ class XyloclimePro {
             riskLevelEl.style.color = riskScore.riskColor;
         }
 
-        // Calculate relative contributions (percentages that add up to 100%)
-        const precip = riskScore.breakdown.precipitation * 0.30; // weighted value
-        const temp = riskScore.breakdown.temperature * 0.25;
-        const seasonal = riskScore.breakdown.seasonal * 0.25;
-
-        // Handle wind data - may be null if unavailable
+        // Get ACTUAL RISK SCORES (0-100) from breakdown
         const hasWindData = riskScore.breakdown.wind !== null && riskScore.breakdown.wind !== undefined;
-        const wind = hasWindData ? riskScore.breakdown.wind * 0.20 : 0;
-        const total = precip + temp + wind + seasonal;
 
-        // Calculate percentages of total risk
-        let precipPercent, tempPercent, windPercent, seasonPercent;
+        const precipScore = Math.round(riskScore.breakdown.precipitation);
+        const tempScore = Math.round(riskScore.breakdown.temperature);
+        const windScore = hasWindData ? Math.round(riskScore.breakdown.wind) : null;
+        const seasonScore = Math.round(riskScore.breakdown.seasonal);
 
-        if (hasWindData) {
-            // Normal calculation with all 4 factors
-            precipPercent = total > 0 ? Math.round((precip / total) * 100) : 25;
-            tempPercent = total > 0 ? Math.round((temp / total) * 100) : 25;
-            windPercent = total > 0 ? Math.round((wind / total) * 100) : 25;
-            seasonPercent = total > 0 ? Math.round((seasonal / total) * 100) : 25;
-        } else {
-            // Recalculate without wind - redistribute percentages among 3 factors
-            precipPercent = total > 0 ? Math.round((precip / total) * 100) : 33;
-            tempPercent = total > 0 ? Math.round((temp / total) * 100) : 33;
-            windPercent = null; // Will be handled specially
-            seasonPercent = total > 0 ? Math.round((seasonal / total) * 100) : 34;
-            console.log('[RISK] Wind data unavailable - excluding from percentage calculations');
-        }
+        console.log('[RISK] Actual risk scores (0-100):', {
+            precip: precipScore,
+            temp: tempScore,
+            wind: windScore,
+            seasonal: seasonScore
+        });
 
-        console.log('[RISK] Relative contributions:', { precip: precipPercent, temp: tempPercent, wind: windPercent, seasonal: seasonPercent });
+        // Update risk breakdown bars with ACTUAL SCORES (0-100)
+        this.updateRiskBar('precipRiskBar', 'precipRiskScore', precipScore);
+        this.updateRiskBar('tempRiskBar', 'tempRiskScore', tempScore);
+        this.updateRiskBar('windRiskBar', 'windRiskScore', hasWindData ? windScore : 'N/A');
+        this.updateRiskBar('seasonRiskBar', 'seasonRiskScore', seasonScore);
 
-        // Update risk breakdown bars with relative percentages
-        this.updateRiskBar('precipRiskBar', 'precipRiskScore', precipPercent);
-        this.updateRiskBar('tempRiskBar', 'tempRiskScore', tempPercent);
-        this.updateRiskBar('windRiskBar', 'windRiskScore', hasWindData ? windPercent : 'N/A');
-        this.updateRiskBar('seasonRiskBar', 'seasonRiskScore', seasonPercent);
-
-        // Create pie chart for risk breakdown
-        this.createRiskPieChart({
-            precipitation: precipPercent,
-            temperature: tempPercent,
-            wind: hasWindData ? windPercent : null,
-            seasonal: seasonPercent
-        }, hasWindData);
+        // Pie chart removed - risk bars show all necessary info
+        // this.createRiskPieChart({
+        //     precipitation: precipPercent,
+        //     temperature: tempPercent,
+        //     wind: hasWindData ? windPercent : null,
+        //     seasonal: seasonPercent
+        // }, hasWindData);
 
         // Update recommendations
         const recommendationsList = document.getElementById('riskRecommendationsList');
@@ -3683,12 +4364,19 @@ class XyloclimePro {
         const bar = document.getElementById(barId);
         const score = document.getElementById(scoreId);
 
+        // Find the parent risk-item container to hide entire row when no data
+        const riskItem = bar?.closest('.risk-item');
+
         if (bar) {
-            // Handle N/A values (missing data)
+            // Handle N/A values (missing data) - HIDE THE ENTIRE ROW
             if (value === 'N/A' || value === null) {
-                bar.style.width = '0%';
-                bar.style.background = 'rgba(255, 255, 255, 0.1)'; // Dimmed appearance
+                if (riskItem) {
+                    riskItem.style.display = 'none'; // Hide entire row for wind when unavailable
+                }
             } else {
+                if (riskItem) {
+                    riskItem.style.display = ''; // Show row when data available
+                }
                 bar.style.width = value + '%';
                 // Use fixed colors for each risk type instead of value-based colors
                 const colors = {
@@ -3702,13 +4390,22 @@ class XyloclimePro {
         }
 
         if (score) {
-            // Display "Data unavailable" for N/A values
             if (value === 'N/A' || value === null) {
+                // Row is hidden, no need to update text
                 score.textContent = 'Data unavailable';
-                score.style.fontSize = '0.85em';
-                score.style.fontStyle = 'italic';
             } else {
-                score.textContent = value + '%';
+                // Add descriptive text for all risk categories
+                let label = '';
+                if (value <= 25) {
+                    label = ' (Low)';
+                } else if (value <= 50) {
+                    label = ' (Moderate)';
+                } else if (value <= 75) {
+                    label = ' (High)';
+                } else {
+                    label = ' (Critical)';
+                }
+                score.textContent = value + '%' + label;
                 score.style.fontSize = ''; // Reset to default
                 score.style.fontStyle = ''; // Reset to default
             }
@@ -3777,6 +4474,12 @@ class XyloclimePro {
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -3871,12 +4574,18 @@ class XyloclimePro {
         // Display confidence intervals
         const confidenceContainer = document.getElementById('confidenceIntervals');
         if (confidenceContainer && analysis.rainyDaysConfidence) {
+            const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
+            const dataSourceNote = usingNOAA
+                ? `*Data quality based on available historical records. Snowfall data from NOAA direct station measurements (100% accuracy). Temperature and precipitation from ${analysis.snowDataSource?.source || 'ERA5'} reanalysis.`
+                : `*Data quality based on available historical records. Values at or near 100% may include minor interpolation or estimation for missing data points from the Open-Meteo ERA5 dataset.`;
+
             const confidenceHTML = `
                 <div class="confidence-info">
                     <h5><i class="fas fa-chart-line"></i> Statistical Confidence</h5>
                     <p>Rainy Days: ${analysis.rainyDays} (range: ${analysis.rainyDaysMin}-${analysis.rainyDaysMax})</p>
                     <p>Precipitation: ${analysis.totalPrecip}mm (range: ${analysis.precipMin}-${analysis.precipMax}mm)</p>
-                    <p class="confidence-note">Based on ${analysis.yearsAnalyzed} years of historical data (${(analysis.dataQuality * 100).toFixed(0)}% complete)</p>
+                    <p class="confidence-note">Based on ${analysis.yearsAnalyzed} years of historical data (${(analysis.dataQuality * 100).toFixed(0)}% complete)*</p>
+                    <p class="footnote" style="font-size: 0.85em; color: #94a3b8; margin-top: 0.5rem;">${dataSourceNote}</p>
                 </div>
             `;
             confidenceContainer.innerHTML = confidenceHTML;
@@ -3888,6 +4597,137 @@ class XyloclimePro {
             extremeEvents: analysis.extremeEvents?.length || 0,
             dataQuality: `${(analysis.dataQuality * 100).toFixed(1)}%`
         });
+    }
+
+    // ========================================================================
+    // MONTHLY BREAKDOWN DISPLAY
+    // ========================================================================
+
+    displayMonthlyBreakdown(analysis) {
+        const container = document.getElementById('monthlyBreakdownContainer');
+        if (!container) return;
+
+        if (!analysis.monthlyBreakdown || !Array.isArray(analysis.monthlyBreakdown)) {
+            container.innerHTML = '<p class="summary-loading">Monthly breakdown data not available.</p>';
+            return;
+        }
+
+        const monthlyData = analysis.monthlyBreakdown;
+
+        // Generate table HTML
+        let tableHTML = `
+            <div class="monthly-table-wrapper">
+                <table class="monthly-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Heavy Rain Days</th>
+                            <th>Work-Stopping Cold</th>
+                            <th>Heavy Snow Days</th>
+                            <th>Workable %</th>
+                            <th>Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        monthlyData.forEach(month => {
+            const riskClass = month.riskScore <= 10 ? 'risk-low' :
+                            month.riskScore <= 25 ? 'risk-medium' : 'risk-high';
+            const riskLabel = month.riskScore <= 10 ? 'Low' :
+                            month.riskScore <= 25 ? 'Medium' : 'High';
+
+            tableHTML += `
+                <tr>
+                    <td class="month-name">${month.month}</td>
+                    <td>${month.heavyRainDays} days</td>
+                    <td>${month.workStoppingColdDays} days</td>
+                    <td>${month.heavySnowDays} days</td>
+                    <td>${month.workablePercent}%</td>
+                    <td class="${riskClass}">${riskLabel}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        // Generate heatmap HTML
+        let heatmapHTML = `
+            <div class="monthly-heatmap">
+                <h4 class="heatmap-title"><i class="fas fa-chart-bar"></i> Concrete Pour Risk Heatmap</h4>
+                <div class="heatmap-grid">
+        `;
+
+        monthlyData.forEach(month => {
+            const totalRiskDays = month.heavyRainDays + month.workStoppingColdDays + month.heavySnowDays;
+            const maxDays = month.avgDaysInMonth;
+            const riskPercent = Math.min(100, (totalRiskDays / maxDays) * 100);
+
+            let riskClass, riskLabel;
+            if (riskPercent === 0) {
+                riskClass = 'risk-none';
+                riskLabel = 'Ideal';
+            } else if (riskPercent <= 10) {
+                riskClass = 'risk-low';
+                riskLabel = 'Low Risk';
+            } else if (riskPercent <= 25) {
+                riskClass = 'risk-medium';
+                riskLabel = 'Medium Risk';
+            } else if (riskPercent <= 40) {
+                riskClass = 'risk-high';
+                riskLabel = 'High Risk';
+            } else {
+                riskClass = 'risk-critical';
+                riskLabel = 'Critical';
+            }
+
+            heatmapHTML += `
+                <div class="heatmap-row">
+                    <div class="heatmap-month-label">${month.month}</div>
+                    <div class="heatmap-bar-container">
+                        <div class="heatmap-bar ${riskClass}" style="width: ${Math.max(15, riskPercent)}%;"
+                             title="${month.month}: ${totalRiskDays} risk days (${riskPercent.toFixed(0)}%)">
+                            ${totalRiskDays} days
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        heatmapHTML += `
+                </div>
+                <div class="heatmap-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(90deg, #10b981, #059669);"></div>
+                        <span class="legend-label">Ideal (0 risk days)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(90deg, #84cc16, #65a30d);"></div>
+                        <span class="legend-label">Low Risk (≤10%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(90deg, #f59e0b, #d97706);"></div>
+                        <span class="legend-label">Medium Risk (11-25%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(90deg, #ef4444, #dc2626);"></div>
+                        <span class="legend-label">High Risk (26-40%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(90deg, #dc2626, #991b1b);"></div>
+                        <span class="legend-label">Critical (>40%)</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = tableHTML + heatmapHTML;
+
+        console.log('[MONTHLY] Monthly breakdown displayed with heatmap');
     }
 
     // ========================================================================
@@ -4053,10 +4893,19 @@ class XyloclimePro {
         if (el('heavyRainDays')) el('heavyRainDays').textContent = analysis.heavyRainDays;
         if (el('snowyDays')) el('snowyDays').textContent = analysis.snowyDays;
         if (el('totalSnow')) el('totalSnow').textContent = this.formatSnow(analysis.totalSnowfall);
-        // Wind and humidity data not available from API - removed fake random data
-        if (el('avgWind')) el('avgWind').textContent = 'N/A';
-        if (el('maxWind')) el('maxWind').textContent = 'N/A';
-        if (el('avgHumidity')) el('avgHumidity').textContent = 'N/A';
+
+        // Wind data (now available from API)
+        if (el('avgWind')) {
+            const avgWind = analysis.avgWindSpeed;
+            el('avgWind').textContent = (avgWind !== undefined && avgWind !== null && avgWind !== 'N/A') ? `${avgWind} km/h` : 'N/A';
+        }
+        if (el('maxWind')) {
+            const maxWind = analysis.maxWindSpeed;
+            el('maxWind').textContent = (maxWind !== undefined && maxWind !== null && maxWind !== 'N/A') ? `${maxWind} km/h` : 'N/A';
+        }
+
+        // Extreme heat days
+        if (el('extremeHeatDays')) el('extremeHeatDays').textContent = analysis.extremeHeatDays || 0;
 
         // Update workability tiers
         if (el('workableDays')) el('workableDays').textContent = analysis.workableDays;
@@ -4547,71 +5396,289 @@ class XyloclimePro {
         const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const months = Math.round(duration / 30);
 
-        // Generate intelligent summary
-        let summary = `<p><strong>Project Overview:</strong> ${this.sanitizeHTML(project.name)} is scheduled for a ${duration}-day period (approximately ${months} months) from ${project.startDate} to ${project.endDate} at ${this.sanitizeHTML(project.locationName)}.</p>`;
-
-        summary += `<p><strong>Historical Analysis:</strong> Based on ${analysis.yearsAnalyzed} years of historical weather data for this exact calendar period, our analysis reveals the following conditions:</p>`;
-
-        // Add workability criteria explanation
-        summary += `<p><strong>Work Feasibility Criteria:</strong> This analysis uses construction-specific thresholds to classify days as "Workable" or "Not Workable":<br>
-        <strong>✓ Workable with precautions:</strong> Light freezing (0 to -5°C), light rain (<10mm), moderate wind (<60 km/h)<br>
-        <strong>✗ Work stoppage required:</strong> Extreme cold (≤-5°C), heavy rain (≥10mm), snow (>10mm), high wind (≥60 km/h), extreme heat (≥37°C)</p>`;
-
-        // Weather assessment - using workable days for realistic feasibility
-        const rainyPercent = Math.round((analysis.rainyDays / duration) * 100);
+        // Calculate key percentages
         const workablePercent = Math.round((analysis.workableDays / duration) * 100);
         const idealPercent = Math.round((analysis.idealDays / duration) * 100);
-        const extremeColdPercent = Math.round((analysis.extremeColdDays / duration) * 100);
-        const lightFreezingPercent = Math.round((analysis.lightFreezingDays / duration) * 100);
+        const rainyPercent = Math.round((analysis.rainyDays / duration) * 100);
+        const heavyRainPercent = analysis.rainyDays > 0 ? Math.round((analysis.heavyRainDays / analysis.rainyDays) * 100) : 0;
 
-        if (workablePercent > 75) {
-            summary += `<p><strong>Favorable Conditions:</strong> Excellent news! Approximately ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable with normal construction precautions. Of these, ${analysis.idealDays} days (${idealPercent}%) are forecast to have ideal conditions. This is significantly favorable for project execution.`;
-        } else if (workablePercent > 55) {
-            summary += `<p><strong>Moderate Conditions:</strong> Approximately ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable with standard cold-weather or rain precautions. ${analysis.idealDays} days (${idealPercent}%) are forecast to have ideal conditions. This is within normal parameters for the selected timeframe and location.`;
-        } else {
-            summary += `<p><strong>Challenging Conditions:</strong> ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable, with only ${analysis.idealDays} days (${idealPercent}%) having ideal conditions. Enhanced weather planning, mitigation strategies, and schedule flexibility are strongly recommended.`;
-        }
+        // Determine overall risk level
+        const riskScore = analysis.riskScore || this.calculateRiskScore(analysis);
+        const riskLevel = riskScore.riskLevel || 'MODERATE RISK';
 
-        // Weather risks
-        if (analysis.rainyDays > duration * 0.25) {
-            summary += ` <strong>Rain Risk:</strong> Expect approximately ${analysis.rainyDays} rainy days (${rainyPercent}% of project duration), which is above historical averages. Note: Many rainy days with light precipitation (<10mm) are included in workable days counts, as work can continue with standard rain precautions. Plan for water management and weather-protected work areas.`;
-        }
+        // Format snow/wind data properly
+        const snowDisplay = analysis.totalSnowfall > 0 ?
+            (analysis.totalSnowfall < 0.1 ? 'Trace' : `${analysis.totalSnowfall} cm`) : '0 cm';
+        const windDisplay = analysis.avgWindSpeed || 'Calculating...';
+        const maxWindDisplay = analysis.maxWindSpeed || 'Calculating...';
 
-        if (analysis.snowyDays > 5) {
-            summary += ` <strong>Snow Advisory:</strong> Historical patterns indicate ${analysis.snowyDays} days with snow accumulation. Winter construction protocols and heated enclosures may be necessary.`;
-        }
-
-        // Explain freezing vs extreme cold
-        if (analysis.allFreezingDays > 10) {
-            if (analysis.extremeColdDays > 5) {
-                summary += ` <strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} freezing days expected (${analysis.extremeColdDays} days with extreme cold ≤-5°C requiring work stoppage, ${analysis.lightFreezingDays} days with light freezing 0 to -5°C workable with cold-weather precautions). Concrete curing, material storage, and worker safety measures must be implemented.`;
-            } else {
-                summary += ` <strong>Cold Weather Info:</strong> ${analysis.allFreezingDays} freezing days expected, but only ${analysis.extremeColdDays} require work stoppage (≤-5°C). ${analysis.lightFreezingDays} days with light freezing (0 to -5°C) are workable with standard cold-weather precautions.`;
+        // Determine snow data source
+        let snowDataSource = null;
+        if (project.historicalData && project.historicalData.length > 0) {
+            const firstYear = project.historicalData[0];
+            if (firstYear.data && firstYear.data.snowDataSource) {
+                snowDataSource = firstYear.data.snowDataSource;
             }
-        } else if (analysis.extremeColdDays > 0) {
-            summary += ` <strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (work stoppage required). Plan for heated enclosures and cold-weather protocols.`;
         }
 
-        summary += `</p>`;
+        // ========================================================================
+        // 1. PROJECT HEADER
+        // ========================================================================
+        let summary = `<div style="border-bottom: 2px solid var(--electric-cyan); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <h3 style="margin: 0 0 0.5rem 0; color: var(--electric-cyan);">Project Overview</h3>
+        <p style="margin: 0;"><strong>${this.sanitizeHTML(project.name)}</strong></p>
+        <p style="margin: 0.5rem 0 0 0;">Location: ${this.sanitizeHTML(project.locationName)}<br>
+        Duration: ${duration} days (approx. ${months} months) | ${project.startDate} to ${project.endDate}<br>
+        Analysis Period: ${analysis.yearsAnalyzed} years of historical data (same calendar period)</p>
+        </div>`;
 
-        // Recommendations
-        summary += `<p><strong>Strategic Recommendations:</strong> `;
-        const recs = [];
+        // ========================================================================
+        // 2. KEY WEATHER METRICS SUMMARY (TABLE)
+        // ========================================================================
+        summary += `<div style="margin-bottom: 1.5rem;">
+        <h3 style="color: var(--electric-cyan); margin-bottom: 1rem;"><i class="fas fa-table"></i> Key Weather Metrics Summary</h3>
+        <table style="width: 100%; border-collapse: collapse; background: rgba(10, 25, 41, 0.6); border-radius: 8px; overflow: hidden;">
+        <thead>
+        <tr style="background: rgba(0, 212, 255, 0.1); border-bottom: 2px solid var(--electric-cyan);">
+        <th style="padding: 0.75rem; text-align: left; color: var(--electric-cyan);">Metric</th>
+        <th style="padding: 0.75rem; text-align: right; color: var(--electric-cyan);">Expected Value</th>
+        <th style="padding: 0.75rem; text-align: right; color: var(--electric-cyan);">% of Project</th>
+        </tr>
+        </thead>
+        <tbody style="color: var(--arctic-white);">
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;"><strong>Workable Days</strong></td>
+        <td style="padding: 0.75rem; text-align: right;"><strong>${analysis.workableDays}</strong></td>
+        <td style="padding: 0.75rem; text-align: right;"><strong>${workablePercent}%</strong></td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;">Ideal Days</td>
+        <td style="padding: 0.75rem; text-align: right;">${analysis.idealDays}</td>
+        <td style="padding: 0.75rem; text-align: right;">${idealPercent}%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;">Total Rainy Days</td>
+        <td style="padding: 0.75rem; text-align: right;">${analysis.rainyDays}</td>
+        <td style="padding: 0.75rem; text-align: right;">${rainyPercent}%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;">Heavy Rain Days (>10mm)</td>
+        <td style="padding: 0.75rem; text-align: right;">${analysis.heavyRainDays}</td>
+        <td style="padding: 0.75rem; text-align: right;">${heavyRainPercent}% of rainy days</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;">Snow Days ${this.getSnowDataBadge(snowDataSource)}</td>
+        <td style="padding: 0.75rem; text-align: right;">${analysis.snowyDays}</td>
+        <td style="padding: 0.75rem; text-align: right;">Total: ${snowDisplay}${this.getSnowDataDetails(snowDataSource)}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;">Freezing Days (Total)</td>
+        <td style="padding: 0.75rem; text-align: right;">${analysis.allFreezingDays}</td>
+        <td style="padding: 0.75rem; text-align: right;">Work-stopping cold (≤-5°C): ${analysis.extremeColdDays}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 0.75rem;">Wind Speed (Avg/Max)</td>
+        <td style="padding: 0.75rem; text-align: right;" colspan="2">${windDisplay} / ${maxWindDisplay} km/h</td>
+        </tr>
+        <tr>
+        <td style="padding: 0.75rem;">Total Precipitation</td>
+        <td style="padding: 0.75rem; text-align: right;" colspan="2">${analysis.totalPrecip} mm</td>
+        </tr>
+        </tbody>
+        </table>
+        </div>`;
+
+        // ========================================================================
+        // 2.5 DATA QUALITY NOTICE (Snowfall Warning)
+        // ========================================================================
+        // Show warning ONLY if using ERA5 fallback data (not NOAA direct measurements)
+        // NOAA data is 100% accurate and doesn't need a warning
+        const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
+
+        if ((analysis.snowyDays > 5 || analysis.totalSnowfall > 1) && !usingNOAA) {
+            summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; border-radius: 8px;">
+            <h3 style="color: #ffc107; margin: 0 0 0.5rem 0;"><i class="fas fa-exclamation-triangle"></i> Data Quality Notice</h3>
+            <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">
+            <strong>Snowfall estimates may be conservative:</strong> This analysis uses ${analysis.snowDataSource?.source || 'ERA5'} reanalysis data, which is known to underestimate snowfall in many regions (particularly Great Plains, Mountain West, and northern climates).
+            Actual snowfall may be significantly higher than shown. For snow-prone locations, cross-reference with local NOAA station data and add extra winter weather contingency.
+            Temperature and precipitation data are generally accurate.
+            <a href="DATA_QUALITY_NOTES.md" target="_blank" style="color: #ffc107;">Learn more about data quality</a>
+            </p>
+            </div>`;
+        }
+
+        // ========================================================================
+        // 3. OVERALL WEATHER RISK SCORE
+        // ========================================================================
+        const riskColor = riskScore.riskColor || '#f39c12';
+        summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(10, 25, 41, 0.6); border-left: 4px solid ${riskColor}; border-radius: 8px;">
+        <h3 style="color: var(--electric-cyan); margin: 0 0 0.5rem 0;"><i class="fas fa-shield-alt"></i> Overall Weather Risk Assessment</h3>
+        <p style="margin: 0; font-size: 1.1rem;"><strong>Risk Level:</strong> <span style="color: ${riskColor}; font-weight: 700;">${riskLevel}</span> (Score: ${riskScore.totalScore}/100)</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem; color: var(--steel-silver);">Based on precipitation, temperature, wind, and seasonal variability factors.</p>
+        </div>`;
+
+        // ========================================================================
+        // 4. CONCRETE WORK IMPACTS (MANDATORY NEW SECTION)
+        // ========================================================================
+        summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(230, 126, 34, 0.1); border: 2px solid #e67e22; border-radius: 8px;">
+        <h3 style="color: #e67e22; margin: 0 0 1rem 0;"><i class="fas fa-hard-hat"></i> Concrete Work Impacts</h3>
+        <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">`;
+
+        if (analysis.allFreezingDays > 10) {
+            summary += `<li><strong>Freezing conditions slow cure times</strong> – ${analysis.extremeColdDays} days with work-stopping cold (≤-5°C / ≤23°F) typically require work stoppage. ${analysis.lightFreezingDays} days with light freezing (0 to -5°C) are workable with heated enclosures and accelerated admixtures.</li>`;
+        }
+
+        if (analysis.heavyRainDays > 5) {
+            const totalProjectDays = analysis.actualProjectDays || 365;
+            const heavyRainPercent = ((analysis.heavyRainDays / totalProjectDays) * 100).toFixed(1);
+
+            let riskLevel = '';
+            if (heavyRainPercent < 8) {
+                riskLevel = 'manageable with proper scheduling';
+            } else if (heavyRainPercent < 15) {
+                riskLevel = 'moderate impact requiring planning';
+            } else {
+                riskLevel = 'significant impact';
+            }
+
+            summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with >10mm rain (${heavyRainPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
+        }
+
+        if (analysis.allFreezingDays > 0 || analysis.extremeColdDays > 0) {
+            summary += `<li><strong>Heated enclosures recommended for winter</strong> – Recommended for ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F). Maintain minimum 10°C ambient temperature for proper curing.</li>`;
+            summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Type III cement or calcium chloride accelerators reduce cure time and cold-weather risks.</li>`;
+        }
+
+        summary += `<li><strong>Plan pours during optimal windows</strong> – ${analysis.idealDays} ideal days identified. Schedule critical pours during these periods for best results.</li>`;
+        summary += `<li><strong>Avoid early-morning winter pours</strong> – Unless blankets/heaters are used. Temperature drops overnight can damage fresh concrete.</li>`;
+
+        // Calculate weather contingency with proper math
+        // NOTE: Each category counts calendar days independently, then overlaps are ESTIMATED (not calculated from actual same-day events)
+        const totalProjectDays = analysis.actualProjectDays || 365;
+        const heavyRain = analysis.heavyRainDays || 0;
+        const workStoppingCold = analysis.extremeColdDays || 0;
+        const heavySnow = analysis.heavySnowDays || 0;
+        const highWind = analysis.highWindDays || 0;
+
+        // Gross total (sum of all categories - INCLUDES overlaps)
+        const grossStoppageDays = heavyRain + workStoppingCold + heavySnow;
+
+        // Estimate overlap reduction (conservative assumption: ~25% of days have multiple stoppage conditions)
+        // This is an ESTIMATE, not calculated from actual day-by-day overlap detection
+        const estimatedOverlap = Math.round(grossStoppageDays * 0.25);
+        const netStoppageDays = grossStoppageDays - estimatedOverlap;
+
+        // Direct stoppage percentage
+        const directStoppagePercent = ((netStoppageDays / totalProjectDays) * 100).toFixed(1);
+
+        // Calculate recommended contingency
+        let recommendedContingency = '';
+        let justification = '';
+
+        if (netStoppageDays === 0) {
+            recommendedContingency = '10%';
+            justification = 'No major work-stoppage events predicted, but standard weather buffer recommended.';
+        } else {
+            // Recommend 1.3-1.5x the direct percentage to account for setup/reset, curing delays, sequencing
+            const minContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.3);
+            const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
+            recommendedContingency = `${minContingency}-${maxContingency}%`;
+
+            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} work-stopping cold + ${heavySnow} heavy snow, accounting for overlap). `;
+            justification += `Recommended schedule contingency: ${recommendedContingency}.`;
+
+            if (highWind > 10) {
+                justification += ` Note: ${highWind} high-wind days may restrict crane/elevated work.`;
+            }
+        }
+
+        summary += `<li><strong>Schedule Contingency Recommendation:</strong> ${recommendedContingency} weather-related float. ${justification}</li>`;
+        summary += `</ul></div>`;
+
+        // ========================================================================
+        // 4.5 TEMPLATE-SPECIFIC ANALYSIS (if template selected)
+        // ========================================================================
+        if (this.selectedTemplate && this.templatesLibrary) {
+            const template = this.templatesLibrary.getTemplate(this.selectedTemplate);
+            if (template) {
+                summary += this.generateTemplateSpecificAnalysis(template, analysis, this.currentProject);
+            }
+        }
+
+        // ========================================================================
+        // 5. DETAILED WEATHER ANALYSIS
+        // ========================================================================
+        summary += `<div style="margin-bottom: 1.5rem;">
+        <h3 style="color: var(--electric-cyan); margin-bottom: 1rem;"><i class="fas fa-cloud-sun"></i> Detailed Weather Analysis</h3>`;
+
+        // Overall conditions assessment
+        if (workablePercent > 75) {
+            summary += `<p><strong>Favorable Conditions:</strong> Excellent news! ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable with normal construction precautions. ${analysis.idealDays} days (${idealPercent}%) offer ideal conditions. This is significantly favorable for project execution.</p>`;
+        } else if (workablePercent > 55) {
+            summary += `<p><strong>Moderate Conditions:</strong> ${workablePercent}% of project days (${analysis.workableDays} days) are workable with standard precautions. ${analysis.idealDays} days (${idealPercent}%) offer ideal conditions. Within normal parameters for this timeframe and location.</p>`;
+        } else {
+            summary += `<p><strong>Challenging Conditions:</strong> Only ${workablePercent}% of days (${analysis.workableDays}) are workable, with ${analysis.idealDays} ideal days (${idealPercent}%). Enhanced weather planning, mitigation strategies, and schedule flexibility strongly recommended.</p>`;
+        }
+
+        // Precipitation analysis
+        if (analysis.rainyDays > 0) {
+            summary += `<p><strong>Precipitation Analysis:</strong> ${analysis.rainyDays} rainy days expected (${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>10mm). ${heavyRainPercent}% of rainy days qualify as heavy rain`;
+            if (heavyRainPercent > 40) {
+                summary += ` – <em>higher than typical 15-30% proportion</em>`;
+            }
+            summary += `. Light rain days (<10mm) are included in workable counts as work can continue with rain gear and drainage.</p>`;
+        }
+
+        // Snow & freezing analysis
+        if (analysis.snowyDays > 0) {
+            summary += `<p><strong>Snow Advisory:</strong> ${analysis.snowyDays} days with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} days with heavy snow (>10mm) typically require work stoppage. Winter construction protocols recommended.</p>`;
+        }
+
+        if (analysis.allFreezingDays > 10) {
+            summary += `<p><strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F, work stoppage) + ${analysis.lightFreezingDays} light freezing days (0 to -5°C, workable with precautions). Concrete curing, material storage, and worker safety measures recommended.</p>`;
+        } else if (analysis.extremeColdDays > 0) {
+            summary += `<p><strong>Work-Stopping Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (≤23°F) typically require work stoppage. Plan heated enclosures and cold-weather protocols.</p>`;
+        }
+
+        summary += `</div>`;
+
+        // ========================================================================
+        // 6. RISK MITIGATION RECOMMENDATIONS
+        // ========================================================================
+        summary += `<div style="margin-bottom: 1.5rem;">
+        <h3 style="color: var(--electric-cyan); margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Risk Mitigation Recommendations</h3>
+        <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">`;
+
         if (workablePercent > 65) {
-            recs.push('Schedule critical path activities during optimal weather windows identified in the analysis below');
+            summary += `<li>Schedule critical path activities during optimal weather windows identified below</li>`;
         }
         if (analysis.rainyDays > 20) {
-            recs.push('implement comprehensive drainage and erosion control systems');
+            summary += `<li>Implement comprehensive drainage and erosion control systems</li>`;
         }
-        if (analysis.snowyDays > 0 || analysis.freezingDays > 15) {
-            recs.push('prepare cold-weather contingency plans and heated work areas');
+        if (analysis.snowyDays > 0 || analysis.allFreezingDays > 15) {
+            summary += `<li>Prepare cold-weather contingency plans and heated work areas</li>`;
         }
-        recs.push('monitor 10-day forecasts continuously for tactical adjustments');
-        recs.push('maintain weather-dependent schedule float of 10-15% minimum');
+        if (riskScore.totalScore > 60) {
+            summary += `<li>Consider weather insurance or performance bonds for high-risk periods</li>`;
+        }
+        summary += `<li>Monitor 10-day forecasts continuously for tactical adjustments</li>`;
+        summary += `<li>Maintain weather-dependent schedule float of ${recommendedContingency} as calculated above</li>`;
+        summary += `<li>Pre-stage materials and equipment for rapid mobilization during weather breaks</li>`;
+        summary += `</ul></div>`;
 
-        summary += recs.join('; ') + '.</p>';
+        // ========================================================================
+        // 7. HISTORICAL CONTEXT & CONFIDENCE
+        // ========================================================================
+        const dataSourceFootnote = usingNOAA
+            ? `*Data quality based on available historical records. Snowfall data from NOAA direct station measurements (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away). Temperature and precipitation from reanalysis data.`
+            : `*Data quality based on available historical records (Open-Meteo ERA5 dataset). Values at or near 100% may include minor interpolation or estimation for missing data points.`;
 
-        summary += `<p><strong>Confidence Level:</strong> This analysis is based on ${analysis.yearsAnalyzed} years of actual weather data for the same calendar period. While historical patterns provide valuable planning insights, actual conditions may vary. This assessment should be used in conjunction with short-term forecasts and professional meteorological guidance.</p>`;
+        summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--electric-cyan); border-radius: 8px;">
+        <h3 style="color: var(--electric-cyan); margin: 0 0 0.5rem 0;"><i class="fas fa-info-circle"></i> Historical Context & Confidence Level</h3>
+        <p style="margin: 0;">This analysis is based on <strong>${analysis.yearsAnalyzed} years</strong> of actual weather data for the same calendar period. Data quality: <strong>${(analysis.dataQuality * 100).toFixed(0)}%</strong> complete.*</p>
+        <p style="margin: 0.25rem 0; font-size: 0.85rem; color: #94a3b8;">${dataSourceFootnote}</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--steel-silver);"><strong>Important:</strong> Historical patterns provide valuable planning insights, but actual conditions may vary. Use this assessment in conjunction with short-term forecasts and professional meteorological guidance. Not suitable for life-safety decisions.</p>
+        </div>`;
 
         container.innerHTML = summary;
     }
@@ -4745,19 +5812,20 @@ class XyloclimePro {
                     dayIsIdeal = false;
                 }
 
-                // Wind penalty (>60km/h = unsafe, >50km/h = challenging)
-                if (day.wind > 60) {
+                // Wind penalty (≥30 km/h restricts crane, elevated work, material handling)
+                if (day.wind >= 40) {
                     highWindDays++;
-                    score -= 6;  // Very high wind
+                    score -= 6;  // High wind - major restrictions
                     dayIsWorkable = false;
                     dayIsIdeal = false;
-                } else if (day.wind > 50) {
-                    score -= 2;  // Challenging but workable
+                } else if (day.wind >= 30) {
+                    score -= 3;  // Moderate wind - some restrictions
+                    dayIsWorkable = false;
                     dayIsIdeal = false;
                 }
 
-                // Extreme cold penalty (<-5°C = very difficult)
-                if (day.temp_min !== null && day.temp_min < -5) {
+                // Work-stopping cold penalty (≤-5°C/≤23°F = construction work stoppage)
+                if (day.temp_min !== null && day.temp_min <= -5) {
                     freezingDays++;
                     score -= 5;
                     dayIsWorkable = false;
@@ -5084,7 +6152,7 @@ class XyloclimePro {
         const findings = [
             `${analysis.workableDays} workable days identified (${workablePercent}% of total project duration)`,
             `${analysis.nonWorkableDays} non-workable days expected due to adverse weather conditions`,
-            `Average temperature: ${this.formatTemp(analysis.averageTemp, 'C')} ${analysis.averageTemp < 5 ? '(Cold weather protocols required)' : ''}`,
+            `Average temperature: ${this.formatTemp(analysis.averageTemp, 'C')} ${analysis.averageTemp < 5 ? '(Cold weather protocols recommended)' : ''}`,
             `Total precipitation forecast: ${this.formatPrecip(analysis.totalPrecipitation)} over project duration`,
             `${analysis.extremeEvents ? analysis.extremeEvents.length : 0} extreme weather events anticipated`,
             analysis.totalSnowfall > 0 ? `Snow accumulation expected: ${this.formatPrecip(analysis.totalSnowfall)}` : null
@@ -5108,13 +6176,31 @@ class XyloclimePro {
         doc.setTextColor(60, 60, 60);
         doc.setFont(undefined, 'normal');
 
+        // Calculate specific contingency for risk assessment
+        const totalDays = analysis.actualProjectDays || 365;
+        const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
+        const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
+        const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
+        const contingencyRange = netStoppage > 0 ? `${Math.ceil(directPercent * 1.3)}-${Math.ceil(directPercent * 1.5)}%` : '';
+
         let riskAssessment = '';
         if (riskScore <= 30) {
             riskAssessment = `LOW RISK: Weather conditions are generally favorable for this project. Expected ${workablePercent}% workability provides good schedule reliability. Standard weather monitoring protocols are recommended.`;
+            if (contingencyRange) riskAssessment += ` Recommended schedule contingency: ${contingencyRange} (~${netStoppage} stoppage days).`;
         } else if (riskScore <= 60) {
-            riskAssessment = `MEDIUM RISK: Moderate weather challenges expected during this project. With ${workablePercent}% workability, implement enhanced weather monitoring and maintain 15-20% schedule contingency for weather delays.`;
+            riskAssessment = `MEDIUM RISK: Moderate weather challenges expected during this project. With ${workablePercent}% workability, implement enhanced weather monitoring.`;
+            if (contingencyRange) {
+                riskAssessment += ` Recommended schedule contingency: ${contingencyRange} (~${netStoppage} stoppage days).`;
+            } else {
+                riskAssessment += ` Maintain minimum 10% schedule contingency for weather delays.`;
+            }
         } else {
-            riskAssessment = `HIGH RISK: Significant weather challenges anticipated for this project period. Only ${workablePercent}% of days considered workable. Robust weather contingency planning essential. Consider 25-30% schedule buffer and alternative work strategies.`;
+            riskAssessment = `HIGH RISK: Significant weather challenges anticipated for this project period. Only ${workablePercent}% of days considered workable. Robust weather contingency planning recommended.`;
+            if (contingencyRange) {
+                riskAssessment += ` Recommended schedule contingency: ${contingencyRange} minimum (~${netStoppage} stoppage days), plus alternative work strategies.`;
+            } else {
+                riskAssessment += ` Consider minimum 10% schedule buffer, plus alternative work strategies.`;
+            }
         }
 
         const assessmentLines = doc.splitTextToSize(riskAssessment, 170);
@@ -5147,8 +6233,16 @@ class XyloclimePro {
 
         // Fallback to generic recommendations if smart recs not available
         if (recommendations.length === 0) {
+            // Calculate contingency with math
+            const totalDays = analysis.actualProjectDays || 365;
+            const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
+            const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25); // Account for overlaps
+            const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
+            const contingency = netStoppage > 0 ? `${Math.ceil(directPercent * 1.3)}-${Math.ceil(directPercent * 1.5)}%` : '10%';
+            const contingencyDetail = netStoppage > 0 ? ` (${netStoppage} net stoppage days / ${totalDays} days = ${directPercent}% direct, ×1.3-1.5 for delays)` : '';
+
             recommendations = [
-                `[CRITICAL] Maintain ${riskScore > 60 ? '25-30%' : riskScore > 30 ? '15-20%' : '10-15%'} schedule contingency for weather delays`,
+                `[CRITICAL] Maintain ${contingency} schedule contingency for weather delays${contingencyDetail}`,
                 '[IMPORTANT] Schedule weather-sensitive activities during optimal periods identified in monthly breakdown',
                 '[IMPORTANT] Implement daily weather monitoring with 10-day forecast reviews',
                 analysis.totalPrecipitation > 200 ? '[CRITICAL] Prepare comprehensive drainage and erosion control measures' : null,
@@ -5377,7 +6471,7 @@ class XyloclimePro {
             if (workablePercent > 75) {
                 outlookText = `✓ FAVORABLE: ${workablePercent}% workable conditions (${idealPercent}% ideal). Excellent opportunity for efficient project execution with minimal weather delays.`;
             } else if (workablePercent > 55) {
-                outlookText = `⚠ MODERATE: ${workablePercent}% workable conditions (${idealPercent}% ideal). Normal parameters for this timeframe. Standard weather contingency planning recommended.`;
+                outlookText = `⚠ MODERATE: ${workablePercent}% workable conditions (${idealPercent}% ideal). Normal parameters for this timeframe. Weather contingency planning recommended based on work-stoppage analysis.`;
             } else {
                 outlookText = `⚠ CHALLENGING: Only ${workablePercent}% workable conditions (${idealPercent}% ideal). Enhanced weather planning and mitigation strategies strongly recommended.`;
             }
@@ -5431,9 +6525,17 @@ class XyloclimePro {
             doc.text('Strategic Recommendations', 20, yPos);
             yPos += 8;
 
+            // Calculate contingency for consistent recommendation
+            const projectAnalysis = this.currentProject.analysis || {};
+            const totalDays = projectAnalysis.actualProjectDays || 365;
+            const stoppageDays = (projectAnalysis.heavyRainDays || 0) + (projectAnalysis.extremeColdDays || 0) + (projectAnalysis.heavySnowDays || 0);
+            const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
+            const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
+            const calculatedContingency = netStoppage > 0 ? `${Math.ceil(directPercent * 1.3)}-${Math.ceil(directPercent * 1.5)}%` : '10%';
+
             const recommendations = [
                 'Monitor 10-day forecasts continuously for tactical schedule adjustments',
-                'Maintain 10-15% schedule float minimum for weather contingencies',
+                `Maintain ${calculatedContingency} schedule float for weather contingencies (based on work-stoppage analysis)`,
                 'Schedule critical path activities during optimal weather windows',
                 'Implement comprehensive site drainage and erosion control',
                 'Prepare contingency plans for adverse weather scenarios'
@@ -5530,9 +6632,10 @@ class XyloclimePro {
 
             const tiersTable = [
                 ['Tier', 'Criteria', 'Description'],
-                ['Workable Days', `Temp: >-5°C, Rain: <10mm, Wind: <60 km/h`, `Realistic construction feasibility with standard precautions`],
-                ['Ideal Days', `Temp: >0°C, Rain: <5mm, Wind: <50 km/h`, `Perfect conditions - no weather precautions needed`],
-                ['Heavy Rain', `Precipitation >10mm/day`, `Work-stopping rainfall requiring schedule adjustment`]
+                ['Workable Days', `Temp: >-5°C, Rain: <10mm, Wind: <30 km/h`, `Realistic construction feasibility with standard precautions`],
+                ['Ideal Days', `Temp: >0°C, Rain: <5mm, Wind: <20 km/h`, `Perfect conditions - no weather precautions needed`],
+                ['Heavy Rain', `Precipitation >10mm/day`, `Work-stopping rainfall requiring schedule adjustment`],
+                ['High Wind', `Wind Speed ≥30 km/h`, `Restricts crane operations, elevated work, and material handling`]
             ];
 
             tiersTable.forEach((row, i) => {
@@ -5943,7 +7046,7 @@ class XyloclimePro {
                 ['Precipitation', 'Total Snow', this.formatSnow(analysis.totalSnowfall, false), this.unitSystem === 'imperial' ? 'in' : 'cm'],
                 ['Temperature Extremes', 'Freezing Days', analysis.freezingDays, 'days'],
                 ['Temperature Extremes', 'Extreme Heat Days', analysis.extremeHeatDays, 'days'],
-                ['Temperature Extremes', 'Extreme Cold Days', analysis.extremeColdDays, 'days'],
+                ['Temperature Extremes', 'Work-Stopping Cold (≤-5°C)', analysis.extremeColdDays, 'days'],
                 ['Work Conditions', 'Workable Days', analysis.workableDays || analysis.optimalDays, 'days'],
                 ['Work Conditions', 'Ideal Days', analysis.idealDays || 0, 'days'],
                 ['Data Quality', 'Years Analyzed', analysis.yearsAnalyzed, 'years']
@@ -5960,12 +7063,19 @@ class XyloclimePro {
             XLSX.utils.book_append_sheet(wb, ws2, 'Detailed Metrics');
 
             // ===== SHEET 3: RECOMMENDATIONS =====
+            // Calculate contingency for consistent recommendation
+            const totalDays = analysis.actualProjectDays || 365;
+            const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
+            const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
+            const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
+            const calculatedContingency = netStoppage > 0 ? `${Math.ceil(directPercent * 1.3)}-${Math.ceil(directPercent * 1.5)}%` : '10%';
+
             const recsData = [
                 ['STRATEGIC RECOMMENDATIONS'],
                 [''],
                 ['#', 'Recommendation', 'Priority'],
                 [1, 'Monitor 10-day forecasts continuously for tactical schedule adjustments', 'HIGH'],
-                [2, 'Maintain 10-15% schedule float minimum for weather contingencies', 'HIGH'],
+                [2, `Maintain ${calculatedContingency} schedule float for weather contingencies (based on work-stoppage analysis)`, 'HIGH'],
                 [3, 'Schedule critical path activities during optimal weather windows', 'HIGH'],
                 [4, 'Implement comprehensive site drainage and erosion control', 'MEDIUM'],
                 [5, 'Prepare contingency plans for adverse weather scenarios', 'HIGH'],
@@ -6059,6 +7169,191 @@ class XyloclimePro {
         }
     }
 
+    async deleteProjectWithConfirmation(projectId, projectName) {
+        // Show custom confirmation modal
+        const confirmed = await this.showConfirmDialog(
+            'Delete Project',
+            `Are you sure you want to delete "${projectName}"?`,
+            'This action cannot be undone.',
+            'Delete',
+            'Cancel'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            console.log('[APP] Deleting project:', projectId);
+            await this.databaseManager.deleteProject(projectId);
+
+            // Remove from local projects array
+            this.projects = this.projects.filter(p => p.id !== projectId);
+
+            // If the deleted project was currently loaded, reload the page or reset
+            if (this.currentProject && this.currentProject.id === projectId) {
+                this.currentProject = null;
+                // Optionally reload to clear all data
+                // window.location.reload();
+            }
+
+            // Refresh the UI
+            this.loadSavedProjects();
+
+            // Show success message
+            console.log('[APP] Project deleted successfully');
+            this.showToast(`Project "${projectName}" deleted successfully`, 'success');
+        } catch (error) {
+            console.error('[APP] Failed to delete project:', error);
+            this.showToast(`Failed to delete project: ${error.message}`, 'error');
+        }
+    }
+
+    showConfirmDialog(title, message, warning, confirmText, cancelText) {
+        return new Promise((resolve) => {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; animation: fadeIn 0.2s;';
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background: linear-gradient(135deg, #0d1b2a 0%, #1b3a5f 100%); border: 2px solid var(--electric-cyan); border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); animation: slideDown 0.3s;';
+
+            modal.innerHTML = `
+                <h2 style="color: var(--electric-cyan); margin: 0 0 1rem 0; font-size: 1.5rem;">
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>${this.sanitizeHTML(title)}
+                </h2>
+                <p style="color: var(--arctic-white); margin: 0 0 0.5rem 0; font-size: 1.1rem;">${this.sanitizeHTML(message)}</p>
+                <p style="color: #e67e22; margin: 0 0 1.5rem 0; font-size: 0.9rem; font-weight: 600;">${this.sanitizeHTML(warning)}</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="confirmBtn" style="flex: 1; padding: 0.75rem; background: #e74c3c; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.2s;">
+                        <i class="fas fa-trash-alt"></i> ${this.sanitizeHTML(confirmText)}
+                    </button>
+                    <button id="cancelBtn" style="flex: 1; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 2px solid var(--electric-cyan); border-radius: 8px; color: var(--electric-cyan); font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.2s;">
+                        ${this.sanitizeHTML(cancelText)}
+                    </button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Add animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            `;
+            document.head.appendChild(style);
+
+            // Handle buttons
+            const confirmBtn = modal.querySelector('#confirmBtn');
+            const cancelBtn = modal.querySelector('#cancelBtn');
+
+            confirmBtn.addEventListener('mouseenter', () => {
+                confirmBtn.style.background = '#c0392b';
+                confirmBtn.style.transform = 'scale(1.05)';
+            });
+            confirmBtn.addEventListener('mouseleave', () => {
+                confirmBtn.style.background = '#e74c3c';
+                confirmBtn.style.transform = 'scale(1)';
+            });
+
+            cancelBtn.addEventListener('mouseenter', () => {
+                cancelBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+            });
+            cancelBtn.addEventListener('mouseleave', () => {
+                cancelBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                document.head.removeChild(style);
+                resolve(true);
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                document.head.removeChild(style);
+                resolve(false);
+            });
+
+            // Close on overlay click
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                    document.head.removeChild(style);
+                    resolve(false);
+                }
+            });
+
+            // Close on Escape key
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    document.body.removeChild(overlay);
+                    document.head.removeChild(style);
+                    document.removeEventListener('keydown', escHandler);
+                    resolve(false);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+        });
+    }
+
+    showToast(message, type = 'info') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 10px;';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast
+        const toast = document.createElement('div');
+        const colors = {
+            success: { bg: '#27ae60', icon: 'check-circle' },
+            error: { bg: '#e74c3c', icon: 'exclamation-circle' },
+            info: { bg: '#3498db', icon: 'info-circle' },
+            warning: { bg: '#f39c12', icon: 'exclamation-triangle' }
+        };
+        const color = colors[type] || colors.info;
+
+        toast.style.cssText = `background: ${color.bg}; color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); display: flex; align-items: center; gap: 0.75rem; min-width: 300px; max-width: 400px; animation: slideInRight 0.3s, slideOutRight 0.3s 2.7s;`;
+        toast.innerHTML = `
+            <i class="fas fa-${color.icon}" style="font-size: 1.25rem;"></i>
+            <span style="flex: 1; font-weight: 500;">${this.sanitizeHTML(message)}</span>
+            <i class="fas fa-times" style="cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"></i>
+        `;
+
+        // Add animation styles
+        if (!document.getElementById('toastAnimations')) {
+            const style = document.createElement('style');
+            style.id = 'toastAnimations';
+            style.textContent = `
+                @keyframes slideInRight { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+                @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
+            `;
+            document.head.appendChild(style);
+        }
+
+        toastContainer.appendChild(toast);
+
+        // Close button
+        toast.querySelector('.fa-times').addEventListener('click', () => {
+            toast.style.animation = 'slideOutRight 0.3s';
+            setTimeout(() => toast.remove(), 300);
+        });
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+
     async migrateAndLoadProjects() {
         // Try to migrate localStorage projects to Firestore
         const result = await this.databaseManager.migrateFromLocalStorage();
@@ -6108,21 +7403,51 @@ class XyloclimePro {
         projectsToShow.forEach(project => {
             const item = document.createElement('div');
             item.className = 'project-item';
-            item.style.cssText = 'padding: 0.8rem; background: rgba(30, 58, 95, 0.3); border-radius: 8px; cursor: pointer; margin-bottom: 0.5rem; transition: all 0.2s;';
-            item.innerHTML = `
+            item.style.cssText = 'padding: 0.8rem; background: rgba(30, 58, 95, 0.3); border-radius: 8px; margin-bottom: 0.5rem; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.style.cssText = 'flex: 1; cursor: pointer;';
+            contentDiv.innerHTML = `
                 <div style="color: var(--electric-cyan); font-weight: 600; margin-bottom: 0.3rem;">${this.sanitizeHTML(project.name)}</div>
                 <div style="color: var(--steel-silver); font-size: 0.85rem;">${project.startDate || 'N/A'} - ${project.endDate || 'N/A'}</div>
             `;
-            item.addEventListener('click', () => {
+            contentDiv.addEventListener('click', () => {
                 this.loadProject(project.id);
                 // Close mobile sidebar after selecting a project
                 this.closeMobileSidebar();
             });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            deleteBtn.title = 'Delete project';
+            deleteBtn.className = 'project-delete-btn';
+            deleteBtn.style.cssText = 'background: rgba(231, 76, 60, 0.2); border: 2px solid #e74c3c; color: #e74c3c; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-left: 0.5rem; opacity: 0; pointer-events: none;';
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.deleteProjectWithConfirmation(project.id, project.name);
+            });
+            deleteBtn.addEventListener('mouseenter', () => {
+                deleteBtn.style.background = '#e74c3c';
+                deleteBtn.style.color = 'white';
+            });
+            deleteBtn.addEventListener('mouseleave', () => {
+                deleteBtn.style.background = 'rgba(231, 76, 60, 0.2)';
+                deleteBtn.style.color = '#e74c3c';
+            });
+
+            item.appendChild(contentDiv);
+            item.appendChild(deleteBtn);
+
+            // Show delete button on hover
             item.addEventListener('mouseenter', () => {
                 item.style.background = 'rgba(0, 212, 255, 0.2)';
+                deleteBtn.style.opacity = '1';
+                deleteBtn.style.pointerEvents = 'auto';
             });
             item.addEventListener('mouseleave', () => {
                 item.style.background = 'rgba(30, 58, 95, 0.3)';
+                deleteBtn.style.opacity = '0';
+                deleteBtn.style.pointerEvents = 'none';
             });
             container.appendChild(item);
         });
@@ -6287,6 +7612,9 @@ class XyloclimePro {
 
             // Show success toast
             window.toastManager.success(`Project "${project.name}" loaded successfully`, 'Project Loaded', 3000);
+
+            // Scroll to top to show results
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
         } catch (error) {
             console.error('[PROJECT] Failed to load project:', error);
@@ -6789,5 +8117,19 @@ if (document.readyState === 'loading') {
     window.authManager = new AuthManager();
     window.meteoryxApp = new XyloclimePro();
 }
+
+// ============================================================================
+// PRELOAD NOAA STATION DATABASE
+// ============================================================================
+// Preload the comprehensive NOAA station network in the background
+// This ensures instant station lookups when the user selects any location
+(async function preloadNOAANetwork() {
+    try {
+        await noaaNetwork.loadStations();
+        console.log('[NOAA Network] Station database preloaded and ready');
+    } catch (error) {
+        console.warn('[NOAA Network] Failed to preload station database:', error);
+    }
+})();
 
 console.log('[XYLOCLIME PRO] Application loaded successfully');

@@ -65,8 +65,8 @@ class ProjectTemplatesLibrary {
                     seasonal: 'MEDIUM'
                 },
                 tips: [
-                    'No work during rain or high winds (safety critical)',
-                    'Asphalt shingles require temps above 40°F (4°C)',
+                    'No work during rain or high winds (important for safety)',
+                    'Asphalt shingles work best with temps above 40°F (4°C)',
                     'Wind speeds above 20mph create safety hazards',
                     'Check 24-hour forecast before starting each section',
                     'Have tarps ready for unexpected weather'
@@ -319,18 +319,37 @@ class SmartRecommendations {
             insights: []
         };
 
-        // Analyze risk levels
-        this.analyzeRainRisk(analysis, recommendations);
+        // Calculate consistent contingency recommendation (same as in app.js)
+        const totalProjectDays = analysis.actualProjectDays || 365;
+        const heavyRain = analysis.heavyRainDays || 0;
+        const workStoppingCold = analysis.extremeColdDays || 0;
+        const heavySnow = analysis.heavySnowDays || 0;
+        const grossStoppageDays = heavyRain + workStoppingCold + heavySnow;
+        const estimatedOverlap = Math.round(grossStoppageDays * 0.25);
+        const netStoppageDays = grossStoppageDays - estimatedOverlap;
+        const directStoppagePercent = ((netStoppageDays / totalProjectDays) * 100).toFixed(1);
+
+        let recommendedContingency = '';
+        if (netStoppageDays === 0) {
+            recommendedContingency = '10%';
+        } else {
+            const minContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.3);
+            const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
+            recommendedContingency = `${minContingency}-${maxContingency}%`;
+        }
+
+        // Analyze risk levels (pass contingency to all methods)
+        this.analyzeRainRisk(analysis, recommendations, recommendedContingency);
         this.analyzeTemperatureRisk(analysis, recommendations);
         this.analyzeWindRisk(analysis, recommendations);
         this.analyzeSeasonalRisk(analysis, project, recommendations);
-        this.analyzeWorkableDays(analysis, project, recommendations);
+        this.analyzeWorkableDays(analysis, project, recommendations, recommendedContingency);
         this.generateSchedulingInsights(analysis, project, recommendations);
 
         return recommendations;
     }
 
-    analyzeRainRisk(analysis, recommendations) {
+    analyzeRainRisk(analysis, recommendations, recommendedContingency) {
         const rainyDays = analysis.rainyDays || 0;
         const heavyRainDays = analysis.heavyRainDays || 0;
         // CRITICAL FIX: Must use actual project duration, not default 90
@@ -338,17 +357,30 @@ class SmartRecommendations {
 
         console.log(`[RECOMMENDATIONS] Rain analysis: ${rainyDays} rainy days / ${totalDays} total days = ${Math.round(rainyDays/totalDays*100)}%`);
 
-        if (heavyRainDays > totalDays * 0.1) {
+        const heavyRainPercent = (heavyRainDays / totalDays) * 100;
+
+        // Heavy rain impact - scaled by severity
+        if (heavyRainPercent > 15) {
+            // >15% = critical (>55 days/year)
             recommendations.critical.push({
                 icon: 'fa-cloud-showers-heavy',
                 title: 'High Heavy Rain Risk',
-                message: `Expect ${heavyRainDays} days with heavy rain (>10mm). This will cause significant delays.`,
-                action: 'Add 15-20% contingency time for rain delays',
+                message: `Expect ${heavyRainDays} days with heavy rain (>10mm), ${Math.round(heavyRainPercent)}% of project duration. Significant impact expected.`,
+                action: `Add ${recommendedContingency} contingency time for weather delays (includes rain impact)`,
                 priority: 'high'
+            });
+        } else if (heavyRainPercent > 8) {
+            // 8-15% = moderate (30-55 days/year)
+            recommendations.important.push({
+                icon: 'fa-cloud-showers-heavy',
+                title: 'Moderate Heavy Rain Impact',
+                message: `Expect ${heavyRainDays} days with heavy rain (>10mm), ${Math.round(heavyRainPercent)}% of project duration. Manageable with planning.`,
+                action: `Schedule contingency: ${recommendedContingency} (includes rain impact)`,
+                priority: 'medium'
             });
         }
 
-        if (rainyDays > totalDays * 0.3) {
+        if (rainyDays > totalDays * 0.35) {
             recommendations.important.push({
                 icon: 'fa-umbrella',
                 title: 'Frequent Rain Expected',
@@ -363,7 +395,7 @@ class SmartRecommendations {
                 icon: 'fa-tarp',
                 title: 'Weather Protection',
                 message: 'Invest in tarps, tent systems, and dehumidifiers for rainy periods',
-                action: 'Budget $2,000-5,000 for weather protection equipment',
+                action: 'Allocate budget for weather protection equipment based on project scope',
                 priority: 'low'
             });
         }
@@ -371,16 +403,29 @@ class SmartRecommendations {
 
     analyzeTemperatureRisk(analysis, recommendations) {
         const freezingDays = analysis.freezingDays || 0;
+        const workStoppingCold = analysis.extremeColdDays || 0;
         const extremeHeatDays = analysis.extremeHeatDays || 0;
         const avgLow = analysis.avgTempMin;
+        const totalDays = analysis.totalDays || analysis.actualProjectDays || 365;
 
-        if (freezingDays > 7) {
+        // Work-stopping cold (≤-5°C) is the real issue
+        if (workStoppingCold > totalDays * 0.05) {
+            // >5% work-stopping cold = significant
             recommendations.critical.push({
                 icon: 'fa-snowflake',
-                title: 'Significant Freezing Risk',
-                message: `${freezingDays} days expected below freezing. This affects concrete, paint, and equipment.`,
+                title: 'Work-Stopping Cold Expected',
+                message: `${workStoppingCold} days expected ≤-5°C (≤23°F) requiring work stoppage. Concrete pours and major construction will be halted.`,
                 action: 'Plan for heated enclosures, winter additives, and extended cure times',
                 priority: 'high'
+            });
+        } else if (freezingDays > 20) {
+            // Freezing but workable with precautions
+            recommendations.important.push({
+                icon: 'fa-snowflake',
+                title: 'Freezing Conditions Expected',
+                message: `${freezingDays} days below freezing (most workable with precautions). ${workStoppingCold} days require work stoppage (≤-5°C).`,
+                action: 'Plan for cold-weather methods: heated blankets, winter mix concrete',
+                priority: 'medium'
             });
         }
 
@@ -414,7 +459,7 @@ class SmartRecommendations {
             recommendations.important.push({
                 icon: 'fa-wind',
                 title: 'High Wind Days Expected',
-                message: `${highWindDays} days with winds >30mph. Affects roofing, crane work, painting.`,
+                message: `${highWindDays} days with winds ≥30 km/h (≥19 mph). Affects roofing, crane work, painting.`,
                 action: 'Schedule wind-sensitive tasks during calm periods. Have backup plans.',
                 priority: 'medium'
             });
@@ -426,15 +471,30 @@ class SmartRecommendations {
         const endDate = new Date(project.endDate);
         const startMonth = startDate.getMonth(); // 0-11
 
-        // Winter start warning (Nov-Feb in Northern Hemisphere)
+        // Winter start warning (Nov-Feb in Northern Hemisphere) - DATA-DRIVEN
         if (startMonth >= 10 || startMonth <= 1) {
-            recommendations.important.push({
-                icon: 'fa-calendar-alt',
-                title: 'Winter Start Timing',
-                message: 'Project starts during winter months. Workable days will be limited.',
-                action: 'Consider pushing start date to March-April for better weather windows',
-                priority: 'medium'
-            });
+            // Check actual winter workability from monthly breakdown
+            const winterMonths = [10, 11, 0, 1]; // Nov, Dec, Jan, Feb
+            let winterWorkability = null;
+
+            if (analysis.monthlyBreakdown && analysis.monthlyBreakdown.length > 0) {
+                const winterMonthsData = analysis.monthlyBreakdown.filter(m => winterMonths.includes(m.monthIndex));
+                if (winterMonthsData.length > 0) {
+                    const avgWinterWorkability = winterMonthsData.reduce((sum, m) => sum + parseInt(m.workablePercent || 0), 0) / winterMonthsData.length;
+                    winterWorkability = Math.round(avgWinterWorkability);
+                }
+            }
+
+            // Only warn if winter months actually have low workability (<70%)
+            if (winterWorkability !== null && winterWorkability < 70) {
+                recommendations.important.push({
+                    icon: 'fa-calendar-alt',
+                    title: 'Winter Start Timing',
+                    message: `Project starts during winter months. Winter workability averages ${winterWorkability}% (below optimal).`,
+                    action: 'Consider pushing start date to March-April for better weather windows, or plan for winter construction methods',
+                    priority: 'medium'
+                });
+            }
         }
 
         // Spring start (best time)
@@ -461,7 +521,7 @@ class SmartRecommendations {
         }
     }
 
-    analyzeWorkableDays(analysis, project, recommendations) {
+    analyzeWorkableDays(analysis, project, recommendations, recommendedContingency) {
         const totalDays = Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24));
         const workableDays = analysis.workableDays || analysis.optimalDays || totalDays * 0.7;
         const workablePercent = (workableDays / totalDays) * 100;
@@ -471,7 +531,7 @@ class SmartRecommendations {
                 icon: 'fa-exclamation-triangle',
                 title: 'Low Workable Days',
                 message: `Only ${Math.round(workablePercent)}% of days expected to be workable (${Math.round(workableDays)} of ${totalDays} days)`,
-                action: 'Add 40-50% contingency time to schedule or shift project timeline',
+                action: `Add ${recommendedContingency} contingency time to schedule (calculated from work-stoppage days)`,
                 priority: 'high'
             });
         } else if (workablePercent < 75) {
@@ -479,7 +539,7 @@ class SmartRecommendations {
                 icon: 'fa-calendar-times',
                 title: 'Moderate Workable Days',
                 message: `${Math.round(workablePercent)}% of days expected to be workable (${Math.round(workableDays)} of ${totalDays} days)`,
-                action: 'Add 20-30% contingency time to account for weather delays',
+                action: `Add ${recommendedContingency} contingency time to account for weather delays`,
                 priority: 'medium'
             });
         } else {
@@ -487,7 +547,7 @@ class SmartRecommendations {
                 icon: 'fa-thumbs-up',
                 title: 'Good Weather Window',
                 message: `${Math.round(workablePercent)}% of days expected to be workable - favorable conditions!`,
-                action: 'Standard 10-15% contingency should be sufficient',
+                action: `Weather contingency of ${recommendedContingency} recommended (calculated from work-stoppage analysis)`,
                 priority: 'positive'
             });
         }

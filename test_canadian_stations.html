@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canadian Station Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #334155;
+            border-radius: 8px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        pre {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Canadian Station Network Test</h1>
+
+    <div class="test">
+        <h2>Test 1: Load Global Station Database</h2>
+        <button onclick="testStationLoad()">Load Stations</button>
+        <div id="test1Result"></div>
+    </div>
+
+    <div class="test">
+        <h2>Test 2: Find Canadian Stations</h2>
+        <button onclick="testToronto()">Toronto, ON</button>
+        <button onclick="testVancouver()">Vancouver, BC</button>
+        <button onclick="testMontreal()">Montreal, QC</button>
+        <button onclick="testCalgary()">Calgary, AB</button>
+        <button onclick="testWinnipeg()">Winnipeg, MB</button>
+        <div id="test2Result"></div>
+    </div>
+
+    <div class="test">
+        <h2>Test 3: Verify Country Codes</h2>
+        <button onclick="testCountryCodes()">Show Country Breakdown</button>
+        <div id="test3Result"></div>
+    </div>
+
+    <script src="noaa-network.js?v=2.0.0"></script>
+    <script>
+        const noaaNetwork = new NOAAStationNetwork();
+
+        async function testStationLoad() {
+            const result = document.getElementById('test1Result');
+            result.innerHTML = '<p class="info">Loading station database...</p>';
+
+            try {
+                const success = await noaaNetwork.loadStations();
+                if (success) {
+                    const stats = await noaaNetwork.getStats();
+                    result.innerHTML = `
+                        <p class="success">SUCCESS! Global network loaded</p>
+                        <pre>${JSON.stringify(stats, null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = '<p class="error">Failed to load stations</p>';
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">ERROR: ${error.message}</p>`;
+            }
+        }
+
+        async function testCanadianCity(name, lat, lng) {
+            const result = document.getElementById('test2Result');
+            result.innerHTML = `<p class="info">Searching for nearest station to ${name}...</p>`;
+
+            try {
+                const station = await noaaNetwork.findNearestStation(lat, lng, 200);
+
+                if (station) {
+                    const isCanadian = station.id.startsWith('CA');
+                    const statusClass = isCanadian ? 'success' : 'error';
+                    const statusText = isCanadian ? 'CANADIAN STATION' : 'NON-CANADIAN STATION';
+
+                    result.innerHTML = `
+                        <p class="${statusClass}">${statusText} FOUND!</p>
+                        <h3>${name}</h3>
+                        <pre>Station ID:   ${station.id}
+Station Name: ${station.name}
+Country Code: ${station.country}
+Distance:     ${station.distance} km
+Latitude:     ${station.lat}
+Longitude:    ${station.lng}
+Elevation:    ${station.elevation} m</pre>
+                    `;
+                } else {
+                    result.innerHTML = `<p class="error">No station found within 200km of ${name}</p>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">ERROR: ${error.message}</p>`;
+            }
+        }
+
+        async function testToronto() {
+            await testCanadianCity('Toronto, ON', 43.6532, -79.3832);
+        }
+
+        async function testVancouver() {
+            await testCanadianCity('Vancouver, BC', 49.2827, -123.1207);
+        }
+
+        async function testMontreal() {
+            await testCanadianCity('Montreal, QC', 45.5017, -73.5673);
+        }
+
+        async function testCalgary() {
+            await testCanadianCity('Calgary, AB', 51.0447, -114.0719);
+        }
+
+        async function testWinnipeg() {
+            await testCanadianCity('Winnipeg, MB', 49.8951, -97.1384);
+        }
+
+        async function testCountryCodes() {
+            const result = document.getElementById('test3Result');
+            result.innerHTML = '<p class="info">Analyzing country codes...</p>';
+
+            try {
+                await noaaNetwork.loadStations();
+
+                const countryCount = {};
+                for (const station of noaaNetwork.stations) {
+                    countryCount[station.country] = (countryCount[station.country] || 0) + 1;
+                }
+
+                const sorted = Object.entries(countryCount)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([code, count]) => {
+                        const pct = (count / noaaNetwork.stations.length * 100).toFixed(1);
+                        return `${code}: ${count} stations (${pct}%)`;
+                    });
+
+                result.innerHTML = `
+                    <p class="success">Country Code Analysis</p>
+                    <pre>Total Stations: ${noaaNetwork.stations.length}
+Countries: ${Object.keys(countryCount).length}
+
+${sorted.join('\n')}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `<p class="error">ERROR: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-load on page load
+        window.addEventListener('load', () => {
+            console.log('[TEST] Canadian station test page loaded');
+            testStationLoad();
+        });
+    </script>
+</body>
+</html>

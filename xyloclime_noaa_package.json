@@ -1,0 +1,663 @@
+{
+  "version": "2.0",
+  "generated": "2025-11-21",
+  "station_count": 4940,
+  "cities": [
+    {
+      "name": "New York, NY",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "population": 8336817,
+      "nearest_station": {
+        "id": "USC00305816",
+        "name": "NY WORLD TRADE CTR",
+        "distance_miles": 0.5,
+        "lat": 40.7106,
+        "lng": -74.0142
+      }
+    },
+    {
+      "name": "Los Angeles, CA",
+      "lat": 34.0522,
+      "lng": -118.2437,
+      "population": 3979576,
+      "nearest_station": {
+        "id": "USW00093134",
+        "name": "CA LOS ANGELES DOWNTOWN/USC",
+        "distance_miles": 3.4,
+        "lat": 34.0236,
+        "lng": -118.2911
+      }
+    },
+    {
+      "name": "Chicago, IL",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "population": 2693976,
+      "nearest_station": {
+        "id": "USW00014819",
+        "name": "IL CHICAGO MIDWAY AP",
+        "distance_miles": 9.1,
+        "lat": 41.7842,
+        "lng": -87.7553
+      }
+    },
+    {
+      "name": "Houston, TX",
+      "lat": 29.7604,
+      "lng": -95.3698,
+      "population": 2320268,
+      "nearest_station": {
+        "id": "USW00012918",
+        "name": "TX HOUSTON WILLIAM P HOBBY AP",
+        "distance_miles": 9.5,
+        "lat": 29.6458,
+        "lng": -95.2822
+      }
+    },
+    {
+      "name": "Phoenix, AZ",
+      "lat": 33.4484,
+      "lng": -112.074,
+      "population": 1680992,
+      "nearest_station": {
+        "id": "USW00023183",
+        "name": "AZ PHOENIX AP",
+        "distance_miles": 4.3,
+        "lat": 33.4278,
+        "lng": -112.0036
+      }
+    },
+    {
+      "name": "Philadelphia, PA",
+      "lat": 39.9526,
+      "lng": -75.1652,
+      "population": 1584064,
+      "nearest_station": {
+        "id": "USC00366886",
+        "name": "PA PHILA FRANKLIN INST",
+        "distance_miles": 0.6,
+        "lat": 39.9586,
+        "lng": -75.1728
+      }
+    },
+    {
+      "name": "San Antonio, TX",
+      "lat": 29.4241,
+      "lng": -98.4936,
+      "population": 1547253,
+      "nearest_station": {
+        "id": "USC00417947",
+        "name": "TX SAN ANTONIO INCARNATE WORD",
+        "distance_miles": 3.4,
+        "lat": 29.4703,
+        "lng": -98.4728
+      }
+    },
+    {
+      "name": "San Diego, CA",
+      "lat": 32.7157,
+      "lng": -117.1611,
+      "population": 1423851,
+      "nearest_station": {
+        "id": "USW00023188",
+        "name": "CA SAN DIEGO INTL AP",
+        "distance_miles": 1.8,
+        "lat": 32.7336,
+        "lng": -117.1831
+      }
+    },
+    {
+      "name": "Dallas, TX",
+      "lat": 32.7767,
+      "lng": -96.797,
+      "population": 1343573,
+      "nearest_station": {
+        "id": "USW00013960",
+        "name": "TX DALLAS FAA AP",
+        "distance_miles": 4.8,
+        "lat": 32.8383,
+        "lng": -96.8358
+      }
+    },
+    {
+      "name": "San Jose, CA",
+      "lat": 37.3382,
+      "lng": -121.8863,
+      "population": 1021795,
+      "nearest_station": {
+        "id": "USC00045933",
+        "name": "CA MT HAMILTON",
+        "distance_miles": 13.8,
+        "lat": 37.3433,
+        "lng": -121.6347
+      }
+    },
+    {
+      "name": "Austin, TX",
+      "lat": 30.2672,
+      "lng": -97.7431,
+      "population": 978908,
+      "nearest_station": {
+        "id": "USW00013958",
+        "name": "TX AUSTIN-CAMP MABRY",
+        "distance_miles": 3.8,
+        "lat": 30.3208,
+        "lng": -97.7603
+      }
+    },
+    {
+      "name": "Jacksonville, FL",
+      "lat": 30.3322,
+      "lng": -81.6557,
+      "population": 949611,
+      "nearest_station": {
+        "id": "USW00053860",
+        "name": "FL JACKSONVILLE CRAIG MUNI AP",
+        "distance_miles": 8.5,
+        "lat": 30.3369,
+        "lng": -81.5128
+      }
+    },
+    {
+      "name": "Fort Worth, TX",
+      "lat": 32.7555,
+      "lng": -97.3308,
+      "population": 918915,
+      "nearest_station": {
+        "id": "USW00013961",
+        "name": "TX FT WORTH MEACHAM FLD",
+        "distance_miles": 5.2,
+        "lat": 32.8247,
+        "lng": -97.3642
+      }
+    },
+    {
+      "name": "Columbus, OH",
+      "lat": 39.9612,
+      "lng": -82.9988,
+      "population": 898553,
+      "nearest_station": {
+        "id": "USC00331785",
+        "name": "OH COLUMBUS WCMH",
+        "distance_miles": 4.6,
+        "lat": 40.025,
+        "lng": -83.0269
+      }
+    },
+    {
+      "name": "Charlotte, NC",
+      "lat": 35.2271,
+      "lng": -80.8431,
+      "population": 885708,
+      "nearest_station": {
+        "id": "USW00013881",
+        "name": "NC CHARLOTTE DOUGLAS AP",
+        "distance_miles": 6.3,
+        "lat": 35.2225,
+        "lng": -80.9544
+      }
+    },
+    {
+      "name": "San Francisco, CA",
+      "lat": 37.7749,
+      "lng": -122.4194,
+      "population": 873965,
+      "nearest_station": {
+        "id": "USW00023272",
+        "name": "CA SAN FRANCISCO DWTN",
+        "distance_miles": 0.5,
+        "lat": 37.7706,
+        "lng": -122.4269
+      }
+    },
+    {
+      "name": "Indianapolis, IN",
+      "lat": 39.7684,
+      "lng": -86.1581,
+      "population": 867125,
+      "nearest_station": {
+        "id": "USW00093819",
+        "name": "IN INDIANAPOLIS",
+        "distance_miles": 7.7,
+        "lat": 39.7075,
+        "lng": -86.2803
+      }
+    },
+    {
+      "name": "Seattle, WA",
+      "lat": 47.6062,
+      "lng": -122.3321,
+      "population": 753675,
+      "nearest_station": {
+        "id": "USW00094290",
+        "name": "WA SEATTLE SAND PT WFO",
+        "distance_miles": 6.6,
+        "lat": 47.6872,
+        "lng": -122.2553
+      }
+    },
+    {
+      "name": "Denver, CO",
+      "lat": 39.7392,
+      "lng": -104.9903,
+      "population": 715522,
+      "nearest_station": {
+        "id": "USC00052223",
+        "name": "CO DENVER WATER DEPT",
+        "distance_miles": 1.2,
+        "lat": 39.7294,
+        "lng": -105.0086
+      }
+    },
+    {
+      "name": "Boston, MA",
+      "lat": 42.3601,
+      "lng": -71.0589,
+      "population": 692600,
+      "nearest_station": {
+        "id": "USW00014739",
+        "name": "MA BOSTON",
+        "distance_miles": 2.5,
+        "lat": 42.3606,
+        "lng": -71.0097
+      }
+    },
+    {
+      "name": "Nashville, TN",
+      "lat": 36.1627,
+      "lng": -86.7816,
+      "population": 689447,
+      "nearest_station": {
+        "id": "USC00408238",
+        "name": "TN SHELBY BOTTOMS NATURE CTR",
+        "distance_miles": 3.2,
+        "lat": 36.1661,
+        "lng": -86.7247
+      }
+    },
+    {
+      "name": "Detroit, MI",
+      "lat": 42.3314,
+      "lng": -83.0458,
+      "population": 639111,
+      "nearest_station": {
+        "id": "USC00202016",
+        "name": "MI DEARBORN #2",
+        "distance_miles": 6.6,
+        "lat": 42.3469,
+        "lng": -83.1736
+      }
+    },
+    {
+      "name": "Portland, OR",
+      "lat": 45.5152,
+      "lng": -122.6784,
+      "population": 652503,
+      "nearest_station": {
+        "id": "USC00356749",
+        "name": "OR PORTLAND KGW-TV",
+        "distance_miles": 0.6,
+        "lat": 45.5181,
+        "lng": -122.6894
+      }
+    },
+    {
+      "name": "Las Vegas, NV",
+      "lat": 36.1699,
+      "lng": -115.1398,
+      "population": 641903,
+      "nearest_station": {
+        "id": "USW00053123",
+        "name": "NV LAS VEGAS AIR TERMINAL",
+        "distance_miles": 4.2,
+        "lat": 36.2119,
+        "lng": -115.1939
+      }
+    },
+    {
+      "name": "Memphis, TN",
+      "lat": 35.1495,
+      "lng": -90.049,
+      "population": 633104,
+      "nearest_station": {
+        "id": "USW00013893",
+        "name": "TN MEMPHIS INTL AP",
+        "distance_miles": 7.3,
+        "lat": 35.0564,
+        "lng": -89.9864
+      }
+    },
+    {
+      "name": "Louisville, KY",
+      "lat": 38.2527,
+      "lng": -85.7585,
+      "population": 617638,
+      "nearest_station": {
+        "id": "USW00093821",
+        "name": "KY LOUISVILLE INTL AP",
+        "distance_miles": 5.4,
+        "lat": 38.1775,
+        "lng": -85.7308
+      }
+    },
+    {
+      "name": "Baltimore, MD",
+      "lat": 39.2904,
+      "lng": -76.6122,
+      "population": 585708,
+      "nearest_station": {
+        "id": "USW00093784",
+        "name": "MD MARYLAND SCI CTR",
+        "distance_miles": 0.6,
+        "lat": 39.2814,
+        "lng": -76.6111
+      }
+    },
+    {
+      "name": "Milwaukee, WI",
+      "lat": 43.0389,
+      "lng": -87.9065,
+      "population": 577222,
+      "nearest_station": {
+        "id": "USW00014839",
+        "name": "WI MILWAUKEE MITCHELL AP",
+        "distance_miles": 5.8,
+        "lat": 42.955,
+        "lng": -87.9044
+      }
+    },
+    {
+      "name": "Albuquerque, NM",
+      "lat": 35.0844,
+      "lng": -106.6504,
+      "population": 564559,
+      "nearest_station": {
+        "id": "USW00023050",
+        "name": "NM ALBUQUERQUE INTL AP",
+        "distance_miles": 3.5,
+        "lat": 35.0419,
+        "lng": -106.6156
+      }
+    },
+    {
+      "name": "Tucson, AZ",
+      "lat": 32.2226,
+      "lng": -110.9747,
+      "population": 548073,
+      "nearest_station": {
+        "id": "USW00023160",
+        "name": "AZ TUCSON INTL AP",
+        "distance_miles": 6.4,
+        "lat": 32.1317,
+        "lng": -110.9564
+      }
+    },
+    {
+      "name": "Fresno, CA",
+      "lat": 36.7378,
+      "lng": -119.7871,
+      "population": 542107,
+      "nearest_station": {
+        "id": "USW00093193",
+        "name": "CA FRESNO YOSEMITE INTL",
+        "distance_miles": 4.7,
+        "lat": 36.78,
+        "lng": -119.7203
+      }
+    },
+    {
+      "name": "Sacramento, CA",
+      "lat": 38.5816,
+      "lng": -121.4944,
+      "population": 524943,
+      "nearest_station": {
+        "id": "USW00023271",
+        "name": "CA SACRAMENTO 5 ESE",
+        "distance_miles": 4.5,
+        "lat": 38.5553,
+        "lng": -121.4183
+      }
+    },
+    {
+      "name": "Kansas City, MO",
+      "lat": 39.0997,
+      "lng": -94.5786,
+      "population": 508090,
+      "nearest_station": {
+        "id": "USW00013988",
+        "name": "MO KANSAS CITY DWTN AP",
+        "distance_miles": 2.0,
+        "lat": 39.1278,
+        "lng": -94.5892
+      }
+    },
+    {
+      "name": "Mesa, AZ",
+      "lat": 33.4152,
+      "lng": -111.8315,
+      "population": 504258,
+      "nearest_station": {
+        "id": "USC00028499",
+        "name": "AZ TEMPE ASU",
+        "distance_miles": 5.2,
+        "lat": 33.4256,
+        "lng": -111.9217
+      }
+    },
+    {
+      "name": "Atlanta, GA",
+      "lat": 33.749,
+      "lng": -84.388,
+      "population": 498715,
+      "nearest_station": {
+        "id": "USW00003888",
+        "name": "GA ATLANTA FULTON CO AP",
+        "distance_miles": 8.1,
+        "lat": 33.7775,
+        "lng": -84.5247
+      }
+    },
+    {
+      "name": "Omaha, NE",
+      "lat": 41.2565,
+      "lng": -95.9345,
+      "population": 486051,
+      "nearest_station": {
+        "id": "USW00014942",
+        "name": "NE OMAHA EPPLEY AIRFIELD",
+        "distance_miles": 4.2,
+        "lat": 41.3119,
+        "lng": -95.9019
+      }
+    },
+    {
+      "name": "Colorado Springs, CO",
+      "lat": 38.8339,
+      "lng": -104.8214,
+      "population": 478961,
+      "nearest_station": {
+        "id": "USW00093037",
+        "name": "CO COLORADO SPRINGS MUNI AP",
+        "distance_miles": 7.3,
+        "lat": 38.8094,
+        "lng": -104.6886
+      }
+    },
+    {
+      "name": "Raleigh, NC",
+      "lat": 35.7796,
+      "lng": -78.6382,
+      "population": 474069,
+      "nearest_station": {
+        "id": "USC00317079",
+        "name": "NC RALEIGH STATE UNIV",
+        "distance_miles": 3.5,
+        "lat": 35.7908,
+        "lng": -78.6989
+      }
+    },
+    {
+      "name": "Miami, FL",
+      "lat": 25.7617,
+      "lng": -80.1918,
+      "population": 442241,
+      "nearest_station": {
+        "id": "USW00012839",
+        "name": "FL MIAMI INTL AP",
+        "distance_miles": 8.0,
+        "lat": 25.7881,
+        "lng": -80.3169
+      }
+    },
+    {
+      "name": "Virginia Beach, VA",
+      "lat": 36.8529,
+      "lng": -75.978,
+      "population": 459470,
+      "nearest_station": {
+        "id": "USW00013737",
+        "name": "VA NORFOLK INTL AP",
+        "distance_miles": 12.4,
+        "lat": 36.9036,
+        "lng": -76.1928
+      }
+    },
+    {
+      "name": "Minneapolis, MN",
+      "lat": 44.9778,
+      "lng": -93.265,
+      "population": 429954,
+      "nearest_station": {
+        "id": "USC00214884",
+        "name": "MN LOWER ST ANTHONY FALLS",
+        "distance_miles": 0.9,
+        "lat": 44.9786,
+        "lng": -93.2469
+      }
+    },
+    {
+      "name": "Cleveland, OH",
+      "lat": 41.4993,
+      "lng": -81.6944,
+      "population": 372624,
+      "nearest_station": {
+        "id": "USW00014820",
+        "name": "OH CLEVELAND",
+        "distance_miles": 10.4,
+        "lat": 41.4133,
+        "lng": -81.86
+      }
+    },
+    {
+      "name": "New Orleans, LA",
+      "lat": 29.9511,
+      "lng": -90.0715,
+      "population": 383997,
+      "nearest_station": {
+        "id": "USC00166130",
+        "name": "LA CHALMETTE",
+        "distance_miles": 7.2,
+        "lat": 29.9431,
+        "lng": -89.9508
+      }
+    },
+    {
+      "name": "Arlington, TX",
+      "lat": 32.7357,
+      "lng": -97.1081,
+      "population": 398854,
+      "nearest_station": {
+        "id": "USW00053907",
+        "name": "TX ARLINGTON MUNI AP",
+        "distance_miles": 5.4,
+        "lat": 32.6583,
+        "lng": -97.095
+      }
+    },
+    {
+      "name": "Tampa, FL",
+      "lat": 27.9506,
+      "lng": -82.4572,
+      "population": 399700,
+      "nearest_station": {
+        "id": "USW00012842",
+        "name": "FL TAMPA INTL AP",
+        "distance_miles": 5.1,
+        "lat": 27.9633,
+        "lng": -82.54
+      }
+    },
+    {
+      "name": "Pittsburgh, PA",
+      "lat": 40.4406,
+      "lng": -79.9959,
+      "population": 302971,
+      "nearest_station": {
+        "id": "USC00362574",
+        "name": "PA EMSWORTH L/D OHIO RVR",
+        "distance_miles": 6.6,
+        "lat": 40.5044,
+        "lng": -80.0889
+      }
+    },
+    {
+      "name": "Cincinnati, OH",
+      "lat": 39.1031,
+      "lng": -84.512,
+      "population": 309317,
+      "nearest_station": {
+        "id": "USC00331516",
+        "name": "OH CHEVIOT 3 W",
+        "distance_miles": 9.4,
+        "lat": 39.1514,
+        "lng": -84.6769
+      }
+    },
+    {
+      "name": "Buffalo, NY",
+      "lat": 42.8864,
+      "lng": -78.8784,
+      "population": 278349,
+      "nearest_station": {
+        "id": "USW00014733",
+        "name": "NY BUFFALO",
+        "distance_miles": 8.4,
+        "lat": 42.9489,
+        "lng": -78.7367
+      }
+    },
+    {
+      "name": "Salt Lake City, UT",
+      "lat": 40.7608,
+      "lng": -111.891,
+      "population": 200567,
+      "nearest_station": {
+        "id": "USW00024127",
+        "name": "UT SALT LAKE CITY INTL AP",
+        "distance_miles": 3.9,
+        "lat": 40.7706,
+        "lng": -111.965
+      }
+    },
+    {
+      "name": "Boise, ID",
+      "lat": 43.615,
+      "lng": -116.2023,
+      "population": 235684,
+      "nearest_station": {
+        "id": "USC00101024",
+        "name": "ID BOISE NWS WFO",
+        "distance_miles": 3.2,
+        "lat": 43.5686,
+        "lng": -116.21
+      }
+    }
+  ],
+  "stats": {
+    "total_stations": 4940,
+    "coverage": "Global (US, Canada, and international)",
+    "data_quality": "High (2024+ data)",
+    "accuracy": "100% (Direct NOAA measurements)"
+  }
+}
