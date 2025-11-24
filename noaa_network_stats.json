@@ -1,0 +1,17 @@
+{
+  "total_stations": 4963,
+  "by_country": {
+    "CA": 277,
+    "CQ": 1,
+    "FM": 3,
+    "GQ": 1,
+    "RM": 1,
+    "RQ": 1,
+    "US": 4654,
+    "VQ": 2,
+    "UK": 23
+  },
+  "uk_stations": 23,
+  "snow_capable": 4963,
+  "last_updated": "2025-11-24"
+}

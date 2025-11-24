@@ -1,0 +1,74 @@
+{
+  "test_date": "2025-11-24",
+  "region": "United Kingdom",
+  "total_tests": 8,
+  "tier1_count": 8,
+  "tier2_count": 0,
+  "results": [
+    {
+      "location": "London, England",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK HEATHROW",
+      "distance": 23.3,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Manchester, England",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK SHAWBURY",
+      "distance": 80.9,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Edinburgh, Scotland",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK ESKDALEMUIR",
+      "distance": 70.8,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Birmingham, England",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK SHAWBURY",
+      "distance": 63.1,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Glasgow, Scotland",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK ESKDALEMUIR",
+      "distance": 89.9,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Rural Wales (Snowdonia)",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK VALLEY",
+      "distance": 46.0,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Belfast, Northern Ireland",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK ALDERGROVE",
+      "distance": 19.6,
+      "accuracy": "100%",
+      "status": "Excellent"
+    },
+    {
+      "location": "Bristol, England",
+      "tier": "TIER 1 - NOAA",
+      "station": "UK BOURNEMOUTH",
+      "distance": 91.3,
+      "accuracy": "100%",
+      "status": "Excellent"
+    }
+  ],
+  "recommendation": "Use Visual Crossing (Tier 2) or ECMWF IFS (Tier 3) for UK projects"
+}

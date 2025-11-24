@@ -1,0 +1,89 @@
+{
+  "test_date": "2025-11-24",
+  "total_tests": 10,
+  "passed": 10,
+  "failed": 0,
+  "pass_rate": "100.0%",
+  "results": [
+    {
+      "location": "Denver, Colorado (Major City)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "CO DENVER WATER DEPT",
+      "distance": 1.9,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Phoenix, Arizona (Desert)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "AZ PHOENIX AP",
+      "distance": 6.9,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Anchorage, Alaska (Far North)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "AK ANCHORAGE FORECAST OFFICE",
+      "distance": 8.2,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Rural Montana (Lewistown)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "MT LEWISTOWN",
+      "distance": 1.6,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Scandia, Minnesota (Previous Test)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "MN FOREST LAKE 5NE",
+      "distance": 11.7,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Miami, Florida (Tropical)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "FL MIAMI INTL AP",
+      "distance": 12.9,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Seattle, Washington (Pacific Northwest)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "WA SEATTLE SAND PT WFO",
+      "distance": 10.7,
+      "accuracy": "100%"
+    },
+    {
+      "location": "New York City, New York (Urban)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "NY WORLD TRADE CTR",
+      "distance": 0.7,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Richland, Washington (Previous Test)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "WA RICHLAND",
+      "distance": 3.3,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Honolulu, Hawaii (Island)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "HI KANEOHE BAY MCAS",
+      "distance": 18.2,
+      "accuracy": "100%"
+    }
+  ]
+}
