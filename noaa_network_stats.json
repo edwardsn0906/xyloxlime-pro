@@ -1,5 +1,5 @@
 {
-  "total_stations": 5498,
+  "total_stations": 7740,
   "by_country": {
     "CA": 277,
     "CQ": 1,
@@ -10,9 +10,23 @@
     "US": 4654,
     "VQ": 2,
     "UK": 23,
-    "DE": 535
+    "DE": 535,
+    "CH": 178,
+    "NL": 315,
+    "NO": 210,
+    "SE": 478,
+    "FR": 50,
+    "JP": 49,
+    "RU": 630,
+    "ES": 45,
+    "AR": 51,
+    "AT": 10,
+    "CZ": 11,
+    "FI": 25,
+    "IT": 21,
+    "KZ": 106,
+    "PL": 10,
+    "TR": 53
   },
-  "germany_stations": 535,
-  "snow_capable": 5498,
   "last_updated": "2025-11-24"
 }
