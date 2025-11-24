@@ -1,0 +1,112 @@
+{
+  "test_date": "2025-11-24",
+  "region": "Germany",
+  "total_tests": 12,
+  "passed": 12,
+  "failed": 0,
+  "pass_rate": "100.0%",
+  "results": [
+    {
+      "location": "Berlin (Capital)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE BERLIN-TEMPELHOF",
+      "distance": 5.7,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Munich (Bavaria)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE MUNCHEN-NYMPHENBURG",
+      "distance": 6.9,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Hamburg (Port City)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE HAMBURG FUHLSBUETTEL",
+      "distance": 9.3,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Frankfurt (Financial)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE OFFENBACH-WETTERPARK",
+      "distance": 7.8,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Cologne (Rhineland)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE KOLN-BONN",
+      "distance": 16.0,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Stuttgart (Baden-Wurttemberg)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE STUTTGART-SCHNARRENBERG",
+      "distance": 6.1,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Dusseldorf (North Rhine)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE DUSSELDORF",
+      "distance": 7.7,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Dortmund (Ruhr Area)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE WALTROP-ABDINGHOF",
+      "distance": 10.3,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Leipzig (Saxony)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE LEIPZIG-HOLZHAUSEN",
+      "distance": 5.8,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Dresden (Saxony)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE DRESDEN-STREHLEN",
+      "distance": 3.9,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Nuremberg (Bavaria)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE NURNBERG",
+      "distance": 6.0,
+      "accuracy": "100%"
+    },
+    {
+      "location": "Hannover (Lower Saxony)",
+      "status": "PASS",
+      "tier": "TIER 1 - NOAA",
+      "station": "DE HANNOVER",
+      "distance": 10.6,
+      "accuracy": "100%"
+    }
+  ],
+  "market_info": {
+    "gdp": "$4.3 trillion",
+    "construction_market": "$500B+ annually",
+    "population": "83+ million",
+    "capital": "Berlin"
+  }
+}

@@ -39702,5 +39702,4285 @@
     "lng": 1.3667,
     "elevation": 44.2,
     "country": "UK"
+  },
+  {
+    "id": "GM000001474",
+    "name": "DE BREMEN-SEEFAHRTSCHULE",
+    "lat": 53.1017,
+    "lng": 8.7842,
+    "elevation": 4.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000002288",
+    "name": "DE KAISERSLAUTERN",
+    "lat": 49.4253,
+    "lng": 7.7367,
+    "elevation": 285.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000003038",
+    "name": "DE SCHWERIN",
+    "lat": 53.6442,
+    "lng": 11.3883,
+    "elevation": 59.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000003319",
+    "name": "DE BERLIN-DAHLEM",
+    "lat": 52.4639,
+    "lng": 13.3017,
+    "elevation": 51.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000003342",
+    "name": "DE POTSDAM",
+    "lat": 52.3833,
+    "lng": 13.0639,
+    "elevation": 81.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000004063",
+    "name": "DE BAMBERG",
+    "lat": 49.8753,
+    "lng": 10.9217,
+    "elevation": 240.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000004155",
+    "name": "DE ZUGSPITZE",
+    "lat": 47.4219,
+    "lng": 10.9867,
+    "elevation": 2964.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000004199",
+    "name": "DE MUNCHEN-NYMPHENBURG",
+    "lat": 48.1667,
+    "lng": 11.5025,
+    "elevation": 515.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000004204",
+    "name": "DE JENA STERNWARTE",
+    "lat": 50.9267,
+    "lng": 11.5842,
+    "elevation": 155.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000010147",
+    "name": "DE HAMBURG FUHLSBUETTEL",
+    "lat": 53.635,
+    "lng": 9.99,
+    "elevation": 11.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000010393",
+    "name": "DE LINDENBERG",
+    "lat": 52.2094,
+    "lng": 14.1203,
+    "elevation": 98.0,
+    "country": "DE"
+  },
+  {
+    "id": "GM000010962",
+    "name": "DE HOHENPEISSENBERG",
+    "lat": 47.8017,
+    "lng": 11.0117,
+    "elevation": 977.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102177",
+    "name": "DE HELGOLAND",
+    "lat": 54.1764,
+    "lng": 7.8931,
+    "elevation": 4.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102185",
+    "name": "DE LIST/SYLT",
+    "lat": 55.0125,
+    "lng": 8.4125,
+    "elevation": 26.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102193",
+    "name": "DE SCHLESWIG",
+    "lat": 54.5289,
+    "lng": 9.5492,
+    "elevation": 43.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102201",
+    "name": "DE WESTERMARKELSDORF/FEHMARN",
+    "lat": 54.5294,
+    "lng": 11.0617,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102212",
+    "name": "DE ROSTOCK-WARNEMUNDE",
+    "lat": 54.1817,
+    "lng": 12.0819,
+    "elevation": 4.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102220",
+    "name": "DE GREIFSWALD",
+    "lat": 54.0978,
+    "lng": 13.4075,
+    "elevation": 2.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102228",
+    "name": "DE EMDEN-WOLTHUSEN",
+    "lat": 53.3719,
+    "lng": 7.2242,
+    "elevation": 0.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102244",
+    "name": "DE HANNOVER",
+    "lat": 52.4656,
+    "lng": 9.6794,
+    "elevation": 55.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102252",
+    "name": "DE MAGDEBURG",
+    "lat": 52.1031,
+    "lng": 11.5842,
+    "elevation": 76.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102268",
+    "name": "DE DUSSELDORF",
+    "lat": 51.2969,
+    "lng": 6.77,
+    "elevation": 37.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102284",
+    "name": "DE FRITZLAR",
+    "lat": 51.1167,
+    "lng": 9.2831,
+    "elevation": 174.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102292",
+    "name": "DE LEIPZIG-SCHKEUDITZ",
+    "lat": 51.4358,
+    "lng": 12.2414,
+    "elevation": 131.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102308",
+    "name": "DE GORLITZ",
+    "lat": 51.1631,
+    "lng": 14.9531,
+    "elevation": 238.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102324",
+    "name": "DE NURBURG-BARWEILER",
+    "lat": 50.3608,
+    "lng": 6.8703,
+    "elevation": 485.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102332",
+    "name": "DE MEININGEN",
+    "lat": 50.5625,
+    "lng": 10.3769,
+    "elevation": 450.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102340",
+    "name": "DE ERFURT-BINDERSLEBEN",
+    "lat": 50.9844,
+    "lng": 10.9631,
+    "elevation": 316.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102348",
+    "name": "DE FICHTELBERG",
+    "lat": 50.4292,
+    "lng": 12.9553,
+    "elevation": 1213.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102356",
+    "name": "DE WURZBURG",
+    "lat": 49.7714,
+    "lng": 9.9589,
+    "elevation": 268.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102364",
+    "name": "DE HOF",
+    "lat": 50.3131,
+    "lng": 11.8775,
+    "elevation": 565.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102372",
+    "name": "DE SAARBRUCKEN/ENSHEIM",
+    "lat": 49.2142,
+    "lng": 7.1081,
+    "elevation": 320.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102380",
+    "name": "DE NURNBERG",
+    "lat": 49.5042,
+    "lng": 11.0567,
+    "elevation": 314.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102388",
+    "name": "DE STRAUBING",
+    "lat": 48.8283,
+    "lng": 12.5603,
+    "elevation": 351.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102396",
+    "name": "DE AUGSBURG",
+    "lat": 48.4264,
+    "lng": 10.9431,
+    "elevation": 461.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102404",
+    "name": "DE KONSTANZ",
+    "lat": 47.6781,
+    "lng": 9.1908,
+    "elevation": 443.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00102412",
+    "name": "DE KEMPTEN",
+    "lat": 47.7242,
+    "lng": 10.3364,
+    "elevation": 705.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111430",
+    "name": "DE MUENSTER/OSNABRUECK (AIRPORT)",
+    "lat": 52.1353,
+    "lng": 7.7,
+    "elevation": 48.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111445",
+    "name": "DE BERLIN-TEMPELHOF",
+    "lat": 52.4683,
+    "lng": 13.4039,
+    "elevation": 48.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111457",
+    "name": "DE ALTASTENBERG",
+    "lat": 51.1903,
+    "lng": 8.4681,
+    "elevation": 839.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111464",
+    "name": "DE DRESDEN-KLOTZSCHE",
+    "lat": 51.1292,
+    "lng": 13.7558,
+    "elevation": 227.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111474",
+    "name": "DE TRIER-PETRISBERG",
+    "lat": 49.7492,
+    "lng": 6.6592,
+    "elevation": 265.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111503",
+    "name": "DE RHEINSTETTEN",
+    "lat": 48.9733,
+    "lng": 8.3308,
+    "elevation": 116.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00111512",
+    "name": "DE STUTTGART/ECHTERDINGEN",
+    "lat": 48.6892,
+    "lng": 9.2253,
+    "elevation": 371.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00114621",
+    "name": "DE BROCKEN",
+    "lat": 51.8,
+    "lng": 10.62,
+    "elevation": 1142.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00115771",
+    "name": "DE STUTTGART-SCHNARRENBERG",
+    "lat": 48.8292,
+    "lng": 9.2008,
+    "elevation": 314.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00120934",
+    "name": "DE FELDBERG/SCHWARZWALD",
+    "lat": 47.8756,
+    "lng": 8.0044,
+    "elevation": 1490.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00120946",
+    "name": "DE FREUDENSTADT",
+    "lat": 48.4544,
+    "lng": 8.41,
+    "elevation": 797.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00120958",
+    "name": "DE AACHEN-ORSBACH",
+    "lat": 50.7992,
+    "lng": 6.025,
+    "elevation": 231.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00120970",
+    "name": "DE GERA-LEUMNITZ",
+    "lat": 50.8819,
+    "lng": 12.13,
+    "elevation": 311.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00120982",
+    "name": "DE GIESSEN/WETTENBERG",
+    "lat": 50.6008,
+    "lng": 8.6506,
+    "elevation": 203.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00120994",
+    "name": "DE ANGERMUNDE",
+    "lat": 53.0331,
+    "lng": 13.9931,
+    "elevation": 54.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121006",
+    "name": "DE GROSSER ARBER",
+    "lat": 49.1139,
+    "lng": 13.1353,
+    "elevation": 1436.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121018",
+    "name": "DE ARKONA",
+    "lat": 54.6817,
+    "lng": 13.4367,
+    "elevation": 42.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121030",
+    "name": "DE KIEL-HOLTENAU",
+    "lat": 54.3756,
+    "lng": 10.1439,
+    "elevation": 27.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121042",
+    "name": "DE KOLN-BONN",
+    "lat": 50.8658,
+    "lng": 7.1583,
+    "elevation": 92.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121054",
+    "name": "DE LAHR",
+    "lat": 48.3656,
+    "lng": 7.8289,
+    "elevation": 155.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121078",
+    "name": "DE BAD LIPPSPRINGE",
+    "lat": 51.7867,
+    "lng": 8.8394,
+    "elevation": 157.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121090",
+    "name": "DE MARNITZ",
+    "lat": 53.3242,
+    "lng": 11.9333,
+    "elevation": 81.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121102",
+    "name": "DE NORDERNEY",
+    "lat": 53.7139,
+    "lng": 7.1525,
+    "elevation": 11.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121114",
+    "name": "DE OBERSTDORF",
+    "lat": 47.3989,
+    "lng": 10.2767,
+    "elevation": 806.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121126",
+    "name": "DE OHRINGEN",
+    "lat": 49.2081,
+    "lng": 9.5183,
+    "elevation": 276.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121138",
+    "name": "DE REGENSBURG",
+    "lat": 49.0433,
+    "lng": 12.1031,
+    "elevation": 365.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121150",
+    "name": "DE BERLIN-TEGEL",
+    "lat": 52.5656,
+    "lng": 13.3106,
+    "elevation": 36.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121162",
+    "name": "DE STOTTEN",
+    "lat": 48.6667,
+    "lng": 9.8656,
+    "elevation": 734.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121174",
+    "name": "DE WASSERKUPPE",
+    "lat": 50.4978,
+    "lng": 9.9439,
+    "elevation": 921.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121186",
+    "name": "DE WEIDEN",
+    "lat": 49.6669,
+    "lng": 12.1856,
+    "elevation": 440.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121210",
+    "name": "DE FURSTENZELL",
+    "lat": 48.5458,
+    "lng": 13.3544,
+    "elevation": 476.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121222",
+    "name": "DE HAHN",
+    "lat": 49.9475,
+    "lng": 7.2644,
+    "elevation": 497.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121246",
+    "name": "DE OFFENBACH-WETTERPARK",
+    "lat": 50.0892,
+    "lng": 8.7864,
+    "elevation": 119.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121258",
+    "name": "DE COTTBUS",
+    "lat": 51.7775,
+    "lng": 14.3183,
+    "elevation": 69.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121270",
+    "name": "DE CUXHAVEN",
+    "lat": 53.8731,
+    "lng": 8.7067,
+    "elevation": 5.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121306",
+    "name": "DE DOBERLUG-KIRCHHAIN",
+    "lat": 51.6467,
+    "lng": 13.5767,
+    "elevation": 97.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121366",
+    "name": "DE DRESDEN-STREHLEN",
+    "lat": 51.0253,
+    "lng": 13.7756,
+    "elevation": 119.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121378",
+    "name": "DE DREWITZ BEI BURG",
+    "lat": 52.2183,
+    "lng": 12.165,
+    "elevation": 80.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121402",
+    "name": "DE BAD DURKHEIM",
+    "lat": 49.4728,
+    "lng": 8.1939,
+    "elevation": 107.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121510",
+    "name": "DE EBERSBERG-HALBING",
+    "lat": 48.1008,
+    "lng": 11.9883,
+    "elevation": 592.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121534",
+    "name": "DE EBRACH",
+    "lat": 49.8531,
+    "lng": 10.5003,
+    "elevation": 346.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121546",
+    "name": "DE EGGEBEK",
+    "lat": 54.6294,
+    "lng": 9.3669,
+    "elevation": 18.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121582",
+    "name": "DE EICHSTATT-LANDERSHOFEN",
+    "lat": 48.8789,
+    "lng": 11.2358,
+    "elevation": 384.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121654",
+    "name": "DE ELLWANGEN-RINDELBACH",
+    "lat": 48.9903,
+    "lng": 10.1317,
+    "elevation": 460.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121666",
+    "name": "DE ELPERSBUTTEL",
+    "lat": 54.0708,
+    "lng": 9.0114,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121702",
+    "name": "DE BAD-SOHL ELSTER",
+    "lat": 50.2717,
+    "lng": 12.2753,
+    "elevation": 560.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121714",
+    "name": "DE ELZACH-FISNACHT",
+    "lat": 48.2019,
+    "lng": 8.1094,
+    "elevation": 440.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121750",
+    "name": "DE EMMENDINGEN-MUNDINGEN",
+    "lat": 48.1383,
+    "lng": 7.8356,
+    "elevation": 201.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121822",
+    "name": "DE EPPINGEN-ELSENZ",
+    "lat": 49.1675,
+    "lng": 8.8531,
+    "elevation": 220.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121834",
+    "name": "DE ALTENSTADT",
+    "lat": 47.8364,
+    "lng": 10.8719,
+    "elevation": 756.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121846",
+    "name": "DE ERFDE",
+    "lat": 54.3008,
+    "lng": 9.3169,
+    "elevation": 18.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121882",
+    "name": "DE MOHRENDORF-KLEINSEEBACH",
+    "lat": 49.6506,
+    "lng": 11.0083,
+    "elevation": 268.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121930",
+    "name": "DE ESCHWEGE",
+    "lat": 51.1844,
+    "lng": 10.065,
+    "elevation": 170.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121954",
+    "name": "DE ALTENTREPTOW",
+    "lat": 53.6881,
+    "lng": 13.2631,
+    "elevation": 30.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121966",
+    "name": "DE ESLOHE",
+    "lat": 51.2553,
+    "lng": 8.1569,
+    "elevation": 351.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121978",
+    "name": "DE ESSEN-BREDENEY",
+    "lat": 51.4056,
+    "lng": 6.9683,
+    "elevation": 150.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00121990",
+    "name": "DE ALTGERINGSWALDE",
+    "lat": 51.0892,
+    "lng": 12.9342,
+    "elevation": 296.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122002",
+    "name": "DE WEILERSWIST-LOMMERSUM",
+    "lat": 50.7131,
+    "lng": 6.7917,
+    "elevation": 146.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122038",
+    "name": "DE KR.ROTTAL-INN FALKENBERG",
+    "lat": 48.4842,
+    "lng": 12.7256,
+    "elevation": 472.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122050",
+    "name": "DE FASSBERG",
+    "lat": 52.9192,
+    "lng": 10.1839,
+    "elevation": 73.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122086",
+    "name": "DE FICHTELBERG/OBERFRANKEN-HUTTST",
+    "lat": 49.9817,
+    "lng": 11.8392,
+    "elevation": 657.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122122",
+    "name": "DE HAMELN-HASTENBECK",
+    "lat": 52.0831,
+    "lng": 9.4081,
+    "elevation": 77.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122134",
+    "name": "DE WALTROP-ABDINGHOF",
+    "lat": 51.5981,
+    "lng": 7.4056,
+    "elevation": 68.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122146",
+    "name": "DE GEVELSBERG-OBERBROKING",
+    "lat": 51.3342,
+    "lng": 7.3417,
+    "elevation": 205.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122158",
+    "name": "DE LANDSHUT-REITHOF",
+    "lat": 48.5742,
+    "lng": 12.2589,
+    "elevation": 490.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122170",
+    "name": "DE ROCKENDORF",
+    "lat": 50.6825,
+    "lng": 11.5164,
+    "elevation": 280.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122182",
+    "name": "DE MEINERZHAGEN-REDLENDORF",
+    "lat": 51.0908,
+    "lng": 7.6294,
+    "elevation": 380.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122194",
+    "name": "DE FLADUNGEN-HEUFURT",
+    "lat": 50.5058,
+    "lng": 10.1681,
+    "elevation": 363.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122218",
+    "name": "DE HELMSTEDT-EMMERSTEDT",
+    "lat": 52.2478,
+    "lng": 10.9603,
+    "elevation": 110.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122290",
+    "name": "DE FLOSSENBURG",
+    "lat": 49.7328,
+    "lng": 12.3506,
+    "elevation": 622.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122326",
+    "name": "DE BIRX/RHON",
+    "lat": 50.5317,
+    "lng": 10.0492,
+    "elevation": 745.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122386",
+    "name": "DE FRANKFURT/ODER",
+    "lat": 52.3653,
+    "lng": 14.5378,
+    "elevation": 48.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122410",
+    "name": "DE ALTOMUNSTER-MAISBRUNN",
+    "lat": 48.4067,
+    "lng": 11.3131,
+    "elevation": 510.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122422",
+    "name": "DE HERSDORF-WEISSENSEIFEN",
+    "lat": 50.1517,
+    "lng": 6.5531,
+    "elevation": 530.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122434",
+    "name": "DE FREIAMT-OTTOSCHWANDEN",
+    "lat": 48.2028,
+    "lng": 7.9342,
+    "elevation": 481.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122446",
+    "name": "DE FREIBERG",
+    "lat": 50.9281,
+    "lng": 13.3389,
+    "elevation": 380.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122458",
+    "name": "DE FREIBURG",
+    "lat": 48.0242,
+    "lng": 7.8353,
+    "elevation": 236.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122482",
+    "name": "DE FREIBURG/ELBE",
+    "lat": 53.8292,
+    "lng": 9.2494,
+    "elevation": 2.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122494",
+    "name": "DE FREYSTADT-OBERNDORF",
+    "lat": 49.1792,
+    "lng": 11.375,
+    "elevation": 436.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122542",
+    "name": "DE FRIESOYTHE-EDEWECHTERDAM",
+    "lat": 53.0894,
+    "lng": 7.9425,
+    "elevation": 8.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122566",
+    "name": "DE ALZEY",
+    "lat": 49.7281,
+    "lng": 8.1167,
+    "elevation": 215.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122602",
+    "name": "DE AMBERG-UNTERAMMERSRICHT",
+    "lat": 49.47,
+    "lng": 11.8558,
+    "elevation": 383.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122626",
+    "name": "DE FULDA",
+    "lat": 50.5344,
+    "lng": 9.6758,
+    "elevation": 255.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122638",
+    "name": "DE GARDELEGEN",
+    "lat": 52.5142,
+    "lng": 11.3978,
+    "elevation": 47.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122650",
+    "name": "DE AMERANG-PFAFFING",
+    "lat": 48.0206,
+    "lng": 12.2939,
+    "elevation": 515.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122698",
+    "name": "DE GEISENHEIM",
+    "lat": 49.985,
+    "lng": 7.9544,
+    "elevation": 110.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122734",
+    "name": "DE GELBELSEE",
+    "lat": 48.9489,
+    "lng": 11.43,
+    "elevation": 536.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122746",
+    "name": "DE GELDERN-WALBECK",
+    "lat": 51.4956,
+    "lng": 6.2467,
+    "elevation": 37.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122782",
+    "name": "DE GENTHIN",
+    "lat": 52.3892,
+    "lng": 12.1633,
+    "elevation": 35.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122806",
+    "name": "DE GERNSHEIM-ALLMENDFELD",
+    "lat": 49.7725,
+    "lng": 8.5306,
+    "elevation": 96.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122818",
+    "name": "DE GERODA-PLATZ",
+    "lat": 50.2778,
+    "lng": 9.9156,
+    "elevation": 550.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122842",
+    "name": "DE GILSERBERG-MOISCHEID",
+    "lat": 50.9664,
+    "lng": 9.0503,
+    "elevation": 340.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122854",
+    "name": "DE GLUCKSBURG-MEIERWIK",
+    "lat": 54.8489,
+    "lng": 9.5081,
+    "elevation": 27.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122866",
+    "name": "DE GLUCKSTADT",
+    "lat": 53.7983,
+    "lng": 9.4306,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122878",
+    "name": "DE ANKLAM",
+    "lat": 53.8431,
+    "lng": 13.6856,
+    "elevation": 9.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122902",
+    "name": "DE GOTTINGEN",
+    "lat": 51.5017,
+    "lng": 9.9528,
+    "elevation": 167.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122938",
+    "name": "DE GRAFENBERG-KASBERG",
+    "lat": 49.665,
+    "lng": 11.2253,
+    "elevation": 506.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122962",
+    "name": "DE GRAINET-REHBERG",
+    "lat": 48.7903,
+    "lng": 13.6306,
+    "elevation": 628.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00122974",
+    "name": "DE GRAMBEK",
+    "lat": 53.5744,
+    "lng": 10.6806,
+    "elevation": 27.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123058",
+    "name": "DE GROSS LUSEWITZ",
+    "lat": 54.0731,
+    "lng": 12.3256,
+    "elevation": 34.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123094",
+    "name": "DE FELDKIRCHEN-WESTERHAM-LENZMUHL",
+    "lat": 47.9417,
+    "lng": 11.9014,
+    "elevation": 517.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123130",
+    "name": "DE GRUNDAU-BREITENBORN",
+    "lat": 50.2675,
+    "lng": 9.1889,
+    "elevation": 258.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123142",
+    "name": "DE GRUNOW",
+    "lat": 53.3167,
+    "lng": 13.9358,
+    "elevation": 56.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123178",
+    "name": "DE GUTERSLOH",
+    "lat": 51.8889,
+    "lng": 8.3553,
+    "elevation": 72.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123190",
+    "name": "DE ARNSTEIN-MUDESHEIM",
+    "lat": 49.9706,
+    "lng": 9.9125,
+    "elevation": 220.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123274",
+    "name": "DE HAMBURG-NEUWIEDENTHAL",
+    "lat": 53.4792,
+    "lng": 9.8983,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123310",
+    "name": "DE ARTERN",
+    "lat": 51.3756,
+    "lng": 11.2931,
+    "elevation": 164.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123370",
+    "name": "DE HANKENSBUTTEL",
+    "lat": 52.7214,
+    "lng": 10.6,
+    "elevation": 108.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123382",
+    "name": "DE HARBURG",
+    "lat": 48.7928,
+    "lng": 10.7075,
+    "elevation": 502.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123394",
+    "name": "DE ASCHAFFENBURG",
+    "lat": 49.9789,
+    "lng": 9.1125,
+    "elevation": 110.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123418",
+    "name": "DE HARZGERODE",
+    "lat": 51.6531,
+    "lng": 11.1375,
+    "elevation": 404.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123466",
+    "name": "DE HECHINGEN",
+    "lat": 48.3758,
+    "lng": 8.9808,
+    "elevation": 522.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123538",
+    "name": "DE HEIDENHEIM/BRENZ",
+    "lat": 48.6731,
+    "lng": 10.1331,
+    "elevation": 500.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123574",
+    "name": "DE HEINSBERG-SCHLEIDEN",
+    "lat": 51.0425,
+    "lng": 6.1044,
+    "elevation": 57.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123586",
+    "name": "DE ASSLAR KLEIN-ALTENSTADTEN",
+    "lat": 50.5808,
+    "lng": 8.4692,
+    "elevation": 200.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123646",
+    "name": "DE HERRENBERG",
+    "lat": 48.5928,
+    "lng": 8.8553,
+    "elevation": 430.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123694",
+    "name": "DE BAD HERSFELD",
+    "lat": 50.8531,
+    "lng": 9.7383,
+    "elevation": 272.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123718",
+    "name": "DE HERZBERG",
+    "lat": 51.6267,
+    "lng": 10.3717,
+    "elevation": 238.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123730",
+    "name": "DE ATTENKAM",
+    "lat": 47.8781,
+    "lng": 11.3656,
+    "elevation": 672.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123754",
+    "name": "DE HIDDENSEE-VITTE",
+    "lat": 54.5767,
+    "lng": 13.1056,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123838",
+    "name": "DE AUE",
+    "lat": 50.5917,
+    "lng": 12.7156,
+    "elevation": 387.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123862",
+    "name": "DE BERTSDORF-HORNITZ",
+    "lat": 50.9006,
+    "lng": 14.7475,
+    "elevation": 270.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123898",
+    "name": "DE HOFHEIM",
+    "lat": 50.1364,
+    "lng": 10.5167,
+    "elevation": 263.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123922",
+    "name": "DE HOHN",
+    "lat": 54.3128,
+    "lng": 9.5392,
+    "elevation": 10.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123934",
+    "name": "DE HOHWACHT",
+    "lat": 54.3206,
+    "lng": 10.6742,
+    "elevation": 10.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123946",
+    "name": "DE HOLZDORF (FLUGPLATZ)",
+    "lat": 51.7683,
+    "lng": 13.1681,
+    "elevation": 81.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123970",
+    "name": "DE HOLZKIRCHEN",
+    "lat": 47.8831,
+    "lng": 11.6975,
+    "elevation": 685.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00123994",
+    "name": "DE KR. HOLZMINDEN BEVERN",
+    "lat": 51.8553,
+    "lng": 9.4975,
+    "elevation": 110.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124030",
+    "name": "DE HOMBURG/SAAR",
+    "lat": 49.3292,
+    "lng": 7.3567,
+    "elevation": 235.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124102",
+    "name": "DE HUMMERICH",
+    "lat": 50.5664,
+    "lng": 7.4844,
+    "elevation": 328.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124126",
+    "name": "DE IDAR-OBERSTEIN",
+    "lat": 49.7,
+    "lng": 7.3331,
+    "elevation": 376.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124138",
+    "name": "DE IHRINGEN",
+    "lat": 48.0428,
+    "lng": 7.6328,
+    "elevation": 193.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124186",
+    "name": "DE INGOLSTADT (FLUGPLATZ)",
+    "lat": 48.7156,
+    "lng": 11.5333,
+    "elevation": 364.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124234",
+    "name": "DE SCHLESWIG-JAGEL",
+    "lat": 54.4567,
+    "lng": 9.5206,
+    "elevation": 21.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124318",
+    "name": "DE KAHL/MAIN",
+    "lat": 50.0656,
+    "lng": 8.9942,
+    "elevation": 107.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124330",
+    "name": "DE KAISERSBACH-CRONHUTTE",
+    "lat": 48.9181,
+    "lng": 9.6881,
+    "elevation": 489.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124366",
+    "name": "DE KALL-SISTIG",
+    "lat": 50.5028,
+    "lng": 6.5267,
+    "elevation": 505.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124402",
+    "name": "DE KARLSHULD",
+    "lat": 48.6775,
+    "lng": 11.2975,
+    "elevation": 374.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124450",
+    "name": "DE KEHL-ODELSHOFEN",
+    "lat": 48.5583,
+    "lng": 7.8808,
+    "elevation": 141.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124474",
+    "name": "DE KIRCHBERG/JAGST-HERBOLDSHAUSEN",
+    "lat": 49.1814,
+    "lng": 9.9808,
+    "elevation": 426.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124486",
+    "name": "DE KIRCHDORF/POEL",
+    "lat": 54.0008,
+    "lng": 11.4358,
+    "elevation": 12.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124498",
+    "name": "DE BADEN-BADEN-GEROLDSAU",
+    "lat": 48.7278,
+    "lng": 8.2467,
+    "elevation": 240.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124510",
+    "name": "DE BAD KISSINGEN",
+    "lat": 50.2256,
+    "lng": 10.0803,
+    "elevation": 282.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124522",
+    "name": "DE MULLHEIM",
+    "lat": 47.8069,
+    "lng": 7.6392,
+    "elevation": 273.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124534",
+    "name": "DE KITZINGEN",
+    "lat": 49.7369,
+    "lng": 10.1792,
+    "elevation": 188.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124546",
+    "name": "DE KLEINER FELDBERG/TAUNUS",
+    "lat": 50.2225,
+    "lng": 8.4481,
+    "elevation": 826.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124570",
+    "name": "DE KLEINER INSELSBERG",
+    "lat": 50.8469,
+    "lng": 10.4814,
+    "elevation": 732.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124594",
+    "name": "DE KLETTWITZ",
+    "lat": 51.5567,
+    "lng": 13.8864,
+    "elevation": 128.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124606",
+    "name": "DE KLEVE",
+    "lat": 51.7625,
+    "lng": 6.0956,
+    "elevation": 46.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124630",
+    "name": "DE KLITZSCHEN BEI TORGAU",
+    "lat": 51.5203,
+    "lng": 12.9078,
+    "elevation": 85.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124678",
+    "name": "DE BAD KONIGSHOFEN",
+    "lat": 50.2853,
+    "lng": 10.4467,
+    "elevation": 288.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124690",
+    "name": "DE KONIGSMOOR",
+    "lat": 53.2292,
+    "lng": 9.6533,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124726",
+    "name": "DE KOSCHING",
+    "lat": 48.8308,
+    "lng": 11.4883,
+    "elevation": 417.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124762",
+    "name": "DE KOTHEN (ANHALT)",
+    "lat": 51.7528,
+    "lng": 12.0092,
+    "elevation": 76.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124774",
+    "name": "DE BAD KOHLGRUB (ROSSHOF)",
+    "lat": 47.6658,
+    "lng": 11.0817,
+    "elevation": 740.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124810",
+    "name": "DE KRONACH",
+    "lat": 50.2533,
+    "lng": 11.3219,
+    "elevation": 312.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124846",
+    "name": "DE KUMMERSBRUCK",
+    "lat": 49.4289,
+    "lng": 11.9019,
+    "elevation": 417.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124918",
+    "name": "DE LAAGE (FLUGPLATZ)",
+    "lat": 53.9167,
+    "lng": 12.2831,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00124930",
+    "name": "DE MERKLINGEN",
+    "lat": 48.5131,
+    "lng": 9.7656,
+    "elevation": 685.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125074",
+    "name": "DE BAD LAUCHSTADT",
+    "lat": 51.3925,
+    "lng": 11.88,
+    "elevation": 119.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125098",
+    "name": "DE LAUPHEIM",
+    "lat": 48.2181,
+    "lng": 9.9094,
+    "elevation": 539.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125122",
+    "name": "DE LECHFELD",
+    "lat": 48.1864,
+    "lng": 10.8506,
+    "elevation": 550.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125146",
+    "name": "DE LECK",
+    "lat": 54.7925,
+    "lng": 8.9492,
+    "elevation": 7.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125218",
+    "name": "DE LEIPZIG-HOLZHAUSEN",
+    "lat": 51.3164,
+    "lng": 12.4475,
+    "elevation": 138.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125230",
+    "name": "DE LENNESTADT-THETEN",
+    "lat": 51.1344,
+    "lng": 8.0358,
+    "elevation": 286.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125278",
+    "name": "DE LENZEN/ELBE",
+    "lat": 53.1025,
+    "lng": 11.4878,
+    "elevation": 20.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125314",
+    "name": "DE LICHTENHAIN-MITTELNDORF",
+    "lat": 50.9394,
+    "lng": 14.2108,
+    "elevation": 321.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125326",
+    "name": "DE BARTH",
+    "lat": 54.3406,
+    "lng": 12.7106,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125422",
+    "name": "DE LIPPSTADT-BOKENFORDE",
+    "lat": 51.6344,
+    "lng": 8.3953,
+    "elevation": 92.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125434",
+    "name": "DE BAD LOBENSTEIN",
+    "lat": 50.4519,
+    "lng": 11.6333,
+    "elevation": 500.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125446",
+    "name": "DE BARUTH",
+    "lat": 52.0619,
+    "lng": 13.5028,
+    "elevation": 55.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125458",
+    "name": "DE LOHNBERG-OBERSHAUSEN",
+    "lat": 50.5633,
+    "lng": 8.24,
+    "elevation": 230.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125530",
+    "name": "DE LUBBEN-BLUMENFELDE",
+    "lat": 51.9281,
+    "lng": 13.8819,
+    "elevation": 57.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125554",
+    "name": "DE LUBECK-BLANKENSEE",
+    "lat": 53.8106,
+    "lng": 10.7067,
+    "elevation": 5.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125602",
+    "name": "DE LUDENSCHEID",
+    "lat": 51.2467,
+    "lng": 7.6431,
+    "elevation": 387.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125638",
+    "name": "DE LUISENTHAL (TALSPERRE )",
+    "lat": 50.7675,
+    "lng": 10.7214,
+    "elevation": 528.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125686",
+    "name": "DE MALLERSDORF/NIEDERBAYERN",
+    "lat": 48.7781,
+    "lng": 12.2544,
+    "elevation": 410.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125698",
+    "name": "DE KR. BAUTZEN KUBSCHUTZ",
+    "lat": 51.1617,
+    "lng": 14.5056,
+    "elevation": 232.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125710",
+    "name": "DE MANDERSCHEID-SONNENHOF",
+    "lat": 50.1028,
+    "lng": 6.8019,
+    "elevation": 413.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125746",
+    "name": "DE KR. MARBURG-BIEDENKOPF COLBE",
+    "lat": 50.8503,
+    "lng": 8.7742,
+    "elevation": 182.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125794",
+    "name": "DE MARTINRODA",
+    "lat": 50.7344,
+    "lng": 10.8831,
+    "elevation": 430.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125806",
+    "name": "DE HEINERSREUTH-VOLLHOF",
+    "lat": 49.9678,
+    "lng": 11.5208,
+    "elevation": 350.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125818",
+    "name": "DE MAUTH-FINSTERAU",
+    "lat": 48.9367,
+    "lng": 13.5781,
+    "elevation": 1004.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125866",
+    "name": "DE MEHRINGEN",
+    "lat": 51.7269,
+    "lng": 11.5125,
+    "elevation": 107.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125890",
+    "name": "DE GARSEBACH BEI MEISSEN",
+    "lat": 51.1306,
+    "lng": 13.4342,
+    "elevation": 157.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125902",
+    "name": "DE MELLE",
+    "lat": 52.2056,
+    "lng": 8.3392,
+    "elevation": 89.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125914",
+    "name": "DE MEMMINGEN",
+    "lat": 47.9831,
+    "lng": 10.1392,
+    "elevation": 615.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125962",
+    "name": "DE MEPPEN",
+    "lat": 52.7331,
+    "lng": 7.3331,
+    "elevation": 19.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00125974",
+    "name": "DE BAD-NEUNKIRCHEN MERGENTHEIM",
+    "lat": 49.4781,
+    "lng": 9.7631,
+    "elevation": 250.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126010",
+    "name": "DE METTEN",
+    "lat": 48.8556,
+    "lng": 12.9203,
+    "elevation": 313.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126022",
+    "name": "DE METZINGEN",
+    "lat": 48.5383,
+    "lng": 9.2742,
+    "elevation": 355.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126046",
+    "name": "DE MICHELSTADT",
+    "lat": 49.67,
+    "lng": 9.0119,
+    "elevation": 240.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126058",
+    "name": "DE MICHELSTADT-VIELBRUNN",
+    "lat": 49.7189,
+    "lng": 9.1006,
+    "elevation": 453.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126070",
+    "name": "DE SCHMIERITZ-WELTWITZ",
+    "lat": 50.7294,
+    "lng": 11.7856,
+    "elevation": 349.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126082",
+    "name": "DE MILTENBERG",
+    "lat": 49.7131,
+    "lng": 9.2267,
+    "elevation": 128.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126106",
+    "name": "DE MITTENWALD-BUCKELWIESEN",
+    "lat": 47.4783,
+    "lng": 11.2667,
+    "elevation": 981.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126118",
+    "name": "DE BEERFELDEN",
+    "lat": 49.5628,
+    "lng": 8.9689,
+    "elevation": 450.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126154",
+    "name": "DE ROLLBACH",
+    "lat": 49.7656,
+    "lng": 9.2542,
+    "elevation": 239.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126178",
+    "name": "DE MONTABAUR",
+    "lat": 50.4392,
+    "lng": 7.8064,
+    "elevation": 265.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126190",
+    "name": "DE MORINGEN-LUTTERBECK",
+    "lat": 51.7217,
+    "lng": 9.8358,
+    "elevation": 240.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126226",
+    "name": "DE MUHLDORF",
+    "lat": 48.28,
+    "lng": 12.5039,
+    "elevation": 405.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126250",
+    "name": "DE MUNCHEBERG",
+    "lat": 52.5189,
+    "lng": 14.125,
+    "elevation": 63.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126322",
+    "name": "DE MUNSINGEN-APFELSTETTEN",
+    "lat": 48.3864,
+    "lng": 9.4842,
+    "elevation": 750.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126358",
+    "name": "DE BAD MUSKAU",
+    "lat": 51.5675,
+    "lng": 14.7006,
+    "elevation": 125.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126370",
+    "name": "DE BELM",
+    "lat": 52.3181,
+    "lng": 8.1706,
+    "elevation": 103.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126418",
+    "name": "DE NEUBURG/DONAU (FLUGPLATZ)",
+    "lat": 48.7092,
+    "lng": 11.21,
+    "elevation": 380.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126430",
+    "name": "DE NEUBURG/KAMMEL-LANGENHASLACH",
+    "lat": 48.3125,
+    "lng": 10.3781,
+    "elevation": 495.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126466",
+    "name": "DE BAD-AHRWEILER NEUENAHR",
+    "lat": 50.5356,
+    "lng": 7.0853,
+    "elevation": 111.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126478",
+    "name": "DE MENZ",
+    "lat": 53.1031,
+    "lng": 13.0439,
+    "elevation": 77.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126490",
+    "name": "DE NEUHAUS AM RENNWEG",
+    "lat": 50.5014,
+    "lng": 11.1356,
+    "elevation": 845.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126514",
+    "name": "DE NEUHAUSEN OB ECK-UNTERSCHWANDO",
+    "lat": 47.9531,
+    "lng": 8.9942,
+    "elevation": 663.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126526",
+    "name": "DE NEUKIRCHEN-HAUPTSCHWENDA",
+    "lat": 50.8933,
+    "lng": 9.4064,
+    "elevation": 500.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126562",
+    "name": "DE NEUNKIRCHEN-SEELSCHEID-KRAWINK",
+    "lat": 50.8456,
+    "lng": 7.3719,
+    "elevation": 195.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126586",
+    "name": "DE NEUNKIRCHEN-WELLESWEILER",
+    "lat": 49.3444,
+    "lng": 7.2303,
+    "elevation": 236.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126622",
+    "name": "DE NEUSTADT AM KULM-FILCHENDORF",
+    "lat": 49.8183,
+    "lng": 11.8653,
+    "elevation": 452.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126670",
+    "name": "DE REGENSBURG-BURGWEINTING",
+    "lat": 48.9842,
+    "lng": 12.1456,
+    "elevation": 341.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126694",
+    "name": "DE NIDEGGEN-SCHMIDT",
+    "lat": 50.6756,
+    "lng": 6.4242,
+    "elevation": 350.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126718",
+    "name": "DE NIEDERSTETTEN",
+    "lat": 49.3992,
+    "lng": 9.9653,
+    "elevation": 473.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126730",
+    "name": "DE NIEDERSTOTZINGEN",
+    "lat": 48.5342,
+    "lng": 10.2442,
+    "elevation": 451.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126754",
+    "name": "DE REIMLINGEN",
+    "lat": 48.8264,
+    "lng": 10.5078,
+    "elevation": 435.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126766",
+    "name": "DE NORVENICH (FLUGPLATZ)",
+    "lat": 50.8289,
+    "lng": 6.6592,
+    "elevation": 111.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126778",
+    "name": "DE NORDHOLZ (FLUGPLATZ)",
+    "lat": 53.7644,
+    "lng": 8.6575,
+    "elevation": 25.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126790",
+    "name": "DE NORDHORN",
+    "lat": 52.4408,
+    "lng": 7.1056,
+    "elevation": 24.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126838",
+    "name": "DE NURNBERG-NETZSTALL",
+    "lat": 49.4267,
+    "lng": 11.2553,
+    "elevation": 368.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126874",
+    "name": "DE KIEFERSFELDEN-GACH",
+    "lat": 47.6192,
+    "lng": 12.1681,
+    "elevation": 518.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126886",
+    "name": "DE BERGEN",
+    "lat": 52.8167,
+    "lng": 9.9331,
+    "elevation": 70.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126898",
+    "name": "DE OBERNDORF/NECKAR-AISTAIG",
+    "lat": 48.3156,
+    "lng": 8.5742,
+    "elevation": 480.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126910",
+    "name": "DE OBERSCHLEISSHEIM",
+    "lat": 48.2444,
+    "lng": 11.5539,
+    "elevation": 484.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126922",
+    "name": "DE OBERSULM-WILLSBACH",
+    "lat": 49.1289,
+    "lng": 9.3533,
+    "elevation": 230.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00126946",
+    "name": "DE OBERVIECHTACH",
+    "lat": 49.4531,
+    "lng": 12.4381,
+    "elevation": 596.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127030",
+    "name": "DE BAD BERGZABERN",
+    "lat": 49.1081,
+    "lng": 7.9969,
+    "elevation": 252.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127090",
+    "name": "DE OSTERFELD",
+    "lat": 51.0883,
+    "lng": 11.9314,
+    "elevation": 246.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127114",
+    "name": "DE OSTHEIM V.D. RHON",
+    "lat": 50.455,
+    "lng": 10.2219,
+    "elevation": 312.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127138",
+    "name": "DE OY-MITTELBERG-PETERSTHAL",
+    "lat": 47.6367,
+    "lng": 10.3903,
+    "elevation": 872.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127150",
+    "name": "DE PAPENBURG",
+    "lat": 53.0656,
+    "lng": 7.4819,
+    "elevation": 7.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127174",
+    "name": "DE PARSBERG/OBERPFALZ-EGLWANG",
+    "lat": 49.1517,
+    "lng": 11.6908,
+    "elevation": 549.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127186",
+    "name": "DE PASSAU-MAIERHOF",
+    "lat": 48.5817,
+    "lng": 13.4167,
+    "elevation": 327.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127222",
+    "name": "DE PELZERHAKEN",
+    "lat": 54.0906,
+    "lng": 10.8783,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127246",
+    "name": "DE PERL-NENNIG",
+    "lat": 49.5367,
+    "lng": 6.3808,
+    "elevation": 152.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127258",
+    "name": "DE BAD-STUNZEL BERLEBURG",
+    "lat": 50.985,
+    "lng": 8.3689,
+    "elevation": 610.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127306",
+    "name": "DE PFORZHEIM-ISPRINGEN",
+    "lat": 48.9328,
+    "lng": 8.6967,
+    "elevation": 333.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127318",
+    "name": "DE PFULLENDORF",
+    "lat": 47.9353,
+    "lng": 9.2878,
+    "elevation": 630.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127342",
+    "name": "DE PIRMASENS",
+    "lat": 49.1919,
+    "lng": 7.5881,
+    "elevation": 390.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127354",
+    "name": "DE PLAUEN",
+    "lat": 50.4831,
+    "lng": 12.1317,
+    "elevation": 386.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127390",
+    "name": "DE POMMELSBRUNN-MITTELBURG",
+    "lat": 49.4789,
+    "lng": 11.5367,
+    "elevation": 522.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127438",
+    "name": "DE BERLIN-BUCH",
+    "lat": 52.6325,
+    "lng": 13.5039,
+    "elevation": 60.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127462",
+    "name": "DE PUTBUS",
+    "lat": 54.3656,
+    "lng": 13.4783,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127498",
+    "name": "DE QUEDLINBURG",
+    "lat": 51.7967,
+    "lng": 11.1331,
+    "elevation": 142.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127510",
+    "name": "DE QUERFURT-MUHLE LODERSLEBEN",
+    "lat": 51.3906,
+    "lng": 11.5428,
+    "elevation": 204.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127534",
+    "name": "DE QUICKBORN",
+    "lat": 53.7344,
+    "lng": 9.8783,
+    "elevation": 13.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127546",
+    "name": "DE RADOLFZELL-MARKELFINGEN",
+    "lat": 47.7467,
+    "lng": 9.0017,
+    "elevation": 407.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127558",
+    "name": "DE RAHDEN-VARL",
+    "lat": 52.4481,
+    "lng": 8.5731,
+    "elevation": 42.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127582",
+    "name": "DE RASTATT",
+    "lat": 48.8478,
+    "lng": 8.1869,
+    "elevation": 114.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127642",
+    "name": "DE BERLIN-KANISWALL",
+    "lat": 52.4056,
+    "lng": 13.7328,
+    "elevation": 33.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127678",
+    "name": "DE MARIENBERG-REITZENHAIN",
+    "lat": 50.5614,
+    "lng": 13.2239,
+    "elevation": 764.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127726",
+    "name": "DE RENNINGEN-IHINGER HOF",
+    "lat": 48.7433,
+    "lng": 8.925,
+    "elevation": 478.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127750",
+    "name": "DE RHEINAU-MEMPRECHTSHOFEN",
+    "lat": 48.6708,
+    "lng": 7.9956,
+    "elevation": 131.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127786",
+    "name": "DE RHEINFELDEN",
+    "lat": 47.5633,
+    "lng": 7.7942,
+    "elevation": 287.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127810",
+    "name": "DE KREIS BIBERACH ALTHEIM",
+    "lat": 48.1489,
+    "lng": 9.4606,
+    "elevation": 533.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127822",
+    "name": "DE BERLIN-MARZAHN",
+    "lat": 52.5458,
+    "lng": 13.5617,
+    "elevation": 60.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127894",
+    "name": "DE ROSENHEIM",
+    "lat": 47.8758,
+    "lng": 12.1292,
+    "elevation": 444.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127930",
+    "name": "DE BERLIN-SCHONEFELD",
+    "lat": 52.3819,
+    "lng": 13.5325,
+    "elevation": 46.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127942",
+    "name": "DE ROTH",
+    "lat": 49.2158,
+    "lng": 11.1025,
+    "elevation": 385.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127954",
+    "name": "DE ROTHENBURG OB DER TAUBER",
+    "lat": 49.3856,
+    "lng": 10.1742,
+    "elevation": 415.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127966",
+    "name": "DE BAD ROTHENFELDE",
+    "lat": 52.1053,
+    "lng": 8.1828,
+    "elevation": 95.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00127978",
+    "name": "DE ROTTENBURG-KIEBINGEN",
+    "lat": 48.4714,
+    "lng": 8.9694,
+    "elevation": 360.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128002",
+    "name": "DE ROTTWEIL",
+    "lat": 48.1819,
+    "lng": 8.6358,
+    "elevation": 588.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128014",
+    "name": "DE BAD KREUZNACH",
+    "lat": 49.8517,
+    "lng": 7.8725,
+    "elevation": 102.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128038",
+    "name": "DE RUPPERTSECKEN",
+    "lat": 49.6478,
+    "lng": 7.8842,
+    "elevation": 461.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128110",
+    "name": "DE SACHSENHEIM",
+    "lat": 48.9578,
+    "lng": 9.0719,
+    "elevation": 248.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128134",
+    "name": "DE SALDENBURG-ENTSCHENREUTH",
+    "lat": 48.7842,
+    "lng": 13.3158,
+    "elevation": 456.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128182",
+    "name": "DE BAD SALZUFLEN",
+    "lat": 52.1056,
+    "lng": 8.7531,
+    "elevation": 135.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128194",
+    "name": "DE SALZWEDEL",
+    "lat": 52.8581,
+    "lng": 11.1442,
+    "elevation": 23.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128206",
+    "name": "DE SANDBERG",
+    "lat": 50.3531,
+    "lng": 10.0042,
+    "elevation": 510.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128218",
+    "name": "DE SANKT PETER-ORDING",
+    "lat": 54.3294,
+    "lng": 8.6028,
+    "elevation": 5.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128266",
+    "name": "DE SCHAAFHEIM-SCHLIERBACH",
+    "lat": 49.9203,
+    "lng": 8.9681,
+    "elevation": 155.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128278",
+    "name": "DE SCHALLSTADT-MENGEN",
+    "lat": 47.9608,
+    "lng": 7.7125,
+    "elevation": 215.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128350",
+    "name": "DE SCHIERKE",
+    "lat": 51.7667,
+    "lng": 10.655,
+    "elevation": 609.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128362",
+    "name": "DE BERNBURG/SAALE (NORD)",
+    "lat": 51.8231,
+    "lng": 11.7114,
+    "elevation": 84.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128374",
+    "name": "DE SCHLEIZ",
+    "lat": 50.5706,
+    "lng": 11.8056,
+    "elevation": 501.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128422",
+    "name": "DE SCHLUCHTERN-HEROLZ",
+    "lat": 50.3456,
+    "lng": 9.555,
+    "elevation": 230.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128470",
+    "name": "DE SCHMELZ-HUTTERSDORF",
+    "lat": 49.4231,
+    "lng": 6.8403,
+    "elevation": 223.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128482",
+    "name": "DE GROSSENKNETEN",
+    "lat": 52.935,
+    "lng": 8.2356,
+    "elevation": 44.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128494",
+    "name": "DE SCHMUCKE",
+    "lat": 50.6556,
+    "lng": 10.7708,
+    "elevation": 937.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128506",
+    "name": "DE SCHNEIFELFORSTHAUS",
+    "lat": 50.3,
+    "lng": 6.4169,
+    "elevation": 649.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128530",
+    "name": "DE SELB/OBERFRANKEN-LAUTERBACH",
+    "lat": 50.2056,
+    "lng": 12.145,
+    "elevation": 609.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128542",
+    "name": "DE SCHOPFHEIM-EICHEN",
+    "lat": 47.6469,
+    "lng": 7.8442,
+    "elevation": 400.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128554",
+    "name": "DE SCHORNDORF-KNOBLING",
+    "lat": 49.1656,
+    "lng": 12.6192,
+    "elevation": 399.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128566",
+    "name": "DE SCHOTTEN",
+    "lat": 50.4939,
+    "lng": 9.1239,
+    "elevation": 265.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128614",
+    "name": "DE SCHWABISCH HALL-BIBERSFELD",
+    "lat": 49.0828,
+    "lng": 9.6881,
+    "elevation": 349.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128650",
+    "name": "DE SCHWANDORF",
+    "lat": 49.3289,
+    "lng": 12.0883,
+    "elevation": 356.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128686",
+    "name": "DE SCHWARZBURG",
+    "lat": 50.6456,
+    "lng": 11.1944,
+    "elevation": 277.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128734",
+    "name": "DE SEEHAUSEN",
+    "lat": 52.8928,
+    "lng": 11.7306,
+    "elevation": 21.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128758",
+    "name": "DE SEESEN",
+    "lat": 51.9056,
+    "lng": 10.19,
+    "elevation": 186.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128818",
+    "name": "DE SIGMARINGEN-LAIZ",
+    "lat": 48.0728,
+    "lng": 9.1953,
+    "elevation": 580.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128830",
+    "name": "DE SIGMARSZELL-ZEISERTSWEILER",
+    "lat": 47.5783,
+    "lng": 9.7417,
+    "elevation": 507.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128854",
+    "name": "DE SIMBACH/INN",
+    "lat": 48.2728,
+    "lng": 13.0289,
+    "elevation": 360.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128866",
+    "name": "DE SIMMERN-WAHLBACH",
+    "lat": 50.0017,
+    "lng": 7.5969,
+    "elevation": 437.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128902",
+    "name": "DE SOLINGEN-HOHENSCHEID",
+    "lat": 51.1408,
+    "lng": 7.0942,
+    "elevation": 154.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128914",
+    "name": "DE SOLTAU",
+    "lat": 52.9617,
+    "lng": 9.7967,
+    "elevation": 76.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128926",
+    "name": "DE SONDERSHAUSEN",
+    "lat": 51.3531,
+    "lng": 10.9069,
+    "elevation": 216.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128962",
+    "name": "DE SONTRA",
+    "lat": 51.0617,
+    "lng": 9.9275,
+    "elevation": 365.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00128974",
+    "name": "DE BAD SOODEN-ALLENDORF",
+    "lat": 51.2814,
+    "lng": 9.9858,
+    "elevation": 199.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129010",
+    "name": "DE BIEDENKOPF",
+    "lat": 50.9208,
+    "lng": 8.5278,
+    "elevation": 349.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129022",
+    "name": "DE STAMMBACH-QUERENBACH",
+    "lat": 50.1542,
+    "lng": 11.7417,
+    "elevation": 598.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129046",
+    "name": "DE KR. CUXHAVEN STEINAU",
+    "lat": 53.6956,
+    "lng": 8.875,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129070",
+    "name": "DE MITTELNKIRCHEN-HOHENFELDE",
+    "lat": 53.5528,
+    "lng": 9.6092,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129082",
+    "name": "DE STIEGE",
+    "lat": 51.6692,
+    "lng": 10.8833,
+    "elevation": 494.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129094",
+    "name": "DE STOCKACH",
+    "lat": 47.86,
+    "lng": 9.0164,
+    "elevation": 532.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129106",
+    "name": "DE WAGERSROTT",
+    "lat": 54.6667,
+    "lng": 9.8044,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129166",
+    "name": "DE TANN/RHON",
+    "lat": 50.6394,
+    "lng": 10.0231,
+    "elevation": 395.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129190",
+    "name": "DE TEGKWITZ",
+    "lat": 50.9789,
+    "lng": 12.3444,
+    "elevation": 193.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129202",
+    "name": "DE TETEROW",
+    "lat": 53.7625,
+    "lng": 12.5581,
+    "elevation": 38.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129214",
+    "name": "DE WORPSWEDE-HUTTENBUSCH",
+    "lat": 53.2775,
+    "lng": 8.9867,
+    "elevation": 7.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129226",
+    "name": "DE TEUSCHNITZ",
+    "lat": 50.4014,
+    "lng": 11.3903,
+    "elevation": 633.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129250",
+    "name": "DE THOLEY",
+    "lat": 49.4744,
+    "lng": 7.0392,
+    "elevation": 386.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129274",
+    "name": "DE THUNGERSHEIM",
+    "lat": 49.8819,
+    "lng": 9.8464,
+    "elevation": 185.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129298",
+    "name": "DE TIRSCHENREUTH-LODERMUHL",
+    "lat": 49.8589,
+    "lng": 12.3556,
+    "elevation": 500.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129346",
+    "name": "DE TONISVORST",
+    "lat": 51.2908,
+    "lng": 6.445,
+    "elevation": 37.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129418",
+    "name": "DE TRIBSEES",
+    "lat": 54.0681,
+    "lng": 12.7689,
+    "elevation": 10.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129478",
+    "name": "DE TROSTBERG",
+    "lat": 48.0317,
+    "lng": 12.5408,
+    "elevation": 559.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129514",
+    "name": "DE TUTTLINGEN-MOHRINGEN",
+    "lat": 47.9558,
+    "lng": 8.7575,
+    "elevation": 675.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129526",
+    "name": "DE TWISTETAL-MUHLHAUSEN",
+    "lat": 51.3356,
+    "lng": 8.9142,
+    "elevation": 295.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129550",
+    "name": "DE UECKERMUNDE",
+    "lat": 53.7458,
+    "lng": 14.0694,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129562",
+    "name": "DE UELZEN",
+    "lat": 52.9428,
+    "lng": 10.53,
+    "elevation": 50.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129574",
+    "name": "DE GOLLHOFEN",
+    "lat": 49.5753,
+    "lng": 10.1928,
+    "elevation": 308.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129598",
+    "name": "DE UMMENDORF",
+    "lat": 52.1617,
+    "lng": 11.1767,
+    "elevation": 162.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129634",
+    "name": "DE VILLINGEN-SCHWENNINGEN",
+    "lat": 48.0458,
+    "lng": 8.4617,
+    "elevation": 720.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129718",
+    "name": "DE WAGHAUSEL-KIRRLACH",
+    "lat": 49.2456,
+    "lng": 8.5381,
+    "elevation": 105.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129742",
+    "name": "DE WAHLSBURG-LIPPOLDSBERG",
+    "lat": 51.6194,
+    "lng": 9.5769,
+    "elevation": 176.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129754",
+    "name": "DE WITTENBORN",
+    "lat": 53.9214,
+    "lng": 10.2306,
+    "elevation": 39.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129814",
+    "name": "DE WALDEMS-REINBORN",
+    "lat": 50.2608,
+    "lng": 8.3608,
+    "elevation": 380.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129862",
+    "name": "DE WALTERSHAUSEN",
+    "lat": 50.8975,
+    "lng": 10.5494,
+    "elevation": 353.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129874",
+    "name": "DE WANGEROOGE",
+    "lat": 53.7883,
+    "lng": 7.9075,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129886",
+    "name": "DE WARBURG",
+    "lat": 51.5053,
+    "lng": 9.1128,
+    "elevation": 236.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129898",
+    "name": "DE WAREN",
+    "lat": 53.5214,
+    "lng": 12.6692,
+    "elevation": 70.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00129910",
+    "name": "DE BLANKENRATH",
+    "lat": 50.0367,
+    "lng": 7.3056,
+    "elevation": 417.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130018",
+    "name": "DE WEIMAR-SCHONDORF",
+    "lat": 51.0192,
+    "lng": 11.3556,
+    "elevation": 325.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130054",
+    "name": "DE WEISKIRCHEN/SAAR",
+    "lat": 49.555,
+    "lng": 6.8125,
+    "elevation": 380.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130102",
+    "name": "DE WEISSENFELS",
+    "lat": 51.2178,
+    "lng": 11.9725,
+    "elevation": 115.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130114",
+    "name": "DE WEISSENSEE-OTTENHAUSEN",
+    "lat": 51.2131,
+    "lng": 10.9967,
+    "elevation": 165.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130126",
+    "name": "DE WEISWEIL-WALDECKHOF",
+    "lat": 48.1892,
+    "lng": 7.6983,
+    "elevation": 173.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130186",
+    "name": "DE WERNIGERODE",
+    "lat": 51.8478,
+    "lng": 10.7694,
+    "elevation": 234.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130210",
+    "name": "DE BOBECK",
+    "lat": 50.9056,
+    "lng": 11.7992,
+    "elevation": 337.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130234",
+    "name": "DE WIELENBACH (DEMOLLSTR.)",
+    "lat": 47.8833,
+    "lng": 11.1589,
+    "elevation": 550.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130258",
+    "name": "DE WIESBADEN-AURINGEN",
+    "lat": 50.1331,
+    "lng": 8.3178,
+    "elevation": 263.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130282",
+    "name": "DE WIESENBURG",
+    "lat": 52.1219,
+    "lng": 12.46,
+    "elevation": 187.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130294",
+    "name": "DE BOCHOLT",
+    "lat": 51.8308,
+    "lng": 6.5358,
+    "elevation": 21.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130306",
+    "name": "DE BAD-CALMBACH WILDBAD",
+    "lat": 48.7856,
+    "lng": 8.5769,
+    "elevation": 385.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130330",
+    "name": "DE NEUBULACH-OBERHAUGSTETT",
+    "lat": 48.6525,
+    "lng": 8.6808,
+    "elevation": 570.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130378",
+    "name": "DE REMS-MURR-KREIS WINTERBACH",
+    "lat": 48.8042,
+    "lng": 9.4706,
+    "elevation": 240.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130390",
+    "name": "DE WISMAR",
+    "lat": 53.8944,
+    "lng": 11.4253,
+    "elevation": 25.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130402",
+    "name": "DE WITTENBERG",
+    "lat": 51.8903,
+    "lng": 12.6464,
+    "elevation": 105.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130414",
+    "name": "DE WITTMUNDHAFEN",
+    "lat": 53.55,
+    "lng": 7.6667,
+    "elevation": 8.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130438",
+    "name": "DE WITTSTOCK-ROTE MUHLE",
+    "lat": 53.1875,
+    "lng": 12.4964,
+    "elevation": 66.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130486",
+    "name": "DE WOLFACH",
+    "lat": 48.2958,
+    "lng": 8.24,
+    "elevation": 291.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130510",
+    "name": "DE WOLFSBURG (SUDWEST)",
+    "lat": 52.3975,
+    "lng": 10.6908,
+    "elevation": 82.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130534",
+    "name": "DE WORMS",
+    "lat": 49.6056,
+    "lng": 8.3667,
+    "elevation": 88.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130570",
+    "name": "DE WUNSTORF",
+    "lat": 52.4581,
+    "lng": 9.4281,
+    "elevation": 57.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130582",
+    "name": "DE WUPPERTAL-BUCHENHOFEN",
+    "lat": 51.2258,
+    "lng": 7.1058,
+    "elevation": 130.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130618",
+    "name": "DE WUTOSCHINGEN-OFTERINGEN",
+    "lat": 47.6789,
+    "lng": 8.3806,
+    "elevation": 398.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130630",
+    "name": "DE WRIXUM/FOHR",
+    "lat": 54.6942,
+    "lng": 8.5281,
+    "elevation": 8.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130642",
+    "name": "DE ZEHDENICK",
+    "lat": 52.9681,
+    "lng": 13.3281,
+    "elevation": 51.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130654",
+    "name": "DE ZEITZ",
+    "lat": 51.0539,
+    "lng": 12.1442,
+    "elevation": 170.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130702",
+    "name": "DE ZINNWALD-GEORGENFELD",
+    "lat": 50.7328,
+    "lng": 13.7531,
+    "elevation": 877.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130726",
+    "name": "DE LICHTENTANNE",
+    "lat": 50.6892,
+    "lng": 12.4342,
+    "elevation": 353.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130738",
+    "name": "DE ZWIESEL",
+    "lat": 49.0292,
+    "lng": 13.2403,
+    "elevation": 615.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130786",
+    "name": "DE BERGE",
+    "lat": 52.6206,
+    "lng": 12.7889,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130858",
+    "name": "DE MELSUNGEN-BURSTOSS",
+    "lat": 51.1331,
+    "lng": 9.52,
+    "elevation": 254.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130870",
+    "name": "DE BOIZENBURG",
+    "lat": 53.3931,
+    "lng": 10.6892,
+    "elevation": 45.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130906",
+    "name": "DE SCHONHAGEN (OSTSEEBAD)",
+    "lat": 54.6408,
+    "lng": 10.0244,
+    "elevation": 2.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130918",
+    "name": "DE REIT IM WINKL",
+    "lat": 47.6758,
+    "lng": 12.4708,
+    "elevation": 685.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00130990",
+    "name": "DE BONN-ROLEBER",
+    "lat": 50.7364,
+    "lng": 7.1939,
+    "elevation": 159.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131002",
+    "name": "DE BOOS",
+    "lat": 48.0744,
+    "lng": 10.2014,
+    "elevation": 592.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131026",
+    "name": "DE WENDISCH EVERN",
+    "lat": 53.2153,
+    "lng": 10.4717,
+    "elevation": 62.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131050",
+    "name": "DE OSTENFELD (RENDSBURG)",
+    "lat": 54.3208,
+    "lng": 9.8058,
+    "elevation": 14.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131062",
+    "name": "DE GRAMBOW-SCHWENNENZ",
+    "lat": 53.3856,
+    "lng": 14.3742,
+    "elevation": 50.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131098",
+    "name": "DE SOHLAND/SPREE",
+    "lat": 51.0606,
+    "lng": 14.4281,
+    "elevation": 290.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131122",
+    "name": "DE WANGERLAND-HOOKSIEL",
+    "lat": 53.6417,
+    "lng": 8.0828,
+    "elevation": 8.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131134",
+    "name": "DE WEIDENBACH-WEIHERSCHNEIDBACH",
+    "lat": 49.2256,
+    "lng": 10.6094,
+    "elevation": 455.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131146",
+    "name": "DE DORPEN",
+    "lat": 52.9553,
+    "lng": 7.3192,
+    "elevation": 8.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131158",
+    "name": "DE DORNICK",
+    "lat": 54.1667,
+    "lng": 10.3539,
+    "elevation": 26.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131170",
+    "name": "DE COSCHEN",
+    "lat": 52.0206,
+    "lng": 14.7269,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131182",
+    "name": "DE BORKEN IN WESTFALEN",
+    "lat": 51.8742,
+    "lng": 6.8867,
+    "elevation": 48.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131242",
+    "name": "DE LUGDE-PAENBRUCH",
+    "lat": 51.8678,
+    "lng": 9.2719,
+    "elevation": 258.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131254",
+    "name": "DE STEINHAGEN-NEGAST",
+    "lat": 54.2503,
+    "lng": 13.0431,
+    "elevation": 16.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131290",
+    "name": "DE SAARBRUCKEN-BURBACH",
+    "lat": 49.2417,
+    "lng": 6.935,
+    "elevation": 190.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131314",
+    "name": "DE FRIEDRICHSHAFEN-UNTERRADERACH",
+    "lat": 47.6853,
+    "lng": 9.4417,
+    "elevation": 459.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131326",
+    "name": "DE GROSSERLACH-MANNENWEILER",
+    "lat": 49.0217,
+    "lng": 9.6042,
+    "elevation": 523.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131338",
+    "name": "DE INGELFINGEN-STACHENHAUSEN",
+    "lat": 49.3333,
+    "lng": 9.705,
+    "elevation": 385.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131350",
+    "name": "DE SCHWABISCH GMUND-WEILER",
+    "lat": 48.7706,
+    "lng": 9.875,
+    "elevation": 413.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131362",
+    "name": "DE SINGEN",
+    "lat": 47.7744,
+    "lng": 8.8228,
+    "elevation": 445.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131374",
+    "name": "DE BRILON-THULEN",
+    "lat": 51.4156,
+    "lng": 8.6506,
+    "elevation": 457.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131386",
+    "name": "DE WUSTERWITZ",
+    "lat": 52.3625,
+    "lng": 12.3883,
+    "elevation": 36.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131398",
+    "name": "DE PABSTORF",
+    "lat": 52.0317,
+    "lng": 10.9639,
+    "elevation": 112.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131410",
+    "name": "DE MOORGRUND GRAFEN-NITZENDORF",
+    "lat": 50.8433,
+    "lng": 10.2528,
+    "elevation": 283.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131422",
+    "name": "DE DEMKER",
+    "lat": 52.5083,
+    "lng": 11.8564,
+    "elevation": 36.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131434",
+    "name": "DE NOTZINGEN",
+    "lat": 48.6717,
+    "lng": 9.4633,
+    "elevation": 325.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131458",
+    "name": "DE MUHLHAUSEN-GORMAR",
+    "lat": 51.2078,
+    "lng": 10.4958,
+    "elevation": 190.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131470",
+    "name": "DE KARLSHAGEN",
+    "lat": 54.1064,
+    "lng": 13.8258,
+    "elevation": 1.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131482",
+    "name": "DE MARKT ERLBACH-MOSBACH",
+    "lat": 49.5325,
+    "lng": 10.6431,
+    "elevation": 362.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131494",
+    "name": "DE NOSSEN",
+    "lat": 51.0517,
+    "lng": 13.3025,
+    "elevation": 308.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131506",
+    "name": "DE LOHR/MAIN-HALSBACH",
+    "lat": 50.0142,
+    "lng": 9.655,
+    "elevation": 285.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131518",
+    "name": "DE LUDINGHAUSEN-BROCHTRUP",
+    "lat": 51.7681,
+    "lng": 7.5203,
+    "elevation": 59.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131530",
+    "name": "DE RUNKEL-ENNERICH",
+    "lat": 50.3956,
+    "lng": 8.1442,
+    "elevation": 168.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131546",
+    "name": "DE MAISACH-GALGEN",
+    "lat": 48.2081,
+    "lng": 11.2044,
+    "elevation": 530.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131554",
+    "name": "DE SCHONUNGEN-MAINBERG",
+    "lat": 50.0589,
+    "lng": 10.2983,
+    "elevation": 304.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131590",
+    "name": "DE BRAMSCHE",
+    "lat": 52.405,
+    "lng": 7.9731,
+    "elevation": 58.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131674",
+    "name": "DE BRAUNSCHWEIG",
+    "lat": 52.2903,
+    "lng": 10.4483,
+    "elevation": 81.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131746",
+    "name": "DE BREMERVORDE",
+    "lat": 53.4989,
+    "lng": 9.1731,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131782",
+    "name": "DE ELSENDORF-HORNECK",
+    "lat": 48.7031,
+    "lng": 11.8506,
+    "elevation": 425.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131794",
+    "name": "DE LIEBENBURG-OTHFRESEN",
+    "lat": 52.0106,
+    "lng": 10.3956,
+    "elevation": 187.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131818",
+    "name": "DE SIEGSDORF-HOLL",
+    "lat": 47.8356,
+    "lng": 12.6564,
+    "elevation": 721.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131830",
+    "name": "DE BIELEFELD-DEPPENDORF",
+    "lat": 52.0728,
+    "lng": 8.4578,
+    "elevation": 105.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131842",
+    "name": "DE BRETTEN",
+    "lat": 49.0264,
+    "lng": 8.7164,
+    "elevation": 185.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131866",
+    "name": "DE FREUDENBERG/MAIN-BOXTAL",
+    "lat": 49.7644,
+    "lng": 9.4064,
+    "elevation": 193.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131902",
+    "name": "DE HATTSTEDT",
+    "lat": 54.5281,
+    "lng": 9.0439,
+    "elevation": 5.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131938",
+    "name": "DE DONAUWORTH-OSTERWEILER",
+    "lat": 48.7358,
+    "lng": 10.7428,
+    "elevation": 434.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131950",
+    "name": "DE OLBERSLEBEN",
+    "lat": 51.1519,
+    "lng": 11.3331,
+    "elevation": 160.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131962",
+    "name": "DE TREUEN",
+    "lat": 50.5467,
+    "lng": 12.2867,
+    "elevation": 465.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131986",
+    "name": "DE HERMARINGEN-ALLEWIND",
+    "lat": 48.6106,
+    "lng": 10.2692,
+    "elevation": 468.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00131998",
+    "name": "DE DEUTSCHNEUDORF-BRUDERWIESE",
+    "lat": 50.6208,
+    "lng": 13.4831,
+    "elevation": 688.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132010",
+    "name": "DE PRACKENBACH-NEUHAUSEL",
+    "lat": 49.1094,
+    "lng": 12.8244,
+    "elevation": 588.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132022",
+    "name": "DE FELDBERG/MECKLENBURG",
+    "lat": 53.3175,
+    "lng": 13.4175,
+    "elevation": 115.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132034",
+    "name": "DE JESSNITZ",
+    "lat": 51.6831,
+    "lng": 12.3056,
+    "elevation": 74.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132046",
+    "name": "DE ALFELD",
+    "lat": 51.9669,
+    "lng": 9.8042,
+    "elevation": 144.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132058",
+    "name": "DE EISENACH",
+    "lat": 51.0025,
+    "lng": 10.3633,
+    "elevation": 312.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132070",
+    "name": "DE FEUCHTWANGEN-HEILBRONN",
+    "lat": 49.1631,
+    "lng": 10.3669,
+    "elevation": 475.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132094",
+    "name": "DE WALDMUNCHEN",
+    "lat": 49.3919,
+    "lng": 12.6853,
+    "elevation": 499.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132106",
+    "name": "DE BORKUM-FLUGPLATZ",
+    "lat": 53.6,
+    "lng": 6.7031,
+    "elevation": 3.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132130",
+    "name": "DE HECKELBERG",
+    "lat": 52.7458,
+    "lng": 13.8419,
+    "elevation": 82.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132154",
+    "name": "DE HOYERSWERDA",
+    "lat": 51.4506,
+    "lng": 14.2542,
+    "elevation": 116.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132166",
+    "name": "DE WUNSIEDEL-SCHONBRUNN",
+    "lat": 50.0317,
+    "lng": 11.9742,
+    "elevation": 622.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132178",
+    "name": "DE GOTTFRIEDING",
+    "lat": 48.6606,
+    "lng": 12.5403,
+    "elevation": 350.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132190",
+    "name": "DE HOHERODSKOPF/VOGELSBERG",
+    "lat": 50.5083,
+    "lng": 9.2244,
+    "elevation": 743.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132202",
+    "name": "DE ALDERSBACH-KRIESTORF",
+    "lat": 48.6167,
+    "lng": 13.0519,
+    "elevation": 340.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132214",
+    "name": "DE LEUTKIRCH-HERLAZHOFEN",
+    "lat": 47.7964,
+    "lng": 10.0333,
+    "elevation": 672.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132226",
+    "name": "DE NEU-ULRICHSTEIN",
+    "lat": 50.7531,
+    "lng": 9.0233,
+    "elevation": 350.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132238",
+    "name": "DE NEUHUTTEN/SPESSART",
+    "lat": 50.0092,
+    "lng": 9.425,
+    "elevation": 340.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132250",
+    "name": "DE LANGENWETZENDORF-GOTTENDORF",
+    "lat": 50.6619,
+    "lng": 12.0769,
+    "elevation": 390.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132262",
+    "name": "DE KREIPITZSCH BEI BAD KOSEN",
+    "lat": 51.1056,
+    "lng": 11.7125,
+    "elevation": 246.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132274",
+    "name": "DE PIDING",
+    "lat": 47.7731,
+    "lng": 12.9089,
+    "elevation": 458.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132286",
+    "name": "DE PADENSTEDT (PONY-PARK)",
+    "lat": 54.0206,
+    "lng": 9.9267,
+    "elevation": 17.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132298",
+    "name": "DE VEILSDORF",
+    "lat": 50.4178,
+    "lng": 10.8167,
+    "elevation": 397.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132310",
+    "name": "DE OBERHACHING-LAUFZORN",
+    "lat": 48.0139,
+    "lng": 11.5539,
+    "elevation": 604.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132322",
+    "name": "DE WITTINGEN-VORHOP",
+    "lat": 52.6439,
+    "lng": 10.6642,
+    "elevation": 72.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132334",
+    "name": "DE KR. NECKAR-ODENWALD BUCHEN",
+    "lat": 49.5192,
+    "lng": 9.3225,
+    "elevation": 340.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132346",
+    "name": "DE BUCHENBACH",
+    "lat": 47.9631,
+    "lng": 7.9989,
+    "elevation": 445.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132358",
+    "name": "DE BUCHHOLZ IN DER NORDHEIDE",
+    "lat": 53.3567,
+    "lng": 9.9367,
+    "elevation": 77.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132370",
+    "name": "DE BUCHEL (FLUGPLATZ)",
+    "lat": 50.1739,
+    "lng": 7.0631,
+    "elevation": 477.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132382",
+    "name": "DE BUCKEBURG",
+    "lat": 52.2817,
+    "lng": 9.0878,
+    "elevation": 68.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132430",
+    "name": "DE ALFHAUSEN",
+    "lat": 52.4864,
+    "lng": 7.9128,
+    "elevation": 65.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132454",
+    "name": "DE SCHLUSSELFELD (KLARANLAGE)",
+    "lat": 49.7458,
+    "lng": 10.6444,
+    "elevation": 290.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132466",
+    "name": "DE BURGWALD-BOTTENDORF",
+    "lat": 51.0317,
+    "lng": 8.8156,
+    "elevation": 293.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132490",
+    "name": "DE CARLSFELD",
+    "lat": 50.4319,
+    "lng": 12.6128,
+    "elevation": 897.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132502",
+    "name": "DE CELLE (STADT)",
+    "lat": 52.6164,
+    "lng": 10.0739,
+    "elevation": 33.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132514",
+    "name": "DE CELLE",
+    "lat": 52.5953,
+    "lng": 10.0281,
+    "elevation": 39.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132526",
+    "name": "DE PEMFLING-PITZLING",
+    "lat": 49.2514,
+    "lng": 12.6056,
+    "elevation": 389.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132538",
+    "name": "DE CHEMNITZ",
+    "lat": 50.7925,
+    "lng": 12.8733,
+    "elevation": 418.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132550",
+    "name": "DE CHIEMING",
+    "lat": 47.8853,
+    "lng": 12.5417,
+    "elevation": 551.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132586",
+    "name": "DE LAUTERTAL-OBERLAUTER",
+    "lat": 50.3081,
+    "lng": 10.9692,
+    "elevation": 345.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132610",
+    "name": "DE CRAILSHEIM-ALEXANDERSREUT",
+    "lat": 49.0992,
+    "lng": 10.0992,
+    "elevation": 423.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132634",
+    "name": "DE DACHWIG",
+    "lat": 51.0783,
+    "lng": 10.8639,
+    "elevation": 170.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132682",
+    "name": "DE ALSFELD-EIFA",
+    "lat": 50.7456,
+    "lng": 9.3467,
+    "elevation": 300.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132694",
+    "name": "DE DEGGENHAUSERTAL-AZENWEILER",
+    "lat": 47.8017,
+    "lng": 9.4117,
+    "elevation": 708.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132730",
+    "name": "DE DEUSELBACH",
+    "lat": 49.7631,
+    "lng": 7.0556,
+    "elevation": 481.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132778",
+    "name": "DE DIETENHOFEN",
+    "lat": 49.4169,
+    "lng": 10.6742,
+    "elevation": 405.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132790",
+    "name": "DE DILLENBURG",
+    "lat": 50.7325,
+    "lng": 8.2631,
+    "elevation": 314.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132814",
+    "name": "DE DILLINGEN/DONAU-FRISTINGEN",
+    "lat": 48.5569,
+    "lng": 10.5608,
+    "elevation": 419.0,
+    "country": "DE"
+  },
+  {
+    "id": "GME00132838",
+    "name": "DE DIPPOLDISWALDE-REINBERG",
+    "lat": 50.9181,
+    "lng": 13.7144,
+    "elevation": 365.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010097",
+    "name": "DE GREIFSWALDER OIE",
+    "lat": 54.2456,
+    "lng": 13.9125,
+    "elevation": 12.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010129",
+    "name": "DE BREMERHAVEN",
+    "lat": 53.5344,
+    "lng": 8.5769,
+    "elevation": 7.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010161",
+    "name": "DE BOLTENHAGEN",
+    "lat": 54.0042,
+    "lng": 11.1919,
+    "elevation": 15.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010168",
+    "name": "DE GOLDBERG",
+    "lat": 53.6069,
+    "lng": 12.1042,
+    "elevation": 58.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010253",
+    "name": "DE LUCHOW",
+    "lat": 52.9739,
+    "lng": 11.1392,
+    "elevation": 17.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010267",
+    "name": "DE KYRITZ",
+    "lat": 52.9381,
+    "lng": 12.4106,
+    "elevation": 40.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010309",
+    "name": "DE AHAUS",
+    "lat": 52.0828,
+    "lng": 6.9417,
+    "elevation": 46.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010321",
+    "name": "DE DIEPHOLZ",
+    "lat": 52.5903,
+    "lng": 8.3464,
+    "elevation": 39.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010396",
+    "name": "DE MANSCHNOW",
+    "lat": 52.5481,
+    "lng": 14.5475,
+    "elevation": 12.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010424",
+    "name": "DE WERL",
+    "lat": 51.5778,
+    "lng": 7.8889,
+    "elevation": 85.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010449",
+    "name": "DE LEINEFELDE",
+    "lat": 51.3853,
+    "lng": 10.3017,
+    "elevation": 356.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010452",
+    "name": "DE BRAUNLAGE",
+    "lat": 51.725,
+    "lng": 10.6039,
+    "elevation": 607.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010480",
+    "name": "DE OSCHATZ",
+    "lat": 51.2969,
+    "lng": 13.0944,
+    "elevation": 150.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010526",
+    "name": "DE BAD MARIENBERG",
+    "lat": 50.6631,
+    "lng": 7.9594,
+    "elevation": 547.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010579",
+    "name": "DE MARIENBERG",
+    "lat": 50.6519,
+    "lng": 13.1483,
+    "elevation": 639.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010704",
+    "name": "DE BERUS",
+    "lat": 49.2653,
+    "lng": 6.6878,
+    "elevation": 363.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010724",
+    "name": "DE WEINBIET",
+    "lat": 49.3767,
+    "lng": 8.1225,
+    "elevation": 553.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010733",
+    "name": "DE WAIBSTADT",
+    "lat": 49.2953,
+    "lng": 8.9064,
+    "elevation": 237.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010736",
+    "name": "DE MUHLACKER",
+    "lat": 48.9731,
+    "lng": 8.8742,
+    "elevation": 244.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010761",
+    "name": "DE WEISSENBURG",
+    "lat": 49.0203,
+    "lng": 10.9617,
+    "elevation": 422.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010818",
+    "name": "DE KLIPPENECK",
+    "lat": 48.1064,
+    "lng": 8.7556,
+    "elevation": 973.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010827",
+    "name": "DE MESSSTETTEN",
+    "lat": 48.1844,
+    "lng": 8.9925,
+    "elevation": 920.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010863",
+    "name": "DE WEIHENSTEPHAN-DURNAST",
+    "lat": 48.4031,
+    "lng": 11.6956,
+    "elevation": 477.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010870",
+    "name": "DE SCHWAIGERMOOS",
+    "lat": 48.3667,
+    "lng": 11.8,
+    "elevation": 444.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMM00010963",
+    "name": "DE GARMISCH-PARTENKIRCHEN",
+    "lat": 47.4839,
+    "lng": 11.0633,
+    "elevation": 719.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMW00034055",
+    "name": "DE HUNSRUCK",
+    "lat": 49.95,
+    "lng": 7.2667,
+    "elevation": 502.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMW00034068",
+    "name": "DE COLEMAN",
+    "lat": 49.5667,
+    "lng": 8.4667,
+    "elevation": 96.0,
+    "country": "DE"
+  },
+  {
+    "id": "GMW00035032",
+    "name": "DE RHEIN MAIN",
+    "lat": 50.0333,
+    "lng": 8.5833,
+    "elevation": 112.2,
+    "country": "DE"
   }
 ]

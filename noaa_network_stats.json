@@ -1,5 +1,5 @@
 {
-  "total_stations": 4963,
+  "total_stations": 5498,
   "by_country": {
     "CA": 277,
     "CQ": 1,
@@ -9,9 +9,10 @@
     "RQ": 1,
     "US": 4654,
     "VQ": 2,
-    "UK": 23
+    "UK": 23,
+    "DE": 535
   },
-  "uk_stations": 23,
-  "snow_capable": 4963,
+  "germany_stations": 535,
+  "snow_capable": 5498,
   "last_updated": "2025-11-24"
 }
