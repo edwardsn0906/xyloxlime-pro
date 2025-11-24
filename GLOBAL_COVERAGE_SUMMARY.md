@@ -11,12 +11,14 @@ Xyloclime Pro uses a **4-tier data source hierarchy** to provide the best availa
 ### TIER 1: NOAA GHCN Stations 🥇
 - **Accuracy**: 100% (direct measurements)
 - **Type**: Station-based
-- **Coverage**: 4,940 stations worldwide
-  - US: 4,654 stations (94.2%)
-  - Canada: 277 stations (5.6%)
+- **Coverage**: 5,498 stations worldwide
+  - US: 4,654 stations (84.7%)
+  - Germany: 535 stations (9.7%) 🆕
+  - Canada: 277 stations (5.0%)
+  - UK: 23 stations (0.4%)
   - Other: 9 research stations (0.2%)
 - **Search Radius**: 200km
-- **Best For**: US and Canadian projects
+- **Best For**: US, Canada, Germany, and UK projects
 
 ### TIER 2: Visual Crossing 🥈
 - **Accuracy**: 80-100% (station-based hybrid)
@@ -73,26 +75,61 @@ Xyloclime Pro uses a **4-tier data source hierarchy** to provide the best availa
 
 ---
 
-### United Kingdom 🇬🇧
+### Germany 🇩🇪
 
-**Primary Source**: TIER 2 - Visual Crossing (80-100% accuracy)
+**Primary Source**: TIER 1 - NOAA (100% accuracy) 🆕
 
 | Aspect | Details |
 |--------|---------|
-| **NOAA Stations** | 0 (not available) |
-| **Primary Source** | Visual Crossing (station-based) |
-| **Expected Accuracy** | 50-100% |
-| **Fallback Option** | ECMWF IFS (~50%) |
-| **Success Rate** | 100% (all have Tier 2 or 3) |
-| **Suitable for Bidding** | ✅ YES - 50-100% accuracy |
+| **Station Count** | 535 NOAA stations |
+| **Coverage Density** | Excellent (2nd largest network) |
+| **Average Distance** | 7.8 km |
+| **Success Rate** | 100% (all tested locations) |
+| **Fallback Rate** | 0% (perfect NOAA coverage) |
+| **Suitable for Bidding** | ✅ YES - 100% accuracy |
+
+**Tested Locations** (12/12 passed):
+- ✅ Berlin - 5.7 km
+- ✅ Munich - 6.9 km
+- ✅ Hamburg - 9.3 km
+- ✅ Frankfurt - 7.8 km
+- ✅ Cologne - 16.0 km
+- ✅ Stuttgart - 6.1 km
+- ✅ Dusseldorf - 7.7 km
+- ✅ Dortmund - 10.3 km
+- ✅ Leipzig - 5.8 km
+- ✅ Dresden - 3.9 km
+- ✅ Nuremberg - 6.0 km
+- ✅ Hannover - 10.6 km
+
+**Recommendation**: ⭐⭐⭐⭐⭐ Excellent (100% accuracy, largest EU construction market)
+
+---
+
+### United Kingdom 🇬🇧
+
+**Primary Source**: TIER 1 - NOAA (100% accuracy)
+
+| Aspect | Details |
+|--------|---------|
+| **Station Count** | 23 NOAA stations |
+| **Coverage Density** | Good (major cities covered) |
+| **Average Distance** | 60.6 km |
+| **Success Rate** | 100% (all tested locations) |
+| **Fallback Rate** | 0% (perfect NOAA coverage) |
+| **Suitable for Bidding** | ✅ YES - 100% accuracy |
 
 **Tested Locations** (8/8 passed):
-- ✅ London - TIER 2+
-- ✅ Manchester - TIER 2+
-- ✅ Edinburgh - TIER 2+
-- ✅ Birmingham - TIER 2+
-- ✅ Glasgow - TIER 2+
-- ✅ Rural Wales - TIER 2+
+- ✅ London - 23.3 km
+- ✅ Manchester - 80.9 km
+- ✅ Edinburgh - 70.8 km
+- ✅ Birmingham - 63.1 km
+- ✅ Glasgow - 89.9 km
+- ✅ Rural Wales - 46.0 km
+- ✅ Belfast - 19.6 km
+- ✅ Bristol - 91.3 km
+
+**Recommendation**: ⭐⭐⭐⭐ Very Good (100% accuracy)
 - ✅ Belfast - TIER 2+
 - ✅ Bristol - TIER 2+
 
