@@ -1,6 +1,7 @@
 /**
  * XYLOCLIME PRO - Professional Weather Intelligence Platform
- * Version: 1.0.0
+ * Version: 1.1.0
+ * Last Updated: November 24, 2025
  *
  * IMPORTANT: This is a commercial weather analysis platform with enhanced
  * liability protections and scalable architecture.
@@ -11,6 +12,16 @@
  * - Enhanced data validation
  * - Scalable architecture for future multi-user support
  * - Comprehensive logging and monitoring hooks
+ * - Enhanced NOAA data source reliability with multi-station fallback
+ * - Intelligent retry logic for API failures
+ * - Real-time update timestamps in UI
+ *
+ * Recent Updates (v1.1.0 - Nov 24, 2025):
+ * - Increased NOAA station search radius to 300km for better US coverage
+ * - Added multi-station fallback when primary station fails
+ * - Implemented retry logic with exponential backoff for NOAA API
+ * - Added "last updated" timestamp to project dashboard
+ * - Improved error handling and logging for data source selection
  */
 
 // ============================================================================
@@ -2686,8 +2697,9 @@ class XyloclimePro {
     /**
      * Fetch snow data from NOAA CDO API (v1 - no auth required)
      * Returns data in inches for consistency with US weather standards
+     * Now with retry logic for improved reliability
      */
-    async fetchNOAASnowData(stationId, startDate, endDate) {
+    async fetchNOAASnowData(stationId, startDate, endDate, retries = 2) {
         const url = `https://www.ncei.noaa.gov/access/services/data/v1?` +
                    `dataset=daily-summaries&` +
                    `dataTypes=SNOW,SNWD&` +
@@ -2697,44 +2709,71 @@ class XyloclimePro {
                    `format=json&` +
                    `units=standard`; // Returns inches/°F
 
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                if (attempt > 0) {
+                    console.log(`[NOAA] Retry attempt ${attempt} for station ${stationId}...`);
+                    // Add exponential backoff delay
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                }
 
-            const response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-            if (!response.ok) {
-                throw new Error(`NOAA API error: ${response.status}`);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    if (response.status === 404 || response.status === 400) {
+                        // Station has no data - don't retry
+                        console.log(`[NOAA] Station ${stationId} has no data (${response.status})`);
+                        return { success: false, error: `No data available (HTTP ${response.status})` };
+                    }
+                    throw new Error(`NOAA API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Check if we got any data
+                if (!data || data.length === 0) {
+                    console.log(`[NOAA] Station ${stationId} returned no records`);
+                    return { success: false, error: 'No records returned' };
+                }
+
+                // Convert to Open-Meteo format for compatibility
+                // NOAA returns SNOW in inches, convert to mm
+                const snowfall_sum = [];
+                const dates = [];
+
+                for (const record of data) {
+                    dates.push(record.DATE);
+                    const snowInches = parseFloat(record.SNOW || 0);
+                    const snowMm = snowInches * 25.4; // Convert inches to mm
+                    snowfall_sum.push(snowMm);
+                }
+
+                console.log(`[NOAA] ✓ Successfully fetched ${data.length} days of data from ${stationId}`);
+
+                return {
+                    daily: {
+                        time: dates,
+                        snowfall_sum: snowfall_sum
+                    },
+                    source: 'NOAA',
+                    success: true
+                };
+
+            } catch (error) {
+                if (attempt === retries) {
+                    console.warn(`[NOAA] Data fetch failed after ${retries + 1} attempts:`, error.message);
+                    return { success: false, error: error.message };
+                }
+                // Continue to next retry attempt
+                console.log(`[NOAA] Attempt ${attempt + 1} failed: ${error.message}`);
             }
-
-            const data = await response.json();
-
-            // Convert to Open-Meteo format for compatibility
-            // NOAA returns SNOW in inches, convert to mm
-            const snowfall_sum = [];
-            const dates = [];
-
-            for (const record of data) {
-                dates.push(record.DATE);
-                const snowInches = parseFloat(record.SNOW || 0);
-                const snowMm = snowInches * 25.4; // Convert inches to mm
-                snowfall_sum.push(snowMm);
-            }
-
-            return {
-                daily: {
-                    time: dates,
-                    snowfall_sum: snowfall_sum
-                },
-                source: 'NOAA',
-                success: true
-            };
-
-        } catch (error) {
-            console.warn('NOAA data fetch failed:', error.message);
-            return { success: false, error: error.message };
         }
+
+        return { success: false, error: 'All retry attempts exhausted' };
     }
 
     /**
@@ -2867,14 +2906,39 @@ class XyloclimePro {
         let snowDataSource = null;
 
         // ============================================================
-        // TIER 1: Try NOAA stations (US only) - 100% accuracy
+        // TIER 1: Try NOAA stations (GLOBAL: 7,740 stations worldwide, 4,654 in US) - 100% accuracy
         // ============================================================
+        console.log('[DATA SOURCE] Searching for NOAA station...');
         try {
-            const noaaStation = await this.findNearestNOAAStation(lat, lng, 100); // 100km max (covers rural areas)
+            // Use larger search radius (300km) for better coverage in rural areas
+            const searchRadius = 300;
+            const noaaStation = await this.findNearestNOAAStation(lat, lng, searchRadius);
 
             if (noaaStation) {
-                console.log(`Found NOAA station: ${noaaStation.name} (${noaaStation.distance}km away)`);
-                const noaaResult = await this.fetchNOAASnowData(noaaStation.id, startDate, endDate);
+                console.log(`[NOAA] Found station: ${noaaStation.name} (${noaaStation.distance}km away, ${noaaStation.country})`);
+
+                // Try to fetch data from the nearest station
+                let noaaResult = await this.fetchNOAASnowData(noaaStation.id, startDate, endDate);
+
+                // If first station fails, try backup stations (multi-station fallback)
+                if (!noaaResult.success) {
+                    console.log('[NOAA] Primary station failed, trying backup stations...');
+                    const backupStations = await noaaNetwork.findNearestStations(lat, lng, 5, searchRadius);
+
+                    for (let i = 1; i < backupStations.length && !noaaResult.success; i++) {
+                        const backup = backupStations[i];
+                        console.log(`[NOAA] Trying backup station ${i}: ${backup.name} (${backup.distance}km)`);
+                        noaaResult = await this.fetchNOAASnowData(backup.id, startDate, endDate);
+
+                        if (noaaResult.success) {
+                            // Update station info to reflect the successful backup
+                            noaaStation.name = backup.name;
+                            noaaStation.id = backup.id;
+                            noaaStation.distance = backup.distance;
+                            noaaStation.country = backup.country;
+                        }
+                    }
+                }
 
                 if (noaaResult.success) {
                     snowDataResult = noaaResult;
@@ -2883,21 +2947,27 @@ class XyloclimePro {
                         station: noaaStation.name,
                         stationId: noaaStation.id,
                         distance: noaaStation.distance,
-                        state: noaaStation.state,
+                        country: noaaStation.country || noaaStation.state,
                         accuracy: '100%',
                         type: 'station'
                     };
-                    console.log('Successfully fetched NOAA snow data');
+                    console.log('[DATA SOURCE] ✓ TIER 1: Using NOAA station data (100% accuracy)');
+                    console.log(`[NOAA] Final station: ${noaaStation.name}, Distance: ${noaaStation.distance}km`);
+                } else {
+                    console.log('[DATA SOURCE] NOAA data fetch failed for all nearby stations, continuing to next tier...');
                 }
+            } else {
+                console.log(`[DATA SOURCE] No NOAA station within ${searchRadius}km, trying next tier...`);
             }
         } catch (error) {
-            console.warn('NOAA station lookup failed:', error.message);
+            console.warn('[DATA SOURCE] NOAA station lookup error:', error.message);
         }
 
         // ============================================================
         // TIER 2: Try Visual Crossing (Global) - 80-100% accuracy
         // ============================================================
         if (!snowDataResult) {
+            console.log('[DATA SOURCE] Trying Visual Crossing (global coverage)...');
             try {
                 const vcResult = await this.fetchVisualCrossingSnowData(lat, lng, startDate, endDate);
 
@@ -2910,12 +2980,17 @@ class XyloclimePro {
                         accuracy: '80-100%',
                         type: 'station'
                     };
-                    console.log('Successfully fetched Visual Crossing snow data');
+                    console.log('[DATA SOURCE] ✓ TIER 2: Using Visual Crossing data (80-100% accuracy)');
+                    console.log(`[Visual Crossing] Location: ${vcResult.location}, Stations: ${vcResult.stationCount}`);
                 } else if (vcResult.reason === 'no_api_key') {
-                    console.log('Visual Crossing API key not configured, trying ECMWF IFS...');
+                    console.log('[DATA SOURCE] Visual Crossing API key not configured, trying next tier...');
+                } else if (vcResult.reason === 'rate_limit') {
+                    console.log('[DATA SOURCE] Visual Crossing rate limit reached, trying next tier...');
+                } else {
+                    console.log('[DATA SOURCE] Visual Crossing fetch unsuccessful, trying next tier...');
                 }
             } catch (error) {
-                console.warn('Visual Crossing fetch failed:', error.message);
+                console.warn('[DATA SOURCE] Visual Crossing error:', error.message);
             }
         }
 
@@ -2923,6 +2998,7 @@ class XyloclimePro {
         // TIER 3: Try ECMWF IFS (Global, 2017+) - ~50% accuracy
         // ============================================================
         if (!snowDataResult) {
+            console.log('[DATA SOURCE] Trying ECMWF IFS model (global, 2017+)...');
             try {
                 const ecmwfResult = await this.fetchECMWFIFSSnowData(lat, lng, startDate, endDate);
 
@@ -2935,10 +3011,13 @@ class XyloclimePro {
                         type: 'model',
                         note: '12.5x more accurate than ERA5'
                     };
-                    console.log('Successfully fetched ECMWF IFS snow data');
+                    console.log('[DATA SOURCE] ✓ TIER 3: Using ECMWF IFS model data (~50% accuracy)');
+                    console.log(`[ECMWF IFS] Resolution: ${ecmwfResult.resolution}`);
+                } else {
+                    console.log('[DATA SOURCE] ECMWF IFS fetch unsuccessful, falling back to ERA5...');
                 }
             } catch (error) {
-                console.warn('ECMWF IFS fetch failed:', error.message);
+                console.warn('[DATA SOURCE] ECMWF IFS error:', error.message);
             }
         }
 
@@ -2954,6 +3033,7 @@ class XyloclimePro {
             // Replace ERA5 snow with higher-quality data
             era5Data.daily.snowfall_sum = snowDataResult.daily.snowfall_sum;
             era5Data.snowDataSource = snowDataSource;
+            console.log('[DATA SOURCE] ✓ Using blended data: Best available snow source + ERA5 for temp/rain/wind');
         } else {
             // Fallback to ERA5 snow (lowest accuracy)
             era5Data.snowDataSource = {
@@ -2963,7 +3043,8 @@ class XyloclimePro {
                 type: 'model',
                 warning: 'Snow estimates may be significantly underestimated (gridded reanalysis data)'
             };
-            console.log('Using ERA5 snow data (fallback)');
+            console.log('[DATA SOURCE] ⚠ TIER 4: Using ERA5 for all data (snow ~4% accuracy - fallback)');
+            console.log('[DATA SOURCE] Location may be in area with limited station coverage');
         }
 
         // ERA5 is still excellent for these metrics
@@ -4880,6 +4961,26 @@ class XyloclimePro {
         document.getElementById('projectInfoLocation').textContent = this.currentProject.locationName;
         document.getElementById('projectInfoDates').textContent =
             `${this.currentProject.startDate} to ${this.currentProject.endDate}`;
+
+        // Add timestamp of when the analysis was completed
+        // If loading an existing project, use its saved timestamp; otherwise use current time
+        let timestampDate;
+        if (this.currentProject.lastUpdated) {
+            timestampDate = new Date(this.currentProject.lastUpdated);
+        } else {
+            timestampDate = new Date();
+            this.currentProject.lastUpdated = timestampDate.toISOString();
+        }
+
+        const timestamp = timestampDate.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+        document.getElementById('projectInfoUpdated').textContent = `Updated: ${timestamp}`;
 
         // Update enhanced summary cards
         const avgTemp = ((parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2);
