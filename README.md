@@ -875,3 +875,4 @@ Good luck with your weather analysis platform! 🌩️⚡
 *Professional Weather Intelligence Platform*
 
 Built with ⚡ and careful attention to legal protection.
+# Vercel deployment cache issue - this forces a fresh deploy
