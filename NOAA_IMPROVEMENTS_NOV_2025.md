@@ -169,11 +169,55 @@ Potential enhancements for future versions:
 3. NOAA API may be temporarily unavailable (system will use fallback sources)
 4. Date range may be outside available data period for those stations
 
+### Issue: CSP (Content Security Policy) Blocking NOAA API
+**Problem**: Console shows "Refused to connect because it violates the document's Content Security Policy"
+
+**Solution**:
+1. The CSP headers in `vercel.json` need to include NOAA and Visual Crossing domains
+2. Fixed in this update - `connect-src` directive now includes:
+   - `https://www.ncei.noaa.gov` (NOAA API)
+   - `https://weather.visualcrossing.com` (Visual Crossing API)
+3. **Test CSP Fix**: Visit https://xyloxlime-pro.vercel.app/test_csp.html
+   - This page will test if the NOAA API connections are working
+   - Should show "✅ CSP ALLOWS NOAA API - Connection Successful!"
+   - If still blocked, wait 2-3 minutes for Vercel deployment to complete
+
 ### Issue: Timestamp not showing
 **Solution**: Clear browser cache and reload. The timestamp element may have been added after the page loaded.
+
+---
+
+## Testing the Fix
+
+### Quick Test - CSP Verification
+1. Visit: **https://xyloxlime-pro.vercel.app/test_csp.html**
+2. Page will auto-run 3 tests:
+   - ✅ Test 1: NOAA API (should show green ✅)
+   - ✅ Test 2: Visual Crossing API (should show green ✅)
+   - ✅ Test 3: Open-Meteo API (baseline - should show green ✅)
+3. If any show ❌ red, the CSP may not be deployed yet - wait 2 minutes and refresh
+
+### Full Test - Create a Montana Project
+1. Open incognito window (Ctrl+Shift+N)
+2. Go to https://xyloxlime-pro.vercel.app/
+3. Create project: "Test Montana Project"
+4. Location: Cascade County, Montana
+5. Dates: 2024-11-24 to 2025-11-24
+6. Open browser console (F12)
+7. Run analysis and look for:
+   ```
+   [NOAA Network] Loaded 7740 high-quality stations
+   [NOAA] Found station: MT GREAT FALLS 16ST (2.5km away, US)
+   [NOAA] ✓ Successfully fetched 365 days of data from USC00243749
+   [DATA SOURCE] ✓ TIER 1: Using NOAA station data (100% accuracy)
+   ```
+8. Snow data should show **NOAA badge** instead of "ECMWF IFS"
+9. Updated timestamp should appear in dashboard header
 
 ---
 
 ## Questions?
 
 Check the browser console (F12) for detailed logging of data source selection and any errors encountered during the analysis process.
+
+**CSP Test Page**: https://xyloxlime-pro.vercel.app/test_csp.html
