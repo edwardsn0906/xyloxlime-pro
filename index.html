@@ -991,8 +991,26 @@
                 </div>
 
                 <div id="loadingSpinner" class="loading-spinner hidden">
-                    <div class="spinner"></div>
-                    <p>Analyzing comprehensive weather data...</p>
+                    <div class="spinner-container">
+                        <div class="spinner-outer"></div>
+                        <div class="spinner-middle"></div>
+                        <div class="spinner-inner"></div>
+                        <div class="spinner-icon">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+                    </div>
+                    <div class="loading-messages">
+                        <h3>Analyzing Weather Data</h3>
+                        <p class="loading-subtitle">Please be patient, this can take a few minutes...</p>
+                        <p class="loading-detail">Fetching data from NOAA stations and climate models</p>
+                        <div class="loading-progress">
+                            <div class="progress-dots">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

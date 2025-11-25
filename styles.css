@@ -1786,19 +1786,163 @@ body {
     justify-content: center;
     padding: 4rem 2rem;
     gap: 2rem;
+    min-height: 400px;
 }
 
-.spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(0, 212, 255, 0.2);
+/* Multi-layered spinner container */
+.spinner-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 1rem;
+}
+
+/* Outer spinning ring - slowest */
+.spinner-outer {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 4px solid transparent;
     border-top-color: var(--electric-cyan);
+    border-right-color: var(--electric-cyan);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin-slow 3s linear infinite;
+    opacity: 0.6;
 }
 
-@keyframes spin {
+/* Middle spinning ring - medium speed */
+.spinner-middle {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 110px;
+    height: 110px;
+    border: 4px solid transparent;
+    border-top-color: #667eea;
+    border-left-color: #667eea;
+    border-radius: 50%;
+    animation: spin-medium 2s linear infinite;
+    opacity: 0.7;
+}
+
+/* Inner spinning ring - fastest */
+.spinner-inner {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    width: 70px;
+    height: 70px;
+    border: 4px solid transparent;
+    border-bottom-color: var(--electric-cyan);
+    border-left-color: var(--electric-cyan);
+    border-radius: 50%;
+    animation: spin-fast 1s linear infinite;
+    opacity: 0.8;
+}
+
+/* Center weather icon with pulse animation */
+.spinner-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    color: var(--electric-cyan);
+    animation: pulse-icon 2s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+/* Loading message styles */
+.loading-messages {
+    text-align: center;
+    max-width: 500px;
+}
+
+.loading-messages h3 {
+    color: var(--electric-cyan);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.loading-subtitle {
+    color: #e8f4f8;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0.5rem 0;
+    opacity: 0.9;
+}
+
+.loading-detail {
+    color: #8b9db8;
+    font-size: 0.95rem;
+    margin: 0.75rem 0 1.5rem 0;
+    opacity: 0.8;
+}
+
+/* Animated progress dots */
+.loading-progress {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.progress-dots {
+    display: flex;
+    gap: 10px;
+}
+
+.progress-dots .dot {
+    width: 12px;
+    height: 12px;
+    background: var(--electric-cyan);
+    border-radius: 50%;
+    animation: dot-pulse 1.4s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.progress-dots .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.progress-dots .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Animations */
+@keyframes spin-slow {
     to { transform: rotate(360deg); }
+}
+
+@keyframes spin-medium {
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes spin-fast {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-icon {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.7;
+    }
+}
+
+@keyframes dot-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
 }
 
 .loading-spinner p {
