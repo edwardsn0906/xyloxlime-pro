@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Test - NOAA API Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 { color: #00d4ff; }
+        .test-box {
+            background: #16213e;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00d4ff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #28a745; color: white; }
+        .error { background: #dc3545; color: white; }
+        .pending { background: #ffc107; color: black; }
+        button {
+            background: #00d4ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #00b8e6; }
+        pre {
+            background: #0f1419;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔒 CSP Test - NOAA API Connection</h1>
+
+    <div class="test-box">
+        <h2>Test 1: NOAA API Connection</h2>
+        <div id="noaa-status" class="status pending">⏳ Waiting for test...</div>
+        <pre id="noaa-log"></pre>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 2: Visual Crossing API Connection</h2>
+        <div id="vc-status" class="status pending">⏳ Waiting for test...</div>
+        <pre id="vc-log"></pre>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 3: Open-Meteo API Connection (Should Work)</h2>
+        <div id="meteo-status" class="status pending">⏳ Waiting for test...</div>
+        <pre id="meteo-log"></pre>
+    </div>
+
+    <button onclick="runTests()">🚀 Run CSP Tests</button>
+
+    <script>
+        function log(testId, message) {
+            const logEl = document.getElementById(testId + '-log');
+            logEl.textContent += message + '\n';
+        }
+
+        function setStatus(testId, statusClass, message) {
+            const statusEl = document.getElementById(testId + '-status');
+            statusEl.className = 'status ' + statusClass;
+            statusEl.textContent = message;
+        }
+
+        async function testNOAA() {
+            log('noaa', 'Testing NOAA API connection...');
+            log('noaa', 'URL: https://www.ncei.noaa.gov/access/services/data/v1');
+
+            try {
+                const url = 'https://www.ncei.noaa.gov/access/services/data/v1?' +
+                           'dataset=daily-summaries&' +
+                           'dataTypes=SNOW,SNWD&' +
+                           'stations=USC00243753&' +
+                           'startDate=2024-01-01&' +
+                           'endDate=2024-01-07&' +
+                           'format=json&' +
+                           'units=standard';
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    log('noaa', `Response status: ${response.status} ${response.statusText}`);
+                    if (response.status === 404) {
+                        setStatus('noaa', 'success', '✅ CSP ALLOWS CONNECTION (station has no data, but connection succeeded)');
+                    } else {
+                        setStatus('noaa', 'error', `❌ API Error: ${response.status}`);
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                log('noaa', `✅ Successfully connected!`);
+                log('noaa', `Received ${data.length || 0} records`);
+                setStatus('noaa', 'success', '✅ CSP ALLOWS NOAA API - Connection Successful!');
+
+            } catch (error) {
+                log('noaa', `❌ Error: ${error.message}`);
+                if (error.message.includes('Content Security Policy')) {
+                    setStatus('noaa', 'error', '❌ CSP STILL BLOCKING - Headers not updated yet');
+                } else {
+                    setStatus('noaa', 'error', '❌ Connection Failed: ' + error.message);
+                }
+            }
+        }
+
+        async function testVisualCrossing() {
+            log('vc', 'Testing Visual Crossing API connection...');
+            log('vc', 'URL: https://weather.visualcrossing.com');
+
+            try {
+                // Using a test URL (will fail due to API key, but CSP should allow the attempt)
+                const url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/40.7128,-74.0060/2024-01-01/2024-01-07?key=TEST';
+
+                const response = await fetch(url);
+                log('vc', `Response status: ${response.status} ${response.statusText}`);
+
+                if (response.status === 401 || response.status === 400) {
+                    setStatus('vc', 'success', '✅ CSP ALLOWS CONNECTION (API key invalid, but connection succeeded)');
+                } else {
+                    setStatus('vc', 'success', '✅ CSP ALLOWS Visual Crossing API');
+                }
+
+            } catch (error) {
+                log('vc', `❌ Error: ${error.message}`);
+                if (error.message.includes('Content Security Policy')) {
+                    setStatus('vc', 'error', '❌ CSP STILL BLOCKING');
+                } else {
+                    setStatus('vc', 'error', '❌ Connection Failed: ' + error.message);
+                }
+            }
+        }
+
+        async function testOpenMeteo() {
+            log('meteo', 'Testing Open-Meteo API connection (baseline test)...');
+            log('meteo', 'URL: https://archive-api.open-meteo.com');
+
+            try {
+                const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=40.7128&longitude=-74.0060&start_date=2024-01-01&end_date=2024-01-07&daily=temperature_2m_max&timezone=auto';
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    log('meteo', `Response status: ${response.status} ${response.statusText}`);
+                    setStatus('meteo', 'error', '❌ API Error: ' + response.status);
+                    return;
+                }
+
+                const data = await response.json();
+                log('meteo', `✅ Successfully connected!`);
+                log('meteo', `Received data for ${data.daily.time.length} days`);
+                setStatus('meteo', 'success', '✅ Open-Meteo API Working (Baseline Test Passed)');
+
+            } catch (error) {
+                log('meteo', `❌ Error: ${error.message}`);
+                setStatus('meteo', 'error', '❌ Unexpected Error: ' + error.message);
+            }
+        }
+
+        async function runTests() {
+            // Clear previous results
+            document.querySelectorAll('pre').forEach(el => el.textContent = '');
+
+            log('noaa', '='.repeat(60));
+            log('vc', '='.repeat(60));
+            log('meteo', '='.repeat(60));
+
+            // Run all tests
+            await testNOAA();
+            await testVisualCrossing();
+            await testOpenMeteo();
+
+            log('noaa', '='.repeat(60));
+            log('vc', '='.repeat(60));
+            log('meteo', '='.repeat(60));
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>
