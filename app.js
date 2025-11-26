@@ -5852,7 +5852,10 @@ class XyloclimePro {
         const workablePercent = Math.round((analysis.workableDays / duration) * 100);
         const idealPercent = Math.round((analysis.idealDays / duration) * 100);
         const rainyPercent = Math.round((analysis.rainyDays / duration) * 100);
-        const heavyRainPercent = analysis.rainyDays > 0 ? Math.round((analysis.heavyRainDays / analysis.rainyDays) * 100) : 0;
+        // Heavy rain as percentage of rainy days (for table display)
+        const heavyRainOfRainyPercent = analysis.rainyDays > 0 ? Math.round((analysis.heavyRainDays / analysis.rainyDays) * 100) : 0;
+        // Heavy rain as percentage of total project (for impact assessment)
+        const heavyRainOfTotalPercent = Math.round((analysis.heavyRainDays / duration) * 100);
 
         // Determine overall risk level
         const riskScore = analysis.riskScore || this.calculateRiskScore(analysis);
@@ -5916,7 +5919,7 @@ class XyloclimePro {
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
         <td style="padding: 0.75rem;">Heavy Rain Days (>10mm)</td>
         <td style="padding: 0.75rem; text-align: right;">${analysis.heavyRainDays}</td>
-        <td style="padding: 0.75rem; text-align: right;">${heavyRainPercent}% of rainy days</td>
+        <td style="padding: 0.75rem; text-align: right;">${heavyRainOfRainyPercent}% of rainy days</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
         <td style="padding: 0.75rem;">Snow Days ${this.getSnowDataBadge(snowDataSource)}</td>
@@ -5981,19 +5984,16 @@ class XyloclimePro {
         }
 
         if (analysis.heavyRainDays > 5) {
-            const totalProjectDays = analysis.actualProjectDays || 365;
-            const heavyRainPercent = ((analysis.heavyRainDays / totalProjectDays) * 100).toFixed(1);
-
             let riskLevel = '';
-            if (heavyRainPercent < 8) {
+            if (heavyRainOfTotalPercent < 2) {
                 riskLevel = 'manageable with proper scheduling';
-            } else if (heavyRainPercent < 15) {
+            } else if (heavyRainOfTotalPercent < 4) {
                 riskLevel = 'moderate impact requiring planning';
             } else {
                 riskLevel = 'significant impact';
             }
 
-            summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with >10mm rain (${heavyRainPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
+            summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with >10mm rain (${heavyRainOfTotalPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
         }
 
         if (analysis.allFreezingDays > 0 || analysis.extremeColdDays > 0) {
