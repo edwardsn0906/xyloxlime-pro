@@ -226,6 +226,11 @@ class LoadingManager {
         progress.classList.add('active');
 
         const bar = progress.querySelector('.loading-progress-bar');
+        if (!bar) {
+            console.error('[LoadingManager] Could not find .loading-progress-bar element');
+            return null;
+        }
+
         bar.style.width = '0%';
 
         // Simulate progress
@@ -236,7 +241,9 @@ class LoadingManager {
                 clearInterval(interval);
                 width = 90;
             }
-            bar.style.width = width + '%';
+            if (bar) {
+                bar.style.width = width + '%';
+            }
         }, 200);
 
         return interval;
@@ -250,14 +257,18 @@ class LoadingManager {
         const progress = document.querySelector('.loading-progress');
         if (progress) {
             const bar = progress.querySelector('.loading-progress-bar');
-            bar.style.width = '100%';
+            if (bar) {
+                bar.style.width = '100%';
 
-            setTimeout(() => {
-                progress.classList.remove('active');
                 setTimeout(() => {
-                    bar.style.width = '0%';
-                }, 300);
-            }, 200);
+                    progress.classList.remove('active');
+                    setTimeout(() => {
+                        if (bar) {
+                            bar.style.width = '0%';
+                        }
+                    }, 300);
+                }, 200);
+            }
         }
     }
 

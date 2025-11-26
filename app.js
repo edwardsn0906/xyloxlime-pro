@@ -1562,9 +1562,12 @@ class XyloclimePro {
         }
 
         // Analyze button
-        document.getElementById('analyzeBtn').addEventListener('click', () => {
-            this.analyzeWeatherData();
-        });
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', () => {
+                this.analyzeWeatherData();
+            });
+        }
 
         // Copy coordinates button
         const copyCoordinatesBtn = document.getElementById('copyCoordinatesBtn');
