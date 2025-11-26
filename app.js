@@ -3571,6 +3571,13 @@ class XyloclimePro {
         const avgTempMax = this.average(allTempsMax);
         const avgTempMin = this.average(allTempsMin);
 
+        // Calculate temperature distribution statistics for validation
+        const tempMinStdDev = this.standardDeviation(allTempsMin);
+        const absMinTemp = Math.min(...allTempsMin);
+        const absMaxTempMin = Math.max(...allTempsMin);
+
+        console.log(`[TEMP STATS] Avg Min: ${avgTempMin.toFixed(1)}°C, Std Dev: ${tempMinStdDev.toFixed(1)}°C, Range: ${absMinTemp.toFixed(1)}°C to ${absMaxTempMin.toFixed(1)}°C`);
+
         // Average precipitation PER YEAR (not total of all years)
         const avgPrecipPerYear = this.average(yearlyStats.map(y => y.totalPrecip));
         const avgSnowfallPerYear = this.average(yearlyStats.map(y => y.totalSnowfall));
@@ -3587,6 +3594,16 @@ class XyloclimePro {
         const highWindDays = Math.round(this.average(yearlyStats.map(y => y.highWindDays)));
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
+
+        // Validate temperature distribution reasonableness
+        const extremeColdPercent = (extremeColdDays / actualProjectDays) * 100;
+        const expectedZScore = (avgTempMin - (-5)) / tempMinStdDev; // How many std devs is threshold from mean
+        console.log(`[TEMP VALIDATION] Extreme cold: ${extremeColdDays} days (${extremeColdPercent.toFixed(1)}%), Z-score: ${expectedZScore.toFixed(2)}, Std Dev: ${tempMinStdDev.toFixed(1)}°C`);
+
+        // Flag if distribution seems unusual (more than 25% below threshold that's >1.5 std devs from mean)
+        if (extremeColdPercent > 25 && Math.abs(expectedZScore) > 1.5) {
+            console.warn(`[TEMP WARNING] Unusual temperature distribution detected: ${extremeColdPercent.toFixed(0)}% of days below -5°C despite avg min of ${avgTempMin.toFixed(1)}°C. Location may have extreme variability or bimodal climate.`);
+        }
 
         // Validate heavy rain proportion (should be 15-30% of rainy days typically)
         const heavyRainProportion = rainyDays > 0 ? (heavyRainDays / rainyDays) * 100 : 0;
@@ -3613,6 +3630,9 @@ class XyloclimePro {
             // Temperature
             avgTempMax: avgTempMax.toFixed(1),
             avgTempMin: avgTempMin.toFixed(1),
+            tempMinStdDev: tempMinStdDev.toFixed(1),  // Standard deviation for distribution validation
+            absMinTemp: absMinTemp.toFixed(1),         // Absolute minimum across all years
+            absMaxTempMin: absMaxTempMin.toFixed(1),   // Warmest daily minimum across all years
 
             // Precipitation (FIXED - averaged not summed)
             totalPrecip: avgPrecipPerYear.toFixed(1),
@@ -6128,8 +6148,22 @@ class XyloclimePro {
         }
 
         if (analysis.allFreezingDays > 10) {
+            // Calculate if temperature distribution is unusual
+            const extremeColdPercent = (analysis.extremeColdDays / duration) * 100;
+            const avgMinC = parseFloat(analysis.avgTempMin);
+            const stdDevC = parseFloat(analysis.tempMinStdDev);
+            const threshold = -5;
+            const zScore = Math.abs((avgMinC - threshold) / stdDevC);
+            const isUnusualDistribution = extremeColdPercent > 25 && zScore > 1.5;
+
             summary += `<p><strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F, work stoppage) + ${analysis.lightFreezingDays} light freezing days (0 to -5°C, workable with precautions).
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean of all daily minimums. Individual days can drop significantly below this average—${analysis.extremeColdDays} specific days are projected to reach ≤23°F (≤-5°C).</em>
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean of all daily minimums. Individual days can drop significantly below this average—${analysis.extremeColdDays} specific days are projected to reach ≤23°F (≤-5°C).`;
+
+            if (isUnusualDistribution) {
+                summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
+            }
+
+            summary += `</em>
             <br>Concrete curing, material storage, and worker safety measures recommended.</p>`;
         } else if (analysis.extremeColdDays > 0) {
             summary += `<p><strong>Work-Stopping Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (≤23°F) typically require work stoppage.
