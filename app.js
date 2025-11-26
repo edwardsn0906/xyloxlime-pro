@@ -6097,13 +6097,19 @@ class XyloclimePro {
 
         // Snow & freezing analysis
         if (analysis.snowyDays > 0) {
-            summary += `<p><strong>Snow Advisory:</strong> ${analysis.snowyDays} days with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} days with heavy snow (>10mm) typically require work stoppage. Winter construction protocols recommended.</p>`;
+            summary += `<p><strong>Snow Advisory:</strong> ${analysis.snowyDays} days with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} days with heavy snow (>10mm) typically require work stoppage.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">⚠️ Snowfall exhibits high year-to-year variability. Actual conditions may vary significantly from historical averages. Build robust contingency buffers into schedules and material delivery plans.</em>
+            <br>Winter construction protocols recommended.</p>`;
         }
 
         if (analysis.allFreezingDays > 10) {
-            summary += `<p><strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F, work stoppage) + ${analysis.lightFreezingDays} light freezing days (0 to -5°C, workable with precautions). Concrete curing, material storage, and worker safety measures recommended.</p>`;
+            summary += `<p><strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F, work stoppage) + ${analysis.lightFreezingDays} light freezing days (0 to -5°C, workable with precautions).
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean of all daily minimums. Individual days can drop significantly below this average—${analysis.extremeColdDays} specific days are projected to reach ≤23°F (≤-5°C).</em>
+            <br>Concrete curing, material storage, and worker safety measures recommended.</p>`;
         } else if (analysis.extremeColdDays > 0) {
-            summary += `<p><strong>Work-Stopping Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (≤23°F) typically require work stoppage. Plan heated enclosures and cold-weather protocols.</p>`;
+            summary += `<p><strong>Work-Stopping Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (≤23°F) typically require work stoppage.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: This count represents ${analysis.extremeColdDays} specific days projected to reach the work-stopping threshold, even though the average low is ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}.</em>
+            <br>Plan heated enclosures and cold-weather protocols.</p>`;
         }
 
         summary += `</div>`;
