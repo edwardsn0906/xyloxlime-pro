@@ -6112,8 +6112,8 @@ class XyloclimePro {
         if (analysis.rainyDays > 0) {
             const rainyDaysMin = analysis.rainyDaysMin || Math.round(analysis.rainyDays * 0.85);
             const rainyDaysMax = analysis.rainyDaysMax || Math.round(analysis.rainyDays * 1.15);
-            summary += `<p><strong>Precipitation Analysis:</strong> Approximately <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax} days, ${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>10mm). ${heavyRainPercent}% of rainy days qualify as heavy rain`;
-            if (heavyRainPercent > 40) {
+            summary += `<p><strong>Precipitation Analysis:</strong> Approximately <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax} days, ${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>10mm). ${heavyRainOfRainyPercent}% of rainy days qualify as heavy rain`;
+            if (heavyRainOfRainyPercent > 40) {
                 summary += ` – <em>higher than typical 15-30% proportion</em>`;
             }
             summary += `. Light rain days (<10mm) are included in workable counts as work can continue with rain gear and drainage.
