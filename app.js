@@ -3046,7 +3046,12 @@ class XyloclimePro {
                     snowfall_sum.push(snowMm);
                 }
 
+                // Log snow statistics for validation
+                const snowDays = snowfall_sum.filter(s => s > 0).length;
+                const heavySnowDays = snowfall_sum.filter(s => s > 10).length;
+                const maxSnow = Math.max(...snowfall_sum);
                 console.log(`[NOAA] ✓ Successfully fetched ${data.length} days of data from ${stationId}`);
+                console.log(`[NOAA] Snow stats: ${snowDays} snowy days, ${heavySnowDays} heavy (>10mm), max: ${maxSnow.toFixed(1)}mm`);
 
                 return {
                     daily: {
@@ -6142,8 +6147,20 @@ class XyloclimePro {
 
         // Snow & freezing analysis
         if (analysis.snowyDays > 0) {
+            const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
+            const allSnowIsHeavy = analysis.snowyDays === analysis.heavySnowDays;
+
+            let snowVariabilityNote = usingNOAA
+                ? `⚠️ Snowfall exhibits high year-to-year variability (±30-50%). Actual conditions may vary significantly from historical averages. Build robust contingency buffers into schedules and material delivery plans.`
+                : `⚠️ Snow data from ${analysis.snowDataSource?.source || 'ERA5'} reanalysis with ${analysis.snowDataSource?.accuracy || '~4%'} accuracy. Snowfall exhibits high year-to-year variability (±30-50%) and may be underestimated in northern/windy climates. Build robust contingency buffers into schedules and material delivery plans.`;
+
+            // Add note if all snow days are heavy (could indicate NOAA reporting threshold or mountain climate)
+            if (allSnowIsHeavy && usingNOAA && analysis.snowyDays > 3) {
+                snowVariabilityNote += ` Note: All measured snow days exceed 10mm (0.4 in) - NOAA may have a reporting threshold for light snow, or location experiences predominantly heavy snowfall events (typical for mountain regions).`;
+            }
+
             summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm) typically require work stoppage.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">⚠️ Snowfall exhibits high year-to-year variability (±30-50%). Actual conditions may vary significantly from historical averages. Build robust contingency buffers into schedules and material delivery plans.</em>
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">${snowVariabilityNote}</em>
             <br>Winter construction protocols recommended.</p>`;
         }
 
