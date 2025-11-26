@@ -658,16 +658,25 @@ class XyloclimePro {
 
     generateTemplateSpecificAnalysis(template, analysis, project) {
         const startDate = new Date(project.startDate);
+        const endDate = new Date(project.endDate);
         const startMonth = startDate.getMonth(); // 0-11
+        const endMonth = endDate.getMonth(); // 0-11
 
-        // Determine season
-        let season = 'spring';
-        if (startMonth >= 2 && startMonth <= 4) season = 'spring';
-        else if (startMonth >= 5 && startMonth <= 7) season = 'summer';
-        else if (startMonth >= 8 && startMonth <= 10) season = 'fall';
-        else season = 'winter';
+        // Calculate project span in months
+        const monthsSpanned = ((endDate.getFullYear() - startDate.getFullYear()) * 12) + (endMonth - startMonth) + 1;
+        const isMultiSeason = monthsSpanned > 4;
 
-        const seasonalAdvice = template.seasonalAdvice?.[season] || '';
+        // Generate DATA-DRIVEN seasonal advice using actual monthly workability
+        let seasonalAdvice = '';
+        if (analysis.monthlyBreakdown && analysis.monthlyBreakdown.length > 0) {
+            seasonalAdvice = this.generateDataDrivenSeasonalAdvice(
+                template,
+                analysis.monthlyBreakdown,
+                startDate,
+                endDate,
+                isMultiSeason
+            );
+        }
 
         let html = `
             <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--electric-cyan); border-radius: 8px;">
@@ -677,8 +686,8 @@ class XyloclimePro {
 
                 ${seasonalAdvice ? `
                     <div style="margin-bottom: 1rem;">
-                        <strong style="color: var(--electric-cyan);">Seasonal Guidance (${season.charAt(0).toUpperCase() + season.slice(1)} Start):</strong>
-                        <p style="margin: 0.5rem 0; color: var(--steel-silver); font-style: italic;">${seasonalAdvice}</p>
+                        <strong style="color: var(--electric-cyan);">Seasonal Timing Analysis:</strong>
+                        <div style="margin: 0.5rem 0; color: var(--steel-silver);">${seasonalAdvice}</div>
                     </div>
                 ` : ''}
 
@@ -691,7 +700,272 @@ class XyloclimePro {
             </div>
         `;
 
+        // Add discipline-specific technical hazards section
+        if (template.name === 'Roofing Installation') {
+            html += this.generateRoofingTechnicalHazards(analysis, project);
+        } else if (template.name === 'Commercial Concrete Work') {
+            html += this.generateConcreteTechnicalHazards(analysis, project);
+        } else if (template.name === 'Exterior Painting') {
+            html += this.generatePaintingTechnicalHazards(analysis, project);
+        }
+
         return html;
+    }
+
+    generateDataDrivenSeasonalAdvice(template, monthlyBreakdown, startDate, endDate, isMultiSeason) {
+        const startMonth = startDate.getMonth();
+        const endMonth = endDate.getMonth();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+
+        // Get workability data for project months
+        let projectMonths = [];
+        let currentMonth = startMonth;
+        let currentYear = startDate.getFullYear();
+        const endYear = endDate.getFullYear();
+
+        while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
+            const monthData = monthlyBreakdown[currentMonth];
+            if (monthData) {
+                const workablePercent = monthData.totalDays > 0
+                    ? Math.round((monthData.workableDays / monthData.totalDays) * 100)
+                    : 0;
+                projectMonths.push({
+                    name: monthNames[currentMonth],
+                    month: currentMonth,
+                    workablePercent: workablePercent,
+                    workableDays: monthData.workableDays,
+                    totalDays: monthData.totalDays
+                });
+            }
+
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+        }
+
+        // Find best and worst months
+        const sortedByWorkability = [...projectMonths].sort((a, b) => b.workablePercent - a.workablePercent);
+        const bestMonths = sortedByWorkability.slice(0, 3);
+        const worstMonths = sortedByWorkability.slice(-3).reverse();
+
+        // Calculate first 3 months average (immediate exposure)
+        const first3Months = projectMonths.slice(0, Math.min(3, projectMonths.length));
+        const avgFirst3Months = first3Months.length > 0
+            ? Math.round(first3Months.reduce((sum, m) => sum + m.workablePercent, 0) / first3Months.length)
+            : 0;
+
+        let advice = '';
+
+        // MULTI-SEASON PROJECT
+        if (isMultiSeason) {
+            advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
+                <strong style="color: #ffc107;">⚠️ Multi-Season Project:</strong> This ${projectMonths.length}-month project spans multiple seasons with highly variable conditions.
+            </p>`;
+
+            // Immediate exposure assessment
+            const firstMonthName = first3Months[0]?.name;
+            if (avgFirst3Months < 40) {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #e74c3c;">
+                    <strong style="color: #e74c3c;">❌ Poor Start Timing:</strong> Project starts in <strong>${firstMonthName}</strong> with only <strong>${avgFirst3Months}% workability</strong> in first 3 months.
+                    ${template.name === 'Roofing Installation' ? 'Winter roofing is extremely challenging - expect frequent delays, safety hazards, and material issues.' : ''}
+                    ${template.name === 'Commercial Concrete Work' ? 'Winter concrete work requires heated enclosures and special admixtures - significantly higher costs.' : ''}
+                    Consider delaying start to spring for better conditions.
+                </p>`;
+            } else if (avgFirst3Months < 60) {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #f39c12;">
+                    <strong style="color: #f39c12;">⚠️ Challenging Start:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months. Plan for weather delays early.
+                </p>`;
+            } else {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #27ae60;">
+                    <strong style="color: #27ae60;">✓ Good Start Timing:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months.
+                </p>`;
+            }
+
+            // Best months guidance
+            advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
+                <strong style="color: var(--electric-cyan);">Best Months:</strong>
+                ${bestMonths.map(m => `<strong>${m.name}</strong> (${m.workablePercent}% workable)`).join(', ')}.
+                Schedule critical ${template.name.toLowerCase()} work during these windows.
+            </p>`;
+
+            // Worst months warning
+            advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
+                <strong style="color: #e74c3c;">Worst Months:</strong>
+                ${worstMonths.map(m => `<strong>${m.name}</strong> (${m.workablePercent}% workable)`).join(', ')}.
+                ${worstMonths[0].workablePercent < 30 ? 'Minimal work possible - plan for extended delays or shutdowns.' : 'Expect significant weather delays.'}
+            </p>`;
+
+        } else {
+            // SHORT PROJECT (≤4 months)
+            const avgWorkability = Math.round(projectMonths.reduce((sum, m) => sum + m.workablePercent, 0) / projectMonths.length);
+            const startMonthName = monthNames[startMonth];
+
+            if (avgWorkability < 40) {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #e74c3c;">
+                    <strong style="color: #e74c3c;">❌ Poor Timing:</strong> Starting ${startMonthName} with only <strong>${avgWorkability}% average workability</strong>.
+                    ${template.name === 'Roofing Installation' ? 'Winter roofing: expect frequent stoppages, safety issues, brittle shingles, and adhesive failures.' : ''}
+                    ${template.name === 'Commercial Concrete Work' ? 'Cold-weather concrete requires heated enclosures, blankets, and winter admixtures.' : ''}
+                    <strong>Recommendation:</strong> Delay to spring for better conditions and lower costs.
+                </p>`;
+            } else if (avgWorkability < 60) {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #f39c12;">
+                    <strong style="color: #f39c12;">⚠️ Marginal Timing:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong>.
+                    Expect weather-related delays and additional precautions required.
+                </p>`;
+            } else {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #27ae60;">
+                    <strong style="color: #27ae60;">✓ Good Timing:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong>.
+                    Favorable conditions expected for ${template.name.toLowerCase()}.
+                </p>`;
+            }
+
+            // Month-by-month breakdown for short projects
+            advice += `<p style="margin: 0; line-height: 1.6;">
+                <strong>Month-by-Month:</strong><br>
+                ${projectMonths.map(m =>
+                    `${m.name}: <strong>${m.workablePercent}%</strong> workable (${m.workableDays}/${m.totalDays} days)`
+                ).join('<br>')}
+            </p>`;
+        }
+
+        return advice;
+    }
+
+    generateRoofingTechnicalHazards(analysis, project) {
+        const avgTempMin = parseFloat(analysis.avgTempMin);
+        const avgTempMax = parseFloat(analysis.avgTempMax);
+        const freezingDays = parseInt(analysis.allFreezingDays) || 0;
+        const extremeColdDays = parseInt(analysis.extremeColdDays) || 0;
+        const highWindDays = parseInt(analysis.highWindDays) || 0;
+        const snowyDays = parseInt(analysis.snowyDays) || 0;
+        const totalDays = analysis.actualProjectDays || 365;
+
+        // Calculate temperature-based hazards
+        const shingleBrittlenessDays = analysis.daysBelow40F || Math.round(freezingDays * 0.8); // Estimate if not tracked
+        const adhesiveActivationDays = shingleBrittlenessDays; // Similar threshold
+
+        let html = `
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(230, 126, 34, 0.05); border: 2px solid #e67e22; border-radius: 8px;">
+                <h3 style="color: #e67e22; margin: 0 0 1rem 0;">
+                    <i class="fas fa-exclamation-triangle"></i> Roofing-Specific Technical Hazards
+                </h3>
+                <p style="margin: 0 0 1rem 0; color: var(--steel-silver); font-style: italic;">
+                    Roofing installations have unique technical requirements beyond general construction.
+                </p>
+        `;
+
+        // 1. SHINGLE BRITTLENESS
+        if (freezingDays > 0) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Shingle Brittleness (<40°F / 4°C)</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>~${shingleBrittlenessDays} days</strong> expected below 40°F (4°C) where asphalt shingles become brittle and prone to cracking during installation.
+                        ${extremeColdDays > 0 ? `<strong>${extremeColdDays} days</strong> will be extremely cold (≤23°F/-5°C) - shingles very brittle, high breakage risk.` : ''}
+                        <br><strong>Mitigation:</strong> Store shingles in warm area before use. Handle carefully. Consider rubberized/synthetic shingles for cold-weather work.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 2. ADHESIVE ACTIVATION
+        if (freezingDays > 0) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Adhesive Strip Activation Temperature</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>~${adhesiveActivationDays} days</strong> may be too cold for adhesive strips to activate properly. Strips require heat (typically >60°F/16°C) to seal.
+                        <br><strong>Mitigation:</strong> Use cold-weather adhesives. Apply manual sealant. Wait for warmer days for critical seal areas. Inspect bonding after temperature rise.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 3. WIND HAZARDS (HIGH PRIORITY FOR ROOFING)
+        if (highWindDays > 10) {
+            const windStoppagePercent = ((highWindDays / totalDays) * 100).toFixed(0);
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ High Wind Safety & Underlayment Risk</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${highWindDays} days (${windStoppagePercent}%)</strong> with winds ≥30 km/h (19 mph) create safety hazards for elevated work.
+                        <br><strong>Safety Risk:</strong> Fall hazard increases significantly above 20 mph. Stop work above 30 km/h.
+                        <br><strong>Underlayment Risk:</strong> High winds can tear loosely fastened underlayment before shingles are applied. Ensure proper fastening density.
+                        <br><strong>Mitigation:</strong> No elevated work during high winds. Secure all materials. Double-check underlayment fastening before wind events.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 4. ICE DAMMING & FREEZE-THAW
+        if (snowyDays > 10 && freezingDays > 30) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Ice Damming & Freeze-Thaw Cycles</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${snowyDays} snowy days</strong> + <strong>${freezingDays} freezing days</strong> = high ice damming risk and freeze-thaw cycles.
+                        <br><strong>Ice Damming:</strong> Snow melts on warm roof, refreezes at eaves causing water backup under shingles.
+                        <br><strong>Installation Impact:</strong> Existing ice dams must be removed before roofing. New roof needs proper ice/water barriers at eaves.
+                        <br><strong>Mitigation:</strong> Install ice/water shield minimum 3-6 feet up from eaves. Ensure proper attic ventilation. Remove all ice before starting.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 5. SNOW MELT SLIP HAZARDS
+        if (snowyDays > 5) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Snow Melt & Frozen Surface Slip Hazards</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${snowyDays} days</strong> with snow create severe slip hazards during morning melt cycles.
+                        <br><strong>Safety Critical:</strong> Wet, partially frozen roof surfaces are extremely slippery. Morning frost creates glass-like conditions.
+                        <br><strong>Mitigation:</strong> Wait for surfaces to fully dry/thaw. Use aggressive fall protection. Roof jacks and safety harnesses mandatory. Consider non-slip footwear covers.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 6. DECK MOISTURE ABSORPTION
+        const rainyDays = parseInt(analysis.rainyDays) || 0;
+        if (rainyDays > 30) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Roof Deck Moisture Absorption Limits</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${rainyDays} rainy days</strong> mean frequent deck moisture exposure if tear-off work spans multiple days.
+                        <br><strong>Technical Issue:</strong> Plywood/OSB decking absorbs moisture quickly (can swell/deform). Wet decking cannot be shingled.
+                        <br><strong>Mitigation:</strong> Complete sections same-day (tear-off to dry-in). Use tarps religiously. Check deck moisture before shingling. Replace wet/damaged sections.
+                    </p>
+                </div>
+            `;
+        }
+
+        html += `
+                <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(231, 76, 60, 0.1); border-left: 3px solid #e74c3c; border-radius: 4px;">
+                    <strong style="color: #e74c3c;">⚠️ CRITICAL REMINDER:</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--arctic-white); line-height: 1.6;">
+                        Roofing is NOT general construction. Material properties, adhesive chemistry, ice formation, and elevated work safety create unique constraints.
+                        Weather-related delays are common and should be built into schedules. Rushing roofing work in poor conditions leads to callbacks and safety incidents.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    generateConcreteTechnicalHazards(analysis, project) {
+        // Placeholder for concrete-specific hazards (already covered in recommendations)
+        return '';
+    }
+
+    generatePaintingTechnicalHazards(analysis, project) {
+        // Placeholder for painting-specific hazards
+        return '';
     }
 
     displaySmartRecommendations(analysis, project) {
@@ -2588,6 +2862,9 @@ class XyloclimePro {
             return;
         }
 
+        // Scroll to top immediately so user can see loading indicator
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         // Show loading indicators
         const progressInterval = window.LoadingManager.showProgress();
         window.LoadingManager.setButtonLoading('analyzeBtn', true);
@@ -3224,10 +3501,14 @@ class XyloclimePro {
                 avgWindSpeed: this.average(daily.windspeed_10m_max),
                 maxWindSpeed: Math.max(...daily.windspeed_10m_max.filter(w => w !== null)),
 
-                // WORKABILITY TIERS - Three levels of work feasibility
+                // WORKABILITY TIERS - Two levels of work feasibility
+                // IMPORTANT: Ideal Days are a SUBSET of Workable Days (not additive)
+                // If a day is ideal, it is automatically also workable
+                // idealDays ≤ workableDays (always)
 
                 // Tier 1: IDEAL DAYS (renamed from "optimal")
                 // Perfect conditions - no precautions needed
+                // Stricter thresholds than workable days
                 // - Temp: Not freezing (>0°C) and comfortable (<100°F / 37.78°C)
                 // - Rain: Minimal (<5mm)
                 // - Wind: Calm (<20 km/h)
@@ -3241,6 +3522,7 @@ class XyloclimePro {
 
                 // Tier 2: WORKABLE DAYS (realistic construction feasibility)
                 // Work can continue with normal cold-weather/rain precautions
+                // More lenient thresholds than ideal days (includes ideal days)
                 // CLEAR RULES:
                 // ✓ Workable: Light freezing (>-5°C), light rain (<10mm), light wind (<30 km/h), hot but <110°F
                 // ✗ NOT Workable: Work-stopping cold (≤-5°C/≤23°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
@@ -4294,6 +4576,12 @@ class XyloclimePro {
             riskColor = '#e74c3c';
         }
 
+        // Get template for project-specific recommendations
+        let template = null;
+        if (this.selectedTemplate && this.templatesLibrary) {
+            template = this.templatesLibrary.getTemplate(this.selectedTemplate);
+        }
+
         // Generate recommendations based on risk factors
         const recommendations = this.generateRiskRecommendations({
             totalScore,
@@ -4301,7 +4589,8 @@ class XyloclimePro {
             tempRisk,
             windRisk,
             seasonRisk,
-            analysis
+            analysis,
+            template  // Pass template for project-specific guidance
         });
 
         return {
@@ -4321,7 +4610,7 @@ class XyloclimePro {
 
     generateRiskRecommendations(riskData) {
         const recommendations = [];
-        const { totalScore, precipRisk, tempRisk, analysis } = riskData;
+        const { totalScore, precipRisk, tempRisk, windRisk, analysis, template } = riskData;
 
         // Calculate consistent contingency recommendation
         const totalProjectDays = analysis.actualProjectDays || 365;
@@ -4342,50 +4631,109 @@ class XyloclimePro {
             recommendedContingency = `${minContingency}-${maxContingency}%`;
         }
 
-        // High precipitation risk
-        if (precipRisk > 60) {
-            recommendations.push('Consider waterproofing measures and drainage planning for frequent precipitation');
-            recommendations.push(`Plan for ${analysis.rainyDays} rainy days with potential work stoppages`);
+        // Get template-specific thresholds and risk factors
+        const templateName = template ? template.name : 'General Construction';
+        const riskFactors = template ? template.riskFactors : {};
+
+        // HIGH PRECIPITATION RISK - Template-specific guidance
+        if (precipRisk > 60 && riskFactors.rain === 'CRITICAL') {
+            // Critical rain sensitivity (roofing, painting)
+            recommendations.push(`${templateName}: Rain is CRITICAL - ${analysis.rainyDays} rainy days will stop all work`);
+            if (template?.name === 'Roofing Installation') {
+                recommendations.push('Have tarps ready for immediate coverage. No exposed work areas during rain');
+            } else if (template?.name === 'Exterior Painting') {
+                recommendations.push('Need 48 hours dry weather after application. Plan around rain windows');
+            }
+        } else if (precipRisk > 60 && riskFactors.rain === 'HIGH') {
+            // High rain sensitivity (concrete)
+            recommendations.push(`${templateName}: Plan for ${analysis.rainyDays} rainy days with work stoppages`);
+            if (template?.name === 'Commercial Concrete Work') {
+                recommendations.push('Avoid pouring 24hrs before/after rain. Use proper drainage and curing protection');
+            }
+        } else if (precipRisk > 60) {
+            // Medium/low rain sensitivity
+            recommendations.push(`Plan for ${analysis.rainyDays} rainy days (${heavyRain} work-stopping)`);
         }
 
-        // High temperature risk (only when tempRisk > 60)
+        // HIGH TEMPERATURE RISK - Template-specific guidance
         if (tempRisk > 60) {
             const workStoppingCold = parseInt(analysis.extremeColdDays) || 0;
+
             if (workStoppingCold > 15) {
-                recommendations.push(`Plan for ${workStoppingCold} work-stopping cold days (≤-5°C): heated enclosures and winter methods recommended`);
-                recommendations.push('Consider insulated materials and cold-weather equipment');
-            } else if (parseInt(analysis.freezingDays) > 30) {
-                recommendations.push(`${analysis.freezingDays} freezing days expected (most workable with precautions)`);
-                recommendations.push('Use cold-weather methods: heated blankets, winter mix concrete');
+                if (template?.name === 'Commercial Concrete Work') {
+                    recommendations.push(`Plan for ${workStoppingCold} work-stopping cold days (≤-5°C): heated enclosures and winter methods recommended`);
+                    recommendations.push('Concrete curing requires temps above 4°C (40°F). Use heated blankets and winter admixtures');
+                } else if (template?.name === 'Roofing Installation') {
+                    recommendations.push(`${workStoppingCold} very cold days expected. Asphalt shingles brittle below -5°C`);
+                    recommendations.push('Use cold-weather adhesives. Work limited to above -5°C days');
+                } else {
+                    recommendations.push(`Plan for ${workStoppingCold} work-stopping cold days (≤-5°C): heated enclosures recommended`);
+                    recommendations.push('Consider insulated materials and cold-weather equipment');
+                }
             }
+
             if (parseInt(analysis.extremeHeatDays) > 20) {
-                recommendations.push('Schedule heat-sensitive work during cooler months');
-                recommendations.push('Plan for worker heat safety measures and hydration');
+                if (template?.name === 'Commercial Concrete Work') {
+                    recommendations.push('Pour concrete early morning during heat. Use retarders above 32°C (90°F)');
+                } else if (template?.name === 'Exterior Painting') {
+                    recommendations.push('Paint in morning/evening during heat. Avoid midday temps above 32°C');
+                } else {
+                    recommendations.push('Schedule heat-sensitive work during cooler hours. Plan worker heat safety');
+                }
             }
         }
 
-        // Overall high risk
+        // HIGH WIND RISK - Template-specific guidance
+        if (windRisk !== null && windRisk > 60) {
+            const highWindDays = parseInt(analysis.highWindDays) || 0;
+
+            if (riskFactors.wind === 'CRITICAL') {
+                recommendations.push(`${templateName}: WIND CRITICAL - ${highWindDays} high wind days (≥30 km/h) will stop work`);
+                if (template?.name === 'Roofing Installation') {
+                    recommendations.push('Safety hazard: No elevated work above 30 km/h (19 mph). Wind sensitivity very high');
+                }
+            } else if (template?.name === 'Commercial Concrete Work') {
+                recommendations.push(`${highWindDays} high wind days expected. May affect crane operations for rebar/forms`);
+            } else if (highWindDays > 20) {
+                recommendations.push(`Consider ${highWindDays} high wind days (≥30 km/h): affects elevated work and crane operations`);
+            }
+        }
+
+        // SNOW RISK - Template-specific
+        if (heavySnow > 5) {
+            if (template?.name === 'Roofing Installation') {
+                recommendations.push(`${heavySnow} heavy snow days: Roof work impossible during snow/ice conditions`);
+            } else if (template?.name === 'Commercial Concrete Work') {
+                recommendations.push(`${heavySnow} heavy snow days: No concrete work possible during active snowfall`);
+            } else {
+                recommendations.push(`${heavySnow} heavy snow days expected: plan for snow removal and delays`);
+            }
+
+            // Add ERA5 warning if snow is underestimated
+            const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
+            if (!usingNOAA && analysis.totalSnowfall > 10) {
+                recommendations.push('⚠️ Snow estimates may be conservative. Actual snowfall could be higher - add extra contingency');
+            }
+        }
+
+        // OVERALL RISK LEVEL GUIDANCE
         if (totalScore > 65) {
             recommendations.push(`Add ${recommendedContingency} contingency time to project schedule for weather delays`);
             recommendations.push('Consider weather insurance or performance bonds');
             recommendations.push('Develop detailed weather contingency plans');
-        }
-
-        // Moderate risk
-        if (totalScore > 40 && totalScore <= 65) {
+        } else if (totalScore > 40) {
             recommendations.push(`Add ${recommendedContingency} contingency time to project schedule`);
             recommendations.push('Monitor weather forecasts closely during critical phases');
-        }
-
-        // Low risk
-        if (totalScore <= 40) {
+        } else {
             recommendations.push('Weather conditions are generally favorable for this project');
             recommendations.push(`Weather contingency of ${recommendedContingency} recommended (calculated from work-stoppage analysis)`);
         }
 
-        // Optimal days insight
-        if (parseInt(analysis.optimalDays) < 100) {
-            recommendations.push(`Focus critical work during the ${analysis.optimalDays} optimal weather days identified`);
+        // OPTIMAL DAYS INSIGHT
+        const workableDays = parseInt(analysis.workableDays);
+        if (workableDays < totalProjectDays * 0.6) {
+            const idealDays = parseInt(analysis.idealDays) || 0;
+            recommendations.push(`Only ${workableDays}/${totalProjectDays} days workable (${idealDays} ideal). Focus critical work during optimal weather windows`);
         }
 
         return recommendations;
@@ -5556,7 +5904,7 @@ class XyloclimePro {
         <td style="padding: 0.75rem; text-align: right;"><strong>${workablePercent}%</strong></td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <td style="padding: 0.75rem;">Ideal Days</td>
+        <td style="padding: 0.75rem; padding-left: 1.5rem;">↳ Ideal Days (subset)</td>
         <td style="padding: 0.75rem; text-align: right;">${analysis.idealDays}</td>
         <td style="padding: 0.75rem; text-align: right;">${idealPercent}%</td>
         </tr>
