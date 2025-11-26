@@ -718,6 +718,11 @@ class XyloclimePro {
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                            'July', 'August', 'September', 'October', 'November', 'December'];
 
+        console.log('[SEASONAL] Generating data-driven seasonal advice');
+        console.log('[SEASONAL] Project:', startDate.toISOString().split('T')[0], 'to', endDate.toISOString().split('T')[0]);
+        console.log('[SEASONAL] Start month:', startMonth, '(' + monthNames[startMonth] + ')');
+        console.log('[SEASONAL] Monthly breakdown data:', monthlyBreakdown);
+
         // Get workability data for project months
         let projectMonths = [];
         let currentMonth = startMonth;
@@ -726,17 +731,24 @@ class XyloclimePro {
 
         while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
             const monthData = monthlyBreakdown[currentMonth];
-            if (monthData) {
-                const workablePercent = monthData.totalDays > 0
-                    ? Math.round((monthData.workableDays / monthData.totalDays) * 100)
-                    : 0;
+
+            console.log(`[SEASONAL] Reading month ${currentMonth} (${monthNames[currentMonth]} ${currentYear}):`, monthData);
+
+            if (monthData && monthData.avgDaysInMonth !== undefined) {
+                // Use the pre-calculated workablePercent from the breakdown (it's a string, so parse it)
+                const workablePercent = parseInt(monthData.workablePercent) || 0;
+
+                console.log(`[SEASONAL] ${monthNames[currentMonth]}: ${monthData.workableDays}/${monthData.avgDaysInMonth} = ${workablePercent}%`);
+
                 projectMonths.push({
                     name: monthNames[currentMonth],
                     month: currentMonth,
                     workablePercent: workablePercent,
                     workableDays: monthData.workableDays,
-                    totalDays: monthData.totalDays
+                    totalDays: monthData.avgDaysInMonth
                 });
+            } else {
+                console.warn(`[SEASONAL] Missing data for month ${currentMonth} (${monthNames[currentMonth]})`);
             }
 
             currentMonth++;
@@ -745,6 +757,8 @@ class XyloclimePro {
                 currentYear++;
             }
         }
+
+        console.log('[SEASONAL] Project months collected:', projectMonths);
 
         // Find best and worst months
         const sortedByWorkability = [...projectMonths].sort((a, b) => b.workablePercent - a.workablePercent);
