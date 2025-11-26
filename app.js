@@ -4516,10 +4516,14 @@ class XyloclimePro {
         console.log(`[RISK] Precipitation: ${wetDays}/${totalDays} days (${(wetDaysRatio*100).toFixed(1)}%) = ${precipRisk.toFixed(1)} risk`);
 
         // 2. Temperature Risk (25% weight)
-        // Extreme temps (freezing or heat) = higher risk
-        const tempExtremeDays = parseInt(analysis.freezingDays) + parseInt(analysis.extremeHeatDays);
-        const tempExtremeRatio = tempExtremeDays / totalDays;
+        // Work-stopping temperature extremes (NOT all freezing - only work-stopping cold)
+        // extremeColdDays = ≤-5°C/≤23°F (work stoppage), not all freezing (0°C includes workable temps)
+        // extremeHeatDays = ≥100°F (reduces productivity but not full stoppage for most work)
+        const workStoppingTempDays = parseInt(analysis.extremeColdDays) + Math.round(parseInt(analysis.extremeHeatDays) * 0.5);
+        const tempExtremeRatio = workStoppingTempDays / totalDays;
         const tempRisk = Math.min(100, tempExtremeRatio * 400);
+
+        console.log(`[RISK] Temperature: ${workStoppingTempDays}/${totalDays} work-stopping days (${(tempExtremeRatio*100).toFixed(1)}%) = ${tempRisk.toFixed(1)} risk`);
 
         // 3. Wind Risk (20% weight)
         // Check if we have actual wind data
@@ -4626,23 +4630,34 @@ class XyloclimePro {
         const recommendations = [];
         const { totalScore, precipRisk, tempRisk, windRisk, analysis, template } = riskData;
 
-        // Calculate consistent contingency recommendation
+        // Calculate transparent contingency recommendation
         const totalProjectDays = analysis.actualProjectDays || 365;
         const heavyRain = analysis.heavyRainDays || 0;
         const workStoppingCold = analysis.extremeColdDays || 0;
         const heavySnow = analysis.heavySnowDays || 0;
         const grossStoppageDays = heavyRain + workStoppingCold + heavySnow;
+
+        // Estimate overlap (e.g., cold + snowy same day)
         const estimatedOverlap = Math.round(grossStoppageDays * 0.25);
         const netStoppageDays = grossStoppageDays - estimatedOverlap;
         const directStoppagePercent = ((netStoppageDays / totalProjectDays) * 100).toFixed(1);
 
+        // Recommended contingency includes:
+        // 1. Direct stoppage days (baseline)
+        // 2. Indirect delays: setup/teardown, mobilization after stoppages, partial workdays
+        // 3. Schedule cascading effects: critical path impacts, trade coordination delays
+        // 4. Safety margin for inter-annual variability
+        // Industry best practice: 1.3-1.5x direct stoppage
         let recommendedContingency = '';
+        let contingencyExplanation = '';
         if (netStoppageDays === 0) {
             recommendedContingency = '10%';
+            contingencyExplanation = 'Minimal weather risk - standard contingency recommended';
         } else {
             const minContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.3);
             const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
             recommendedContingency = `${minContingency}-${maxContingency}%`;
+            contingencyExplanation = `${directStoppagePercent}% direct stoppage × 1.3-1.5 multiplier (accounts for indirect delays, setup/teardown, and schedule cascading)`;
         }
 
         // Get template-specific thresholds and risk factors
@@ -4732,15 +4747,15 @@ class XyloclimePro {
 
         // OVERALL RISK LEVEL GUIDANCE
         if (totalScore > 65) {
-            recommendations.push(`Add ${recommendedContingency} contingency time to project schedule for weather delays`);
+            recommendations.push(`Add ${recommendedContingency} weather contingency to project schedule (${contingencyExplanation})`);
             recommendations.push('Consider weather insurance or performance bonds');
             recommendations.push('Develop detailed weather contingency plans');
         } else if (totalScore > 40) {
-            recommendations.push(`Add ${recommendedContingency} contingency time to project schedule`);
+            recommendations.push(`Add ${recommendedContingency} weather contingency to project schedule (${contingencyExplanation})`);
             recommendations.push('Monitor weather forecasts closely during critical phases');
         } else {
             recommendations.push('Weather conditions are generally favorable for this project');
-            recommendations.push(`Weather contingency of ${recommendedContingency} recommended (calculated from work-stoppage analysis)`);
+            recommendations.push(`Weather contingency of ${recommendedContingency} recommended (${contingencyExplanation})`);
         }
 
         // OPTIMAL DAYS INSIGHT
