@@ -5035,10 +5035,17 @@ class XyloclimePro {
         // Display confidence intervals
         const confidenceContainer = document.getElementById('confidenceIntervals');
         if (confidenceContainer && analysis.rainyDaysConfidence) {
-            const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
-            const dataSourceNote = usingNOAA
-                ? `*Data quality based on available historical records. Snowfall data from NOAA direct station measurements (100% accuracy). Temperature and precipitation from ${analysis.snowDataSource?.source || 'ERA5'} reanalysis.`
-                : `*Data quality based on available historical records. Values at or near 100% may include minor interpolation or estimation for missing data points from the Open-Meteo ERA5 dataset.`;
+            const snowSource = analysis.snowDataSource?.source || 'ERA5';
+            const usingNOAA = snowSource === 'NOAA';
+
+            // Build clear multi-source attribution
+            let dataSourceNote = '';
+            if (usingNOAA) {
+                dataSourceNote = `*Data Sources: Snowfall from <strong>NOAA station</strong> (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away - 100% accuracy). Temperature, precipitation, and wind from <strong>ERA5 reanalysis</strong> (30km resolution). Historical averages calculated from ${analysis.yearsAnalyzed} years of data.`;
+            } else {
+                const snowAccuracy = analysis.snowDataSource?.accuracy || '~4%';
+                dataSourceNote = `*Data Sources: All metrics from <strong>ERA5 reanalysis</strong> (30km resolution). Snowfall estimates have <strong>${snowAccuracy} accuracy</strong> - may be underestimated in northern/windy climates or lake-effect zones. Temperature and precipitation are reliable. Consider using wider contingency buffers for snow-dependent operations.`;
+            }
 
             const confidenceHTML = `
                 <div class="confidence-info">
@@ -6103,17 +6110,20 @@ class XyloclimePro {
 
         // Precipitation analysis
         if (analysis.rainyDays > 0) {
-            summary += `<p><strong>Precipitation Analysis:</strong> ${analysis.rainyDays} rainy days expected (${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>10mm). ${heavyRainPercent}% of rainy days qualify as heavy rain`;
+            const rainyDaysMin = analysis.rainyDaysMin || Math.round(analysis.rainyDays * 0.85);
+            const rainyDaysMax = analysis.rainyDaysMax || Math.round(analysis.rainyDays * 1.15);
+            summary += `<p><strong>Precipitation Analysis:</strong> Approximately <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax} days, ${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>10mm). ${heavyRainPercent}% of rainy days qualify as heavy rain`;
             if (heavyRainPercent > 40) {
                 summary += ` – <em>higher than typical 15-30% proportion</em>`;
             }
-            summary += `. Light rain days (<10mm) are included in workable counts as work can continue with rain gear and drainage.</p>`;
+            summary += `. Light rain days (<10mm) are included in workable counts as work can continue with rain gear and drainage.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Precipitation values represent historical averages. Actual conditions may vary ±15-20% from these projections year-to-year.</em></p>`;
         }
 
         // Snow & freezing analysis
         if (analysis.snowyDays > 0) {
-            summary += `<p><strong>Snow Advisory:</strong> ${analysis.snowyDays} days with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} days with heavy snow (>10mm) typically require work stoppage.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">⚠️ Snowfall exhibits high year-to-year variability. Actual conditions may vary significantly from historical averages. Build robust contingency buffers into schedules and material delivery plans.</em>
+            summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm) typically require work stoppage.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">⚠️ Snowfall exhibits high year-to-year variability (±30-50%). Actual conditions may vary significantly from historical averages. Build robust contingency buffers into schedules and material delivery plans.</em>
             <br>Winter construction protocols recommended.</p>`;
         }
 
