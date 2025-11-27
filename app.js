@@ -3488,15 +3488,16 @@ class XyloclimePro {
 
                 // Count event days for THIS YEAR
                 // TEMPERATURE CATEGORIES (construction-specific thresholds):
-                // NOTE: "Work-stopping cold" (≤-5°C) is DIFFERENT from meteorological "Extreme Cold" (≤-17.7°C/0°F)
-                // This tool uses ≤-5°C as the construction-specific threshold for contingency calculations
-                // - Light freezing (0 to -5°C): Workable with cold-weather precautions
-                // - Work-stopping cold (≤ -5°C / ≤23°F): Construction/concrete work stoppage required
+                // REALISTIC thresholds based on modern cold-weather concrete practices:
+                // - Light freezing (0 to -5°C / 32-23°F): Workable with blankets, timing adjustments
+                // - Cold-weather methods (≤-5°C to -18°C / ≤23°F to 0°F): Workable with accelerators, hot water, enclosures, blankets
+                // - EXTREME COLD STOPPAGE (≤-18°C / ≤0°F): True work stoppage - even protected pours are risky
                 // - Hot days (≥ 100°F / 37.78°C): Tracked for information - reduces ideal days but still workable with precautions
                 // - Dangerous heat (≥ 110°F / 43.33°C): True work stoppage - safety risk
                 allFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t <= 0).length,  // All days at/below freezing
-                lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -5 && t <= 0).length,  // Workable with precautions
-                extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -5).length,  // Work stoppage
+                lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -5 && t <= 0).length,  // Light precautions (blankets, timing)
+                coldWeatherMethodsDays: daily.temperature_2m_min.filter(t => t !== null && t <= -5 && t > -18).length,  // Workable with proper methods (accelerators, hot water, enclosures)
+                extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -18).length,  // TRUE work stoppage (≤0°F)
                 extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37.78).length,  // Days ≥100°F (informational - not work-stopping)
 
                 // PRECIPITATION CATEGORIES:
@@ -3590,6 +3591,7 @@ class XyloclimePro {
         // Average event days PER YEAR
         const allFreezingDays = Math.round(this.average(yearlyStats.map(y => y.allFreezingDays)));
         const lightFreezingDays = Math.round(this.average(yearlyStats.map(y => y.lightFreezingDays)));
+        const coldWeatherMethodsDays = Math.round(this.average(yearlyStats.map(y => y.coldWeatherMethodsDays)));
         const extremeColdDays = Math.round(this.average(yearlyStats.map(y => y.extremeColdDays)));
         const extremeHeatDays = Math.round(this.average(yearlyStats.map(y => y.extremeHeatDays)));
         const rainyDays = Math.round(this.average(yearlyStats.map(y => y.rainyDays)));
@@ -3600,14 +3602,15 @@ class XyloclimePro {
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
 
-        // Validate temperature distribution reasonableness
+        // Validate temperature distribution reasonableness (using new -18°C / 0°F threshold)
         const extremeColdPercent = (extremeColdDays / actualProjectDays) * 100;
-        const expectedZScore = (avgTempMin - (-5)) / tempMinStdDev; // How many std devs is threshold from mean
-        console.log(`[TEMP VALIDATION] Extreme cold: ${extremeColdDays} days (${extremeColdPercent.toFixed(1)}%), Z-score: ${expectedZScore.toFixed(2)}, Std Dev: ${tempMinStdDev.toFixed(1)}°C`);
+        const coldWeatherPercent = (coldWeatherMethodsDays / actualProjectDays) * 100;
+        const expectedZScore = (avgTempMin - (-18)) / tempMinStdDev; // How many std devs is threshold from mean
+        console.log(`[TEMP VALIDATION] Extreme cold (≤0°F): ${extremeColdDays} days (${extremeColdPercent.toFixed(1)}%), Cold-weather methods (0-23°F): ${coldWeatherMethodsDays} days (${coldWeatherPercent.toFixed(1)}%), Z-score: ${expectedZScore.toFixed(2)}, Std Dev: ${tempMinStdDev.toFixed(1)}°C`);
 
-        // Flag if distribution seems unusual (more than 25% below threshold that's >1.5 std devs from mean)
-        if (extremeColdPercent > 25 && Math.abs(expectedZScore) > 1.5) {
-            console.warn(`[TEMP WARNING] Unusual temperature distribution detected: ${extremeColdPercent.toFixed(0)}% of days below -5°C despite avg min of ${avgTempMin.toFixed(1)}°C. Location may have extreme variability or bimodal climate.`);
+        // Flag if distribution seems unusual (more than 15% below 0°F threshold that's >1.5 std devs from mean)
+        if (extremeColdPercent > 15 && Math.abs(expectedZScore) > 1.5) {
+            console.warn(`[TEMP WARNING] Unusual temperature distribution detected: ${extremeColdPercent.toFixed(0)}% of days below 0°F (≤-18°C) despite avg min of ${avgTempMin.toFixed(1)}°C. Location may have extreme variability or bimodal climate.`);
         }
 
         // Validate heavy rain proportion (should be 15-30% of rainy days typically)
@@ -3645,8 +3648,9 @@ class XyloclimePro {
 
             // Event days - Temperature
             allFreezingDays,          // All days at/below freezing (informational)
-            lightFreezingDays,        // Days with 0 to -5°C (workable with precautions)
-            extremeColdDays,          // Work-stopping cold (≤-5°C/≤23°F) - construction work stoppage
+            lightFreezingDays,        // Days with 0 to -5°C / 32-23°F (workable with blankets, timing)
+            coldWeatherMethodsDays,   // Days with -5 to -18°C / 23-0°F (workable with accelerators, hot water, enclosures)
+            extremeColdDays,          // EXTREME COLD STOPPAGE (≤-18°C/≤0°F) - true work stoppage
             extremeHeatDays,          // Days above 37°C (NOT workable)
             freezingDays: allFreezingDays,  // Backward compatibility
 
@@ -4541,14 +4545,15 @@ class XyloclimePro {
         console.log(`[RISK] Precipitation: ${wetDays}/${totalDays} days (${(wetDaysRatio*100).toFixed(1)}%) = ${precipRisk.toFixed(1)} risk`);
 
         // 2. Temperature Risk (25% weight)
-        // Work-stopping temperature extremes (NOT all freezing - only work-stopping cold)
-        // extremeColdDays = ≤-5°C/≤23°F (work stoppage), not all freezing (0°C includes workable temps)
+        // REALISTIC work-stopping temperature extremes based on modern cold-weather practices
+        // extremeColdDays = ≤-18°C/≤0°F (TRUE work stoppage - extreme cold even with protection)
+        // coldWeatherMethodsDays = -18°C to -5°C (0°F to 23°F) are WORKABLE with proper methods, not counted as stoppage
         // extremeHeatDays = ≥100°F (reduces productivity but not full stoppage for most work)
         const workStoppingTempDays = parseInt(analysis.extremeColdDays) + Math.round(parseInt(analysis.extremeHeatDays) * 0.5);
         const tempExtremeRatio = workStoppingTempDays / totalDays;
         const tempRisk = Math.min(100, tempExtremeRatio * 400);
 
-        console.log(`[RISK] Temperature: ${workStoppingTempDays}/${totalDays} work-stopping days (${(tempExtremeRatio*100).toFixed(1)}%) = ${tempRisk.toFixed(1)} risk`);
+        console.log(`[RISK] Temperature: ${workStoppingTempDays}/${totalDays} work-stopping days (${analysis.extremeColdDays} extreme cold ≤0°F + ${Math.round(parseInt(analysis.extremeHeatDays) * 0.5)} heat days, ${(tempExtremeRatio*100).toFixed(1)}%) = ${tempRisk.toFixed(1)} risk`);
 
         // 3. Wind Risk (20% weight)
         // Check if we have actual wind data
@@ -6090,7 +6095,12 @@ class XyloclimePro {
         <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">`;
 
         if (analysis.allFreezingDays > 10) {
-            summary += `<li><strong>Freezing conditions slow cure times</strong> – ${analysis.extremeColdDays} days with work-stopping cold (≤-5°C / ≤23°F) typically require work stoppage. ${analysis.lightFreezingDays} days with light freezing (0 to -5°C) are workable with heated enclosures and accelerated admixtures.</li>`;
+            const coldWeatherTotal = (analysis.coldWeatherMethodsDays || 0) + (analysis.lightFreezingDays || 0);
+            if (analysis.extremeColdDays > 0) {
+                summary += `<li><strong>Extreme cold stoppage</strong> – ${analysis.extremeColdDays} days with extreme cold (≤0°F / ≤-18°C) typically require work stoppage even with protection. ${analysis.coldWeatherMethodsDays || 0} additional days (0-23°F) are workable with proper cold-weather methods: blankets, hot water mix, accelerators, and heated enclosures. ${analysis.lightFreezingDays} days (23-32°F) need only light precautions (timing, blankets).</li>`;
+            } else if (coldWeatherTotal > 0) {
+                summary += `<li><strong>Cold-weather concrete methods required</strong> – ${analysis.coldWeatherMethodsDays || 0} days (0-23°F) need accelerators, hot water, and enclosures. ${analysis.lightFreezingDays} days (23-32°F) need light precautions (timing, blankets). No extreme cold stoppage days expected.</li>`;
+            }
         }
 
         if (analysis.heavyRainDays > 5) {
@@ -6106,9 +6116,13 @@ class XyloclimePro {
             summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with >10mm rain (${heavyRainOfTotalPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
         }
 
-        if (analysis.allFreezingDays > 0 || analysis.extremeColdDays > 0) {
-            summary += `<li><strong>Heated enclosures recommended for winter</strong> – Recommended for ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F). Maintain minimum 10°C ambient temperature for proper curing.</li>`;
-            summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Type III cement or calcium chloride accelerators reduce cure time and cold-weather risks.</li>`;
+        if (analysis.allFreezingDays > 0) {
+            if (analysis.extremeColdDays > 0) {
+                summary += `<li><strong>Heated enclosures critical for extreme cold</strong> – Essential for ${analysis.extremeColdDays} extreme cold days (≤0°F/≤-18°C). Maintain minimum 50°F (10°C) ambient temperature for proper curing.</li>`;
+            }
+            if ((analysis.coldWeatherMethodsDays || 0) > 0) {
+                summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Required for ${analysis.coldWeatherMethodsDays} cold-weather days (0-23°F). Type III cement or calcium chloride accelerators reduce cure time. Hot water mix (120°F) recommended.</li>`;
+            }
         }
 
         summary += `<li><strong>Plan pours during optimal windows</strong> – ${analysis.idealDays} ideal days identified. Schedule critical pours during these periods for best results.</li>`;
@@ -6146,11 +6160,16 @@ class XyloclimePro {
             const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
             recommendedContingency = `${minContingency}-${maxContingency}%`;
 
-            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} work-stopping cold + ${heavySnow} heavy snow, accounting for overlap). `;
+            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} extreme cold (≤0°F) + ${heavySnow} heavy snow, accounting for overlap). `;
             justification += `Recommended schedule contingency: ${recommendedContingency}.`;
 
+            const coldWeatherDays = (analysis.coldWeatherMethodsDays || 0);
+            if (coldWeatherDays > 10) {
+                justification += ` Note: ${coldWeatherDays} additional cold-weather days (0-23°F) are workable with proper methods (accelerators, hot water, enclosures).`;
+            }
+
             if (highWind > 10) {
-                justification += ` Note: ${highWind} high-wind days may restrict crane/elevated work.`;
+                justification += ` ${highWind} high-wind days may restrict crane/elevated work.`;
             }
         }
 
@@ -6216,25 +6235,43 @@ class XyloclimePro {
         if (analysis.allFreezingDays > 10) {
             // Calculate if temperature distribution is unusual
             const extremeColdPercent = (analysis.extremeColdDays / duration) * 100;
+            const coldWeatherPercent = ((analysis.coldWeatherMethodsDays || 0) / duration) * 100;
             const avgMinC = parseFloat(analysis.avgTempMin);
             const stdDevC = parseFloat(analysis.tempMinStdDev);
-            const threshold = -5;
+            const threshold = -18; // 0°F threshold
             const zScore = Math.abs((avgMinC - threshold) / stdDevC);
-            const isUnusualDistribution = extremeColdPercent > 25 && zScore > 1.5;
+            const isUnusualDistribution = extremeColdPercent > 15 && zScore > 1.5;
 
-            summary += `<p><strong>Cold Weather Alert:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${analysis.extremeColdDays} work-stopping cold days (≤-5°C/≤23°F, work stoppage) + ${analysis.lightFreezingDays} light freezing days (0 to -5°C, workable with precautions).
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean of all daily minimums. Individual days can drop significantly below this average—${analysis.extremeColdDays} specific days are projected to reach ≤23°F (≤-5°C).`;
+            // Build three-tier cold weather breakdown
+            let coldBreakdown = '';
+            if (analysis.extremeColdDays > 0) {
+                coldBreakdown += `${analysis.extremeColdDays} <strong>extreme cold stoppage days</strong> (≤0°F/≤-18°C, true work stoppage)`;
+            }
+            if ((analysis.coldWeatherMethodsDays || 0) > 0) {
+                if (coldBreakdown) coldBreakdown += ' + ';
+                coldBreakdown += `${analysis.coldWeatherMethodsDays} <strong>cold-weather method days</strong> (0-23°F, workable with accelerators/enclosures/hot water)`;
+            }
+            if (analysis.lightFreezingDays > 0) {
+                if (coldBreakdown) coldBreakdown += ' + ';
+                coldBreakdown += `${analysis.lightFreezingDays} <strong>light precaution days</strong> (23-32°F, blankets/timing needed)`;
+            }
+
+            summary += `<p><strong>Cold Weather Analysis:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${coldBreakdown}.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Modern cold-weather concrete practices allow work in temps as low as 0°F with proper methods (hot water mix, accelerators, heated enclosures, insulated blankets). Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
 
             if (isUnusualDistribution) {
                 summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
             }
 
             summary += `</em>
-            <br>Concrete curing, material storage, and worker safety measures recommended.</p>`;
+            <br>Plan cold-weather protocols: blankets, accelerators, hot water, and enclosures as needed.</p>`;
         } else if (analysis.extremeColdDays > 0) {
-            summary += `<p><strong>Work-Stopping Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤-5°C (≤23°F) typically require work stoppage.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: This count represents ${analysis.extremeColdDays} specific days projected to reach the work-stopping threshold, even though the average low is ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}.</em>
-            <br>Plan heated enclosures and cold-weather protocols.</p>`;
+            summary += `<p><strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤0°F (≤-18°C) typically require work stoppage even with protection.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: This represents ${analysis.extremeColdDays} specific days projected to reach extreme cold, even though the average low is ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}.</em>
+            <br>Plan heated enclosures and schedule around these extreme conditions.</p>`;
+        } else if ((analysis.coldWeatherMethodsDays || 0) > 0) {
+            summary += `<p><strong>Cold-Weather Methods Required:</strong> ${analysis.coldWeatherMethodsDays} days between 0-23°F require accelerators, hot water mix, and curing blankets. No extreme cold stoppage expected.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Concrete work is feasible year-round with proper cold-weather practices.</em></p>`;
         }
 
         summary += `</div>`;
