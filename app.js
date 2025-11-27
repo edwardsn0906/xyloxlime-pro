@@ -5374,6 +5374,33 @@ class XyloclimePro {
         document.getElementById('projectInfoDates').textContent =
             `${this.currentProject.startDate} to ${this.currentProject.endDate}`;
 
+        // Update template badge in project header
+        const templateBadgeEl = document.getElementById('projectInfoTemplate');
+        if (templateBadgeEl) {
+            if (this.selectedTemplate && this.templatesLibrary) {
+                const template = this.templatesLibrary.getTemplate(this.selectedTemplate);
+                if (template) {
+                    const templateIcon = template.icon || 'fa-cog';
+                    templateBadgeEl.innerHTML = `
+                        <i class="fas ${templateIcon}" style="color: var(--electric-cyan); margin-right: 0.5rem;"></i>
+                        <strong style="color: var(--electric-cyan);">Analysis Template:</strong>
+                        <span style="color: var(--arctic-white); margin-left: 0.5rem;">${this.sanitizeHTML(template.name)}</span>
+                    `;
+                    templateBadgeEl.style.display = 'block';
+                } else {
+                    templateBadgeEl.style.display = 'none';
+                }
+            } else {
+                // Show default/general construction warning
+                templateBadgeEl.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #f39c12; margin-right: 0.5rem;"></i>
+                    <strong style="color: #f39c12;">Analysis Template:</strong>
+                    <span style="color: var(--arctic-white); margin-left: 0.5rem;">General Construction (Default)</span>
+                `;
+                templateBadgeEl.style.display = 'block';
+            }
+        }
+
         // Add timestamp of when the analysis was completed
         // If loading an existing project, use its saved timestamp; otherwise use current time
         let timestampDate;
@@ -5940,9 +5967,31 @@ class XyloclimePro {
         // ========================================================================
         // 1. PROJECT HEADER
         // ========================================================================
+
+        // Get template information to display clearly
+        let templateBadge = '';
+        if (this.selectedTemplate && this.templatesLibrary) {
+            const template = this.templatesLibrary.getTemplate(this.selectedTemplate);
+            if (template) {
+                const templateIcon = template.icon || 'fa-cog';
+                templateBadge = `<div style="margin: 0.5rem 0; padding: 0.5rem 1rem; background: rgba(0, 212, 255, 0.1); border: 1px solid var(--electric-cyan); border-radius: 6px; display: inline-block;">
+                    <i class="fas ${templateIcon}" style="color: var(--electric-cyan); margin-right: 0.5rem;"></i>
+                    <strong style="color: var(--electric-cyan);">Analysis Template:</strong>
+                    <span style="color: var(--arctic-white);">${this.sanitizeHTML(template.name)}</span>
+                </div>`;
+            }
+        } else {
+            templateBadge = `<div style="margin: 0.5rem 0; padding: 0.5rem 1rem; background: rgba(243, 156, 18, 0.1); border: 1px solid #f39c12; border-radius: 6px; display: inline-block;">
+                <i class="fas fa-exclamation-triangle" style="color: #f39c12; margin-right: 0.5rem;"></i>
+                <strong style="color: #f39c12;">Analysis Template:</strong>
+                <span style="color: var(--arctic-white);">General Construction (Default)</span>
+            </div>`;
+        }
+
         let summary = `<div style="border-bottom: 2px solid var(--electric-cyan); padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <h3 style="margin: 0 0 0.5rem 0; color: var(--electric-cyan);">Project Overview</h3>
         <p style="margin: 0;"><strong>${this.sanitizeHTML(project.name)}</strong></p>
+        ${templateBadge}
         <p style="margin: 0.5rem 0 0 0;">Location: ${this.sanitizeHTML(project.locationName)}<br>
         Duration: ${duration} days (approx. ${months} months) | ${project.startDate} to ${project.endDate}<br>
         Analysis Period: ${analysis.yearsAnalyzed} years of historical data (same calendar period)</p>
