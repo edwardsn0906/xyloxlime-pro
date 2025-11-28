@@ -486,6 +486,61 @@ class XyloclimePro {
         return this.unitSystem;
     }
 
+    // ========================================================================
+    // THRESHOLD DISPLAY HELPERS (for displaying temp/precip/wind thresholds)
+    // ========================================================================
+
+    formatThresholdTemp(celsiusValue, operator = '≤', bothUnits = false) {
+        // Format temperature thresholds for display based on unit system
+        // celsiusValue: temperature in Celsius
+        // operator: comparison operator (≤, ≥, <, >, =)
+        // bothUnits: if true, show both units (for definitions section)
+
+        const fahrenheitValue = Math.round(celsiusValue * 9/5 + 32);
+
+        if (bothUnits) {
+            // Show both units for threshold definitions
+            return `${operator}${fahrenheitValue}°F / ${operator}${celsiusValue}°C`;
+        } else {
+            // Show only user's preferred unit
+            if (this.unitSystem === 'imperial') {
+                return `${operator}${fahrenheitValue}°F`;
+            } else {
+                return `${operator}${celsiusValue}°C`;
+            }
+        }
+    }
+
+    formatThresholdPrecip(mmValue, operator = '>', bothUnits = false) {
+        // Format precipitation thresholds for display
+        const inchesValue = (mmValue / 25.4).toFixed(1);
+
+        if (bothUnits) {
+            return `${operator}${inchesValue} in / ${operator}${mmValue}mm`;
+        } else {
+            if (this.unitSystem === 'imperial') {
+                return `${operator}${inchesValue} in`;
+            } else {
+                return `${operator}${mmValue}mm`;
+            }
+        }
+    }
+
+    formatThresholdWind(kmhValue, operator = '≥', bothUnits = false) {
+        // Format wind speed thresholds for display
+        const mphValue = Math.round(kmhValue / 1.609344);
+
+        if (bothUnits) {
+            return `${operator}${kmhValue} km/h / ${operator}${mphValue} mph`;
+        } else {
+            if (this.unitSystem === 'imperial') {
+                return `${operator}${mphValue} mph`;
+            } else {
+                return `${operator}${kmhValue} km/h`;
+            }
+        }
+    }
+
     setUnitSystem(system) {
         this.unitSystem = system;
         this.tempUnit = system === 'imperial' ? 'F' : 'C';
@@ -875,10 +930,10 @@ class XyloclimePro {
         if (freezingDays > 0) {
             html += `
                 <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
-                    <strong style="color: #e67e22;">⚠️ Shingle Brittleness (<40°F / 4°C)</strong>
+                    <strong style="color: #e67e22;">⚠️ Shingle Brittleness (${this.formatThresholdTemp(4, '<')})</strong>
                     <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
-                        <strong>~${shingleBrittlenessDays} days</strong> expected below 40°F (4°C) where asphalt shingles become brittle and prone to cracking during installation.
-                        ${extremeColdDays > 0 ? `<strong>${extremeColdDays} days</strong> will be extremely cold (≤23°F/-5°C) - shingles very brittle, high breakage risk.` : ''}
+                        <strong>~${shingleBrittlenessDays} days</strong> expected below ${this.formatTemp(4, 'C')} where asphalt shingles become brittle and prone to cracking during installation.
+                        ${extremeColdDays > 0 ? `<strong>${extremeColdDays} days</strong> will be extremely cold (${this.formatThresholdTemp(-18, '≤')}) - shingles very brittle, high breakage risk.` : ''}
                         <br><strong>Mitigation:</strong> Store shingles in warm area before use. Handle carefully. Consider rubberized/synthetic shingles for cold-weather work.
                     </p>
                 </div>
@@ -891,7 +946,7 @@ class XyloclimePro {
                 <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
                     <strong style="color: #e67e22;">⚠️ Adhesive Strip Activation Temperature</strong>
                     <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
-                        <strong>~${adhesiveActivationDays} days</strong> may be too cold for adhesive strips to activate properly. Strips require heat (typically >60°F/16°C) to seal.
+                        <strong>~${adhesiveActivationDays} days</strong> may be too cold for adhesive strips to activate properly. Strips require heat (typically ${this.formatThresholdTemp(16, '>')}) to seal.
                         <br><strong>Mitigation:</strong> Use cold-weather adhesives. Apply manual sealant. Wait for warmer days for critical seal areas. Inspect bonding after temperature rise.
                     </p>
                 </div>
@@ -905,8 +960,8 @@ class XyloclimePro {
                 <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
                     <strong style="color: #e67e22;">⚠️ High Wind Safety & Underlayment Risk</strong>
                     <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
-                        <strong>${highWindDays} days (${windStoppagePercent}%)</strong> with winds ≥30 km/h (19 mph) create safety hazards for elevated work.
-                        <br><strong>Safety Risk:</strong> Fall hazard increases significantly above 20 mph. Stop work above 30 km/h.
+                        <strong>${highWindDays} days (${windStoppagePercent}%)</strong> with winds ${this.formatThresholdWind(30)} create safety hazards for elevated work.
+                        <br><strong>Safety Risk:</strong> Fall hazard increases significantly above ${this.formatWind(32)}. Stop work above ${this.formatWind(30)}.
                         <br><strong>Underlayment Risk:</strong> High winds can tear loosely fastened underlayment before shingles are applied. Ensure proper fastening density.
                         <br><strong>Mitigation:</strong> No elevated work during high winds. Secure all materials. Double-check underlayment fastening before wind events.
                     </p>
@@ -6097,9 +6152,9 @@ class XyloclimePro {
         if (analysis.allFreezingDays > 10) {
             const coldWeatherTotal = (analysis.coldWeatherMethodsDays || 0) + (analysis.lightFreezingDays || 0);
             if (analysis.extremeColdDays > 0) {
-                summary += `<li><strong>Extreme cold stoppage</strong> – ${analysis.extremeColdDays} days with extreme cold (≤0°F / ≤-18°C) typically require work stoppage even with protection. ${analysis.coldWeatherMethodsDays || 0} additional days (0-23°F) are workable with proper cold-weather methods: blankets, hot water mix, accelerators, and heated enclosures. ${analysis.lightFreezingDays} days (23-32°F) need only light precautions (timing, blankets).</li>`;
+                summary += `<li><strong>Extreme cold stoppage</strong> – ${analysis.extremeColdDays} days with extreme cold (${this.formatThresholdTemp(-18, '≤')}) typically require work stoppage even with protection. ${analysis.coldWeatherMethodsDays || 0} additional days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) are workable with proper cold-weather methods: blankets, hot water mix, accelerators, and heated enclosures. ${analysis.lightFreezingDays} days (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}) need only light precautions (timing, blankets).</li>`;
             } else if (coldWeatherTotal > 0) {
-                summary += `<li><strong>Cold-weather concrete methods required</strong> – ${analysis.coldWeatherMethodsDays || 0} days (0-23°F) need accelerators, hot water, and enclosures. ${analysis.lightFreezingDays} days (23-32°F) need light precautions (timing, blankets). No extreme cold stoppage days expected.</li>`;
+                summary += `<li><strong>Cold-weather concrete methods required</strong> – ${analysis.coldWeatherMethodsDays || 0} days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) need accelerators, hot water, and enclosures. ${analysis.lightFreezingDays} days (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}) need light precautions (timing, blankets). No extreme cold stoppage days expected.</li>`;
             }
         }
 
@@ -6113,15 +6168,16 @@ class XyloclimePro {
                 riskLevel = 'significant impact';
             }
 
-            summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with >10mm rain (${heavyRainOfTotalPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
+            summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with ${this.formatThresholdPrecip(10)} rain (${heavyRainOfTotalPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
         }
 
         if (analysis.allFreezingDays > 0) {
             if (analysis.extremeColdDays > 0) {
-                summary += `<li><strong>Heated enclosures critical for extreme cold</strong> – Essential for ${analysis.extremeColdDays} extreme cold days (≤0°F/≤-18°C). Maintain minimum 50°F (10°C) ambient temperature for proper curing.</li>`;
+                summary += `<li><strong>Heated enclosures critical for extreme cold</strong> – Essential for ${analysis.extremeColdDays} extreme cold days (${this.formatThresholdTemp(-18, '≤')}). Maintain minimum ${this.formatThresholdTemp(10, '≥')} ambient temperature for proper curing.</li>`;
             }
             if ((analysis.coldWeatherMethodsDays || 0) > 0) {
-                summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Required for ${analysis.coldWeatherMethodsDays} cold-weather days (0-23°F). Type III cement or calcium chloride accelerators reduce cure time. Hot water mix (120°F) recommended.</li>`;
+                const hotWaterTemp = this.formatTemp(49, 'C'); // 120°F = 49°C
+                summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Required for ${analysis.coldWeatherMethodsDays} cold-weather days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}). Type III cement or calcium chloride accelerators reduce cure time. Hot water mix (${hotWaterTemp}) recommended.</li>`;
             }
         }
 
@@ -6160,12 +6216,12 @@ class XyloclimePro {
             const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
             recommendedContingency = `${minContingency}-${maxContingency}%`;
 
-            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} extreme cold (≤0°F) + ${heavySnow} heavy snow, accounting for overlap). `;
+            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} extreme cold (${this.formatThresholdTemp(-18, '≤')}) + ${heavySnow} heavy snow, accounting for overlap). `;
             justification += `Recommended schedule contingency: ${recommendedContingency}.`;
 
             const coldWeatherDays = (analysis.coldWeatherMethodsDays || 0);
             if (coldWeatherDays > 10) {
-                justification += ` Note: ${coldWeatherDays} additional cold-weather days (0-23°F) are workable with proper methods (accelerators, hot water, enclosures).`;
+                justification += ` Note: ${coldWeatherDays} additional cold-weather days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) are workable with proper methods (accelerators, hot water, enclosures).`;
             }
 
             if (highWind > 10) {
@@ -6245,19 +6301,19 @@ class XyloclimePro {
             // Build three-tier cold weather breakdown
             let coldBreakdown = '';
             if (analysis.extremeColdDays > 0) {
-                coldBreakdown += `${analysis.extremeColdDays} <strong>extreme cold stoppage days</strong> (≤0°F/≤-18°C, true work stoppage)`;
+                coldBreakdown += `${analysis.extremeColdDays} <strong>extreme cold stoppage days</strong> (${this.formatThresholdTemp(-18, '≤')}, true work stoppage)`;
             }
             if ((analysis.coldWeatherMethodsDays || 0) > 0) {
                 if (coldBreakdown) coldBreakdown += ' + ';
-                coldBreakdown += `${analysis.coldWeatherMethodsDays} <strong>cold-weather method days</strong> (0-23°F, workable with accelerators/enclosures/hot water)`;
+                coldBreakdown += `${analysis.coldWeatherMethodsDays} <strong>cold-weather method days</strong> (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}, workable with accelerators/enclosures/hot water)`;
             }
             if (analysis.lightFreezingDays > 0) {
                 if (coldBreakdown) coldBreakdown += ' + ';
-                coldBreakdown += `${analysis.lightFreezingDays} <strong>light precaution days</strong> (23-32°F, blankets/timing needed)`;
+                coldBreakdown += `${analysis.lightFreezingDays} <strong>light precaution days</strong> (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}, blankets/timing needed)`;
             }
 
             summary += `<p><strong>Cold Weather Analysis:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${coldBreakdown}.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Modern cold-weather concrete practices allow work in temps as low as 0°F with proper methods (hot water mix, accelerators, heated enclosures, insulated blankets). Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Modern cold-weather concrete practices allow work in temps as low as ${this.formatThresholdTemp(-18)} with proper methods (hot water mix, accelerators, heated enclosures, insulated blankets). Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
 
             if (isUnusualDistribution) {
                 summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
@@ -6266,11 +6322,11 @@ class XyloclimePro {
             summary += `</em>
             <br>Plan cold-weather protocols: blankets, accelerators, hot water, and enclosures as needed.</p>`;
         } else if (analysis.extremeColdDays > 0) {
-            summary += `<p><strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ≤0°F (≤-18°C) typically require work stoppage even with protection.
+            summary += `<p><strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ${this.formatThresholdTemp(-18, '≤')} typically require work stoppage even with protection.
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: This represents ${analysis.extremeColdDays} specific days projected to reach extreme cold, even though the average low is ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}.</em>
             <br>Plan heated enclosures and schedule around these extreme conditions.</p>`;
         } else if ((analysis.coldWeatherMethodsDays || 0) > 0) {
-            summary += `<p><strong>Cold-Weather Methods Required:</strong> ${analysis.coldWeatherMethodsDays} days between 0-23°F require accelerators, hot water mix, and curing blankets. No extreme cold stoppage expected.
+            summary += `<p><strong>Cold-Weather Methods Required:</strong> ${analysis.coldWeatherMethodsDays} days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} require accelerators, hot water mix, and curing blankets. No extreme cold stoppage expected.
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">Concrete work is feasible year-round with proper cold-weather practices.</em></p>`;
         }
 
