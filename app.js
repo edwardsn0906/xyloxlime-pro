@@ -5126,10 +5126,10 @@ class XyloclimePro {
             // Build clear multi-source attribution
             let dataSourceNote = '';
             if (usingNOAA) {
-                dataSourceNote = `*Data Sources: Snowfall from <strong>NOAA station</strong> (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away - 100% accuracy). Temperature, precipitation, and wind from <strong>ERA5 reanalysis</strong> (30km resolution). Historical averages calculated from ${analysis.yearsAnalyzed} years of data.`;
+                dataSourceNote = `*Data Sources: Snowfall from <strong>NOAA station</strong> (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away - direct measurements, high reliability). Temperature, precipitation, and wind from <strong>ERA5 reanalysis</strong> (30km resolution). Historical averages calculated from ${analysis.yearsAnalyzed} years of data.`;
             } else {
-                const snowAccuracy = analysis.snowDataSource?.accuracy || '~4%';
-                dataSourceNote = `*Data Sources: All metrics from <strong>ERA5 reanalysis</strong> (30km resolution). Snowfall estimates have <strong>${snowAccuracy} accuracy</strong> - may be underestimated in northern/windy climates or lake-effect zones. Temperature and precipitation are reliable. Consider using wider contingency buffers for snow-dependent operations.`;
+                const snowCapture = analysis.snowDataSource?.accuracy || '~4%';
+                dataSourceNote = `*Data Sources: All metrics from <strong>ERA5 reanalysis</strong> (30km resolution). <strong>Note on snowfall:</strong> Reanalysis models typically capture only ${snowCapture} of station-measured snowfall and often underestimate in mountain/lake-effect regions. Temperature and precipitation metrics are more reliable. Consider using wider contingency buffers for snow-dependent operations.`;
             }
 
             const confidenceHTML = `
@@ -6275,8 +6275,8 @@ class XyloclimePro {
             const allSnowIsHeavy = analysis.snowyDays === analysis.heavySnowDays;
 
             let snowVariabilityNote = usingNOAA
-                ? `⚠️ Snowfall exhibits high year-to-year variability (±30-50%). Actual conditions may vary significantly from historical averages. Build robust contingency buffers into schedules and material delivery plans.`
-                : `⚠️ Snow data from ${analysis.snowDataSource?.source || 'ERA5'} reanalysis with ${analysis.snowDataSource?.accuracy || '~4%'} accuracy. Snowfall exhibits high year-to-year variability (±30-50%) and may be underestimated in northern/windy climates. Build robust contingency buffers into schedules and material delivery plans.`;
+                ? `⚠️ <strong>Natural variability:</strong> Snowfall varies ±30-50% year-to-year (typical for all climates). Actual conditions may differ from historical averages. <strong>Data source:</strong> NOAA direct station measurements (high reliability). Build robust contingency buffers into schedules and material delivery plans.`
+                : `⚠️ <strong>Data source:</strong> ${analysis.snowDataSource?.source || 'ERA5'} reanalysis data. Note that reanalysis models typically capture only ~${analysis.snowDataSource?.accuracy || '4%'} of station-measured snowfall and often underestimate in mountain regions and lake-effect zones. <strong>Natural variability:</strong> Snowfall also varies ±30-50% year-to-year regardless of data source. Build robust contingency buffers into schedules and material delivery plans.`;
 
             // Add note if all snow days are heavy (could indicate NOAA reporting threshold or mountain climate)
             if (allSnowIsHeavy && usingNOAA && analysis.snowyDays > 3) {
@@ -6360,12 +6360,12 @@ class XyloclimePro {
         // 7. HISTORICAL CONTEXT & CONFIDENCE
         // ========================================================================
         const dataSourceFootnote = usingNOAA
-            ? `*Data quality based on available historical records. Snowfall data from NOAA direct station measurements (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away). Temperature and precipitation from reanalysis data.`
-            : `*Data quality based on available historical records (Open-Meteo ERA5 dataset). Values at or near 100% may include minor interpolation or estimation for missing data points.`;
+            ? `*Data coverage indicates percentage of project days with available historical records. Snowfall data from NOAA direct station measurements (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away - high reliability). Temperature and precipitation from ERA5 reanalysis data.`
+            : `*Data coverage indicates percentage of project days with available historical records (Open-Meteo ERA5 dataset). Values at or near 100% may include minor interpolation for missing data points.`;
 
         summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--electric-cyan); border-radius: 8px;">
         <h3 style="color: var(--electric-cyan); margin: 0 0 0.5rem 0;"><i class="fas fa-info-circle"></i> Historical Context & Confidence Level</h3>
-        <p style="margin: 0;">This analysis is based on <strong>${analysis.yearsAnalyzed} years</strong> of actual weather data for the same calendar period. Data quality: <strong>${(analysis.dataQuality * 100).toFixed(0)}%</strong> complete.*</p>
+        <p style="margin: 0;">This analysis is based on <strong>${analysis.yearsAnalyzed} years</strong> of actual weather data for the same calendar period. Data coverage: <strong>${(analysis.dataQuality * 100).toFixed(0)}%</strong> of project days included.*</p>
         <p style="margin: 0.25rem 0; font-size: 0.85rem; color: #94a3b8;">${dataSourceFootnote}</p>
         <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--steel-silver);"><strong>Important:</strong> Historical patterns provide valuable planning insights, but actual conditions may vary. Use this assessment in conjunction with short-term forecasts and professional meteorological guidance. Not suitable for life-safety decisions.</p>
         </div>`;
