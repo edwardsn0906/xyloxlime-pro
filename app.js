@@ -838,18 +838,18 @@ class XyloclimePro {
             const firstMonthName = first3Months[0]?.name;
             if (avgFirst3Months < 40) {
                 advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #e74c3c;">
-                    <strong style="color: #e74c3c;">❌ Poor Start Timing:</strong> Project starts in <strong>${firstMonthName}</strong> with only <strong>${avgFirst3Months}% workability</strong> in first 3 months.
-                    ${template.name === 'Roofing Installation' ? 'Winter roofing is extremely challenging - expect frequent delays, safety hazards, and material issues.' : ''}
-                    ${template.name === 'Commercial Concrete Work' ? 'Winter concrete work requires heated enclosures and special admixtures - significantly higher costs.' : ''}
-                    Consider delaying start to spring for better conditions.
+                    <strong style="color: #e74c3c;">Winter-Heavy Start:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months.
+                    ${template.name === 'Roofing Installation' ? 'Winter roofing requires significant weather-dependent planning - expect frequent weather holds, safety precautions, and material handling adjustments.' : ''}
+                    ${template.name === 'Commercial Concrete Work' ? 'Standard winter concrete methods required: heated enclosures, blankets, and winter admixtures - budget for additional cold-weather costs.' : ''}
+                    Consider delaying start to spring to reduce winter-related costs and delays.
                 </p>`;
-            } else if (avgFirst3Months < 60) {
-                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #f39c12;">
-                    <strong style="color: #f39c12;">⚠️ Challenging Start:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months. Plan for weather delays early.
+            } else if (avgFirst3Months < 65) {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #3498db;">
+                    <strong style="color: #3498db;">Moderate Workability:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months - typical for this region and season. Plan for standard weather-related contingencies.
                 </p>`;
             } else {
                 advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #27ae60;">
-                    <strong style="color: #27ae60;">✓ Good Start Timing:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months.
+                    <strong style="color: #27ae60;">Higher Workability Period:</strong> Project starts in <strong>${firstMonthName}</strong> with <strong>${avgFirst3Months}% workability</strong> in first 3 months - favorable for this region.
                 </p>`;
             }
 
@@ -874,20 +874,20 @@ class XyloclimePro {
 
             if (avgWorkability < 40) {
                 advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #e74c3c;">
-                    <strong style="color: #e74c3c;">❌ Poor Timing:</strong> Starting ${startMonthName} with only <strong>${avgWorkability}% average workability</strong>.
-                    ${template.name === 'Roofing Installation' ? 'Winter roofing: expect frequent stoppages, safety issues, brittle shingles, and adhesive failures.' : ''}
-                    ${template.name === 'Commercial Concrete Work' ? 'Cold-weather concrete requires heated enclosures, blankets, and winter admixtures.' : ''}
-                    <strong>Recommendation:</strong> Delay to spring for better conditions and lower costs.
+                    <strong style="color: #e74c3c;">Winter-Heavy Period:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong>.
+                    ${template.name === 'Roofing Installation' ? 'Winter roofing: expect frequent weather holds, cold-weather safety protocols, brittle materials, and adhesive temperature limitations.' : ''}
+                    ${template.name === 'Commercial Concrete Work' ? 'Cold-weather concrete methods required: heated enclosures, curing blankets, and winter admixtures.' : ''}
+                    <strong>Consider:</strong> Delaying to spring may reduce weather-related costs and schedule risk.
                 </p>`;
-            } else if (avgWorkability < 60) {
-                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #f39c12;">
-                    <strong style="color: #f39c12;">⚠️ Marginal Timing:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong>.
-                    Expect weather-related delays and additional precautions required.
+            } else if (avgWorkability < 65) {
+                advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #3498db;">
+                    <strong style="color: #3498db;">Moderate Workability:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong> - typical for this region and season.
+                    Plan for standard weather contingencies and cold-weather methods as needed.
                 </p>`;
             } else {
                 advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6; padding-left: 1rem; border-left: 3px solid #27ae60;">
-                    <strong style="color: #27ae60;">✓ Good Timing:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong>.
-                    Favorable conditions expected for ${template.name.toLowerCase()}.
+                    <strong style="color: #27ae60;">Higher Workability Period:</strong> Starting ${startMonthName} with <strong>${avgWorkability}% average workability</strong> - favorable conditions for this region.
+                    Standard weather planning recommended for ${template.name.toLowerCase()}.
                 </p>`;
             }
 
