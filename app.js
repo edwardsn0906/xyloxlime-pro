@@ -3639,6 +3639,12 @@ class XyloclimePro {
         const projectEnd = new Date(projectEndDate);
         const actualProjectDays = Math.ceil((projectEnd - projectStart) / (1000 * 60 * 60 * 24));
 
+        // Extract snow data source from the most recent year (first element)
+        const snowDataSource = historicalData.length > 0 && historicalData[0].data
+            ? historicalData[0].data.snowDataSource
+            : null;
+        console.log('[ANALYSIS] Snow data source:', snowDataSource);
+
         // Process each year SEPARATELY to avoid index mismatch (BUG FIX #2)
         const yearlyStats = [];
         const allTempsMax = [];
@@ -3879,7 +3885,10 @@ class XyloclimePro {
             yearlyStats: yearlyStats,
 
             // NEW - Monthly breakdown for concrete pour planning
-            monthlyBreakdown: this.calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats)
+            monthlyBreakdown: this.calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats),
+
+            // NEW - Snow data source for proper warning display
+            snowDataSource: snowDataSource
         };
     }
 
@@ -6250,6 +6259,11 @@ class XyloclimePro {
         // Show warning ONLY if using ERA5 fallback data (not NOAA direct measurements)
         // NOAA data is 100% accurate and doesn't need a warning
         const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
+        console.log('[SUMMARY] Snow data source check:', {
+            source: analysis.snowDataSource?.source,
+            usingNOAA,
+            willShowWarning: !usingNOAA && (analysis.snowyDays > 5 || analysis.totalSnowfall > 1)
+        });
 
         if ((analysis.snowyDays > 5 || analysis.totalSnowfall > 1) && !usingNOAA) {
             summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; border-radius: 8px;">
