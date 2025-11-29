@@ -8480,9 +8480,7 @@ class XyloclimePro {
         }
     }
 
-    showSettings() {
-        alert('Settings panel coming soon! For now, configure via browser localStorage.');
-    }
+    // Removed duplicate - using openSettings() instead
 
     // ========================================================================
     // MOBILE SIDEBAR TOGGLE
@@ -8522,6 +8520,23 @@ class XyloclimePro {
             menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
             console.log('[UI] Mobile sidebar closed');
         }
+    }
+
+    // ========================================================================
+    // BID CALCULATOR INTEGRATION
+    // ========================================================================
+
+    exportBidSummary() {
+        if (window.bidCalculator) {
+            window.bidCalculator.exportSummaryToExcel();
+        } else {
+            window.toastManager.error('Bid calculator not loaded', 'Export Error');
+        }
+    }
+
+    addBidToPDF() {
+        window.toastManager.info('Bid data will be included in the next PDF export', 'Feature Coming Soon');
+        // TODO: Integrate bid data into PDF export
     }
 }
 

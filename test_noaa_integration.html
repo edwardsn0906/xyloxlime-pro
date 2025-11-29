@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOAA Integration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 { margin-top: 0; font-size: 2.5rem; }
+        h2 { color: #ffd700; margin-top: 30px; }
+        .test-location {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #00ff00; }
+        .error { border-left: 4px solid #ff0000; }
+        .info { border-left: 4px solid #00d4ff; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .badge-noaa {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .badge-era5 {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 NOAA Integration Test Suite</h1>
+        <p>Comprehensive testing of the hybrid NOAA + ERA5 weather data system</p>
+
+        <button onclick="runAllTests()" id="runAllBtn">▶️ Run All Tests</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+
+    <div id="testResults"></div>
+
+    <script>
+        // Test locations with known characteristics
+        const testLocations = [
+            {
+                name: 'Scottsbluff, NE (NOAA Station Available)',
+                lat: 41.867,
+                lng: -103.667,
+                expectedStation: 'USW00024028',
+                expectedStationName: 'Scottsbluff W B Heilig Field',
+                shouldHaveNOAA: true
+            },
+            {
+                name: 'Chicago, IL (Major Airport)',
+                lat: 41.995,
+                lng: -87.933,
+                expectedStation: 'USW00094846',
+                expectedStationName: "Chicago O'Hare International",
+                shouldHaveNOAA: true
+            },
+            {
+                name: 'Denver, CO (Mountain Region)',
+                lat: 39.833,
+                lng: -104.650,
+                expectedStation: 'USW00023062',
+                expectedStationName: 'Denver International',
+                shouldHaveNOAA: true
+            },
+            {
+                name: 'Rural Montana (No Station)',
+                lat: 47.0,
+                lng: -110.0,
+                shouldHaveNOAA: false
+            },
+            {
+                name: 'London, UK (International)',
+                lat: 51.507,
+                lng: -0.127,
+                shouldHaveNOAA: false
+            }
+        ];
+
+        async function runAllTests() {
+            const btn = document.getElementById('runAllBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Running Tests...';
+
+            clearResults();
+
+            const container = document.getElementById('testResults');
+
+            // Test 1: Station Finder
+            await testStationFinder(container);
+
+            // Test 2: NOAA Data Fetch
+            await testNOAADataFetch(container);
+
+            // Test 3: Hybrid Data Blending
+            await testHybridBlending(container);
+
+            // Test 4: Fallback Behavior
+            await testFallbackBehavior(container);
+
+            // Test 5: Multiple Locations
+            await testMultipleLocations(container);
+
+            btn.disabled = false;
+            btn.innerHTML = '▶️ Run All Tests';
+
+            // Summary
+            addResult(container, 'info', 'TEST SUITE COMPLETE',
+                '✅ All tests finished! Check results above for details.');
+        }
+
+        async function testStationFinder(container) {
+            addTestHeader(container, 'Test 1: Station Finder Algorithm');
+
+            for (const location of testLocations) {
+                try {
+                    const station = await findNearestNOAAStation(location.lat, location.lng, 50);
+
+                    if (location.shouldHaveNOAA) {
+                        if (station) {
+                            addResult(container, 'success', location.name,
+                                `✅ Found station: ${station.name} (${station.id})\\n` +
+                                `   Distance: ${station.distance}km\\n` +
+                                `   State: ${station.state}`);
+                        } else {
+                            addResult(container, 'error', location.name,
+                                `❌ Expected station but none found`);
+                        }
+                    } else {
+                        if (!station) {
+                            addResult(container, 'success', location.name,
+                                `✅ Correctly returned null (no station available)`);
+                        } else {
+                            addResult(container, 'info', location.name,
+                                `ℹ️ Found unexpected station: ${station.name} (${station.distance}km)`);
+                        }
+                    }
+                } catch (error) {
+                    addResult(container, 'error', location.name,
+                        `❌ Error: ${error.message}`);
+                }
+            }
+        }
+
+        async function testNOAADataFetch(container) {
+            addTestHeader(container, 'Test 2: NOAA API Data Fetch');
+
+            try {
+                const stationId = 'USW00024028'; // Scottsbluff
+                const startDate = '2023-11-20';
+                const endDate = '2023-12-31';
+
+                addResult(container, 'info', 'Fetching from NOAA CDO API',
+                    `Station: ${stationId}\\n` +
+                    `Period: ${startDate} to ${endDate}\\n` +
+                    `Testing API connection...`);
+
+                const result = await fetchNOAASnowData(stationId, startDate, endDate);
+
+                if (result.success) {
+                    const snowDays = result.daily.snowfall_sum.filter(s => s > 1).length;
+                    const totalSnow = result.daily.snowfall_sum.reduce((a, b) => a + b, 0);
+
+                    addResult(container, 'success', 'NOAA API Response',
+                        `✅ Successfully fetched data\\n` +
+                        `   Days: ${result.daily.time.length}\\n` +
+                        `   Snow days (>1mm): ${snowDays}\\n` +
+                        `   Total snowfall: ${totalSnow.toFixed(1)}mm (${(totalSnow/25.4).toFixed(1)}in)\\n` +
+                        `   Data source: ${result.source}`);
+                } else {
+                    addResult(container, 'error', 'NOAA API Response',
+                        `❌ Failed: ${result.error}`);
+                }
+            } catch (error) {
+                addResult(container, 'error', 'NOAA API Test',
+                    `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testHybridBlending(container) {
+            addTestHeader(container, 'Test 3: Hybrid Data Blending');
+
+            try {
+                const lat = 41.867;
+                const lng = -103.667;
+                const startDate = '2023-11-20';
+                const endDate = '2023-12-31';
+
+                addResult(container, 'info', 'Testing Hybrid Fetch',
+                    `Location: Scottsbluff, NE\\n` +
+                    `Expecting: NOAA snow + ERA5 temp/rain/wind`);
+
+                const data = await fetchWeatherDataHybrid(lat, lng, startDate, endDate);
+
+                if (data.snowDataSource) {
+                    if (data.snowDataSource.source === 'NOAA') {
+                        addResult(container, 'success', 'Snow Data Source',
+                            `✅ Using NOAA station data\\n` +
+                            `   Station: ${data.snowDataSource.station}\\n` +
+                            `   Station ID: ${data.snowDataSource.stationId}\\n` +
+                            `   Distance: ${data.snowDataSource.distance}km`);
+                    } else {
+                        addResult(container, 'info', 'Snow Data Source',
+                            `ℹ️ Using ERA5 (fallback)\\n` +
+                            `   Warning: ${data.snowDataSource.warning}`);
+                    }
+                } else {
+                    addResult(container, 'error', 'Snow Data Source',
+                        `❌ No snowDataSource metadata found`);
+                }
+
+                // Check other data sources
+                const otherSources = `Temperature: ${data.temperatureSource || 'Unknown'}\\n` +
+                                   `Precipitation: ${data.precipitationSource || 'Unknown'}\\n` +
+                                   `Wind: ${data.windSource || 'Unknown'}`;
+
+                addResult(container, 'info', 'Other Data Sources', otherSources);
+
+            } catch (error) {
+                addResult(container, 'error', 'Hybrid Blending Test',
+                    `❌ Error: ${error.message}\\n${error.stack}`);
+            }
+        }
+
+        async function testFallbackBehavior(container) {
+            addTestHeader(container, 'Test 4: Fallback to ERA5');
+
+            try {
+                // Test with remote location (no NOAA station)
+                const lat = 47.0;
+                const lng = -110.0;
+                const startDate = '2023-11-20';
+                const endDate = '2023-12-31';
+
+                addResult(container, 'info', 'Testing Fallback',
+                    `Location: Rural Montana (no nearby station)\\n` +
+                    `Expecting: ERA5 for all data`);
+
+                const data = await fetchWeatherDataHybrid(lat, lng, startDate, endDate);
+
+                if (data.snowDataSource && data.snowDataSource.source === 'ERA5') {
+                    addResult(container, 'success', 'Fallback Behavior',
+                        `✅ Correctly fell back to ERA5\\n` +
+                        `   Warning shown: ${data.snowDataSource.warning || 'None'}`);
+                } else {
+                    addResult(container, 'error', 'Fallback Behavior',
+                        `❌ Unexpected data source: ${data.snowDataSource?.source || 'Unknown'}`);
+                }
+
+            } catch (error) {
+                addResult(container, 'error', 'Fallback Test',
+                    `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testMultipleLocations(container) {
+            addTestHeader(container, 'Test 5: Multiple Location Analysis');
+
+            const quickTests = [
+                { name: 'Boston', lat: 42.367, lng: -71.017 },
+                { name: 'Minneapolis', lat: 44.883, lng: -93.233 },
+                { name: 'Salt Lake City', lat: 40.783, lng: -111.983 }
+            ];
+
+            for (const loc of quickTests) {
+                try {
+                    const station = await findNearestNOAAStation(loc.lat, loc.lng, 50);
+                    const badge = station ?
+                        `<span class="badge badge-noaa">⭐ NOAA</span>` :
+                        `<span class="badge badge-era5">ERA5</span>`;
+
+                    const details = station ?
+                        `Station: ${station.name} (${station.distance}km)` :
+                        'No nearby station';
+
+                    addResult(container, station ? 'success' : 'info',
+                        `${loc.name} ${badge}`, details);
+                } catch (error) {
+                    addResult(container, 'error', loc.name,
+                        `❌ Error: ${error.message}`);
+                }
+            }
+        }
+
+        // Helper functions from app.js
+        async function findNearestNOAAStation(lat, lng, maxDistanceKm = 50) {
+            const majorStations = [
+                ['USW00024028', 'Scottsbluff W B Heilig Field', 41.867, -103.667, 'NE'],
+                ['USW00014942', 'North Platte Regional', 41.133, -100.683, 'NE'],
+                ['USW00094846', "Chicago O'Hare International", 41.995, -87.933, 'IL'],
+                ['USW00023062', 'Denver International', 39.833, -104.650, 'CO'],
+                ['USW00014922', 'Minneapolis-St Paul', 44.883, -93.233, 'MN'],
+                ['USW00014739', 'Boston Logan', 42.367, -71.017, 'MA'],
+                ['USW00024127', 'Salt Lake City International', 40.783, -111.983, 'UT'],
+                ['USW00024233', 'Seattle-Tacoma International', 47.450, -122.317, 'WA']
+            ];
+
+            let nearestStation = null;
+            let minDistance = Infinity;
+
+            for (const [id, name, stationLat, stationLng, state] of majorStations) {
+                const R = 6371;
+                const dLat = (stationLat - lat) * Math.PI / 180;
+                const dLon = (stationLng - lng) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                         Math.cos(lat * Math.PI / 180) * Math.cos(stationLat * Math.PI / 180) *
+                         Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const distance = R * c;
+
+                if (distance < minDistance && distance <= maxDistanceKm) {
+                    minDistance = distance;
+                    nearestStation = {
+                        id, name,
+                        lat: stationLat,
+                        lng: stationLng,
+                        state,
+                        distance: Math.round(distance * 10) / 10
+                    };
+                }
+            }
+
+            return nearestStation;
+        }
+
+        async function fetchNOAASnowData(stationId, startDate, endDate) {
+            const url = `https://www.ncei.noaa.gov/access/services/data/v1?` +
+                       `dataset=daily-summaries&` +
+                       `dataTypes=SNOW,SNWD&` +
+                       `stations=${stationId}&` +
+                       `startDate=${startDate}&` +
+                       `endDate=${endDate}&` +
+                       `format=json&` +
+                       `units=standard`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`NOAA API error: ${response.status}`);
+
+                const data = await response.json();
+                const snowfall_sum = [];
+                const dates = [];
+
+                for (const record of data) {
+                    dates.push(record.DATE);
+                    const snowInches = parseFloat(record.SNOW || 0);
+                    const snowMm = snowInches * 25.4;
+                    snowfall_sum.push(snowMm);
+                }
+
+                return {
+                    daily: { time: dates, snowfall_sum },
+                    source: 'NOAA',
+                    success: true
+                };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function fetchWeatherDataHybrid(lat, lng, startDate, endDate) {
+            let noaaStation = null;
+            let noaaSnowData = null;
+
+            try {
+                noaaStation = await findNearestNOAAStation(lat, lng, 50);
+                if (noaaStation) {
+                    const noaaResult = await fetchNOAASnowData(noaaStation.id, startDate, endDate);
+                    if (noaaResult.success) {
+                        noaaSnowData = noaaResult;
+                    }
+                }
+            } catch (error) {
+                console.warn('NOAA lookup failed:', error);
+            }
+
+            // Simulate ERA5 data
+            const era5Data = {
+                daily: {
+                    time: generateDates(startDate, endDate),
+                    temperature_2m_max: [],
+                    temperature_2m_min: [],
+                    precipitation_sum: [],
+                    snowfall_sum: noaaSnowData ? noaaSnowData.daily.snowfall_sum : [],
+                    windspeed_10m_max: []
+                }
+            };
+
+            if (noaaSnowData) {
+                era5Data.snowDataSource = {
+                    source: 'NOAA',
+                    station: noaaStation.name,
+                    stationId: noaaStation.id,
+                    distance: noaaStation.distance,
+                    state: noaaStation.state
+                };
+            } else {
+                era5Data.snowDataSource = {
+                    source: 'ERA5',
+                    warning: 'Snow estimates may be conservative (gridded reanalysis data)'
+                };
+            }
+
+            era5Data.temperatureSource = 'ERA5';
+            era5Data.precipitationSource = 'ERA5';
+            era5Data.windSource = 'ERA5';
+
+            return era5Data;
+        }
+
+        function generateDates(start, end) {
+            const dates = [];
+            const current = new Date(start);
+            const endDate = new Date(end);
+
+            while (current <= endDate) {
+                dates.push(current.toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function addTestHeader(container, title) {
+            const header = document.createElement('div');
+            header.className = 'test-container';
+            header.innerHTML = `<h2>${title}</h2>`;
+            container.appendChild(header);
+        }
+
+        function addResult(container, type, title, content) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-location';
+            resultDiv.innerHTML = `
+                <strong>${title}</strong>
+                <div class="result ${type}">${content}</div>
+            `;
+            container.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

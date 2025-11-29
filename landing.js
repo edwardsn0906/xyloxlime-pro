@@ -1,4 +1,4 @@
-// Xyloclime Pro Landing Page - Stripe Integration
+// Xyloclime Pro Landing Page - Enhanced Interactions
 
 // TODO: Replace with your actual Stripe publishable key
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE'; // Get this from Stripe Dashboard
@@ -14,6 +14,14 @@ const PRICE_IDS = {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[LANDING] Initializing enhanced landing page...');
+
+    // Initialize all interactive features
+    initAnimatedCounters();
+    initMobileMenu();
+    initScrollToTop();
+    initNavbarScroll();
+    initSmoothScroll();
     // Initialize Stripe.js
     if (STRIPE_PUBLISHABLE_KEY !== 'pk_test_YOUR_KEY_HERE') {
         stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
@@ -213,3 +221,172 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ========== INTERACTIVE FEATURES ========== //
+
+/**
+ * Animated Counter for Stats Section
+ */
+function initAnimatedCounters() {
+    const statNumbers = document.querySelectorAll('.stat-number');
+
+    const animateCounter = (element) => {
+        const target = parseInt(element.getAttribute('data-target'));
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60 FPS
+        let current = 0;
+
+        const updateCounter = () => {
+            current += increment;
+            if (current < target) {
+                element.textContent = Math.floor(current).toLocaleString();
+                requestAnimationFrame(updateCounter);
+            } else {
+                // Handle suffix (%, +, etc.)
+                const targetStr = element.getAttribute('data-target');
+                if (targetStr.includes('%')) {
+                    element.textContent = target + '%';
+                } else if (targetStr.includes('+')) {
+                    element.textContent = target + '+';
+                } else {
+                    element.textContent = target.toLocaleString();
+                }
+            }
+        };
+
+        updateCounter();
+    };
+
+    // Intersection Observer to trigger animation when scrolled into view
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.target.textContent === '0' || entry.target.textContent === '0%' || entry.target.textContent === '0+') {
+                animateCounter(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    statNumbers.forEach(stat => observer.observe(stat));
+    console.log('[LANDING] Animated counters initialized');
+}
+
+/**
+ * Mobile Menu Toggle
+ */
+function initMobileMenu() {
+    const toggle = document.getElementById('mobileMenuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    if (!toggle || !navLinks) return;
+
+    toggle.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        const icon = toggle.querySelector('i');
+
+        // Toggle hamburger/close icon
+        if (navLinks.classList.contains('active')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+
+    // Close menu when clicking on a link
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            const icon = toggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!toggle.contains(e.target) && !navLinks.contains(e.target)) {
+            navLinks.classList.remove('active');
+            const icon = toggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+
+    console.log('[LANDING] Mobile menu initialized');
+}
+
+/**
+ * Scroll to Top Button
+ */
+function initScrollToTop() {
+    const scrollButton = document.getElementById('scrollToTop');
+
+    if (!scrollButton) return;
+
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            scrollButton.classList.add('visible');
+        } else {
+            scrollButton.classList.remove('visible');
+        }
+    });
+
+    // Scroll to top when clicked
+    scrollButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    console.log('[LANDING] Scroll to top button initialized');
+}
+
+/**
+ * Navbar Scroll Effect
+ */
+function initNavbarScroll() {
+    const navbar = document.getElementById('navbar');
+
+    if (!navbar) return;
+
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+
+    console.log('[LANDING] Navbar scroll effect initialized');
+}
+
+/**
+ * Smooth Scroll for Anchor Links
+ */
+function initSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+
+            // Ignore empty anchors
+            if (href === '#' || href === '#!') return;
+
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                const offsetTop = target.offsetTop - 80; // Account for fixed navbar
+
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    console.log('[LANDING] Smooth scroll initialized');
+}

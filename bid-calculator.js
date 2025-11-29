@@ -8,6 +8,7 @@ class BidSupportCalculator {
         this.calculator = null;
         this.currentAnalysis = null;
         this.currentProject = null;
+        this.lastResults = null; // Store last calculation results for export
     }
 
     initialize() {
@@ -117,9 +118,12 @@ class BidSupportCalculator {
         // Recommended markup range
         const recommendedMarkup = this.getRecommendedMarkup(riskScore, workablePercent);
 
-        // Display results
-        this.displayResults({
+        // Store results for export
+        this.lastResults = {
             baseBid,
+            baseLabor,
+            baseMaterials,
+            baseEquipment,
             totalWeatherContingency,
             contingencyPercent,
             weatherDelayRange,
@@ -130,8 +134,14 @@ class BidSupportCalculator {
             recommendedMarkup,
             riskScore,
             workablePercent,
-            totalBidWithContingency: baseBid + totalWeatherContingency
-        });
+            totalBidWithContingency: baseBid + totalWeatherContingency,
+            dailyOverhead,
+            delayPenalty,
+            laborMultiplier
+        };
+
+        // Display results
+        this.displayResults(this.lastResults);
 
         // Show success toast
         window.toastManager.success('Bid contingency calculated successfully! Review recommendations below.', 'Calculation Complete', 4000);
@@ -317,8 +327,103 @@ class BidSupportCalculator {
     }
 
     exportSummaryToExcel() {
-        // Will be implemented - exports bid summary to Excel
-        window.toastManager.info('Bid summary export coming soon!', 'Feature In Development');
+        if (!this.lastResults) {
+            window.toastManager.warning('Please calculate bid contingency first', 'No Results');
+            return;
+        }
+
+        if (typeof XLSX === 'undefined') {
+            window.toastManager.error('Excel export library not loaded', 'Export Error');
+            return;
+        }
+
+        const results = this.lastResults;
+        const projectName = this.currentProject?.name || 'Weather Bid Analysis';
+        const location = this.currentAnalysis?.locationName || 'Unknown Location';
+        const dateRange = this.currentProject ?
+            `${this.currentProject.startDate} to ${this.currentProject.endDate}` :
+            'Unknown';
+
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: Bid Summary
+        const summaryData = [
+            ['WEATHER-BASED BID CONTINGENCY ANALYSIS'],
+            ['Project:', projectName],
+            ['Location:', location],
+            ['Project Period:', dateRange],
+            ['Generated:', new Date().toLocaleString()],
+            [],
+            ['BASE BID BREAKDOWN'],
+            ['Labor:', `$${results.baseLabor.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Materials:', `$${results.baseMaterials.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Equipment:', `$${results.baseEquipment.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Base Bid Total:', `$${results.baseBid.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            [],
+            ['WEATHER CONTINGENCY BREAKDOWN'],
+            ['Delay Overhead Cost:', `$${results.delayOverheadCost.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Delay Labor Cost:', `$${results.delayLaborCost.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Delay Penalty Cost:', `$${results.delayPenaltyCost.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Remobilization Cost:', `$${results.remobilizationCost.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Total Weather Contingency:', `$${results.totalWeatherContingency.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Contingency Percentage:', `${results.contingencyPercent.toFixed(1)}%`],
+            [],
+            ['FINAL BID'],
+            ['Total Bid with Weather Contingency:', `$${results.totalBidWithContingency.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            [],
+            ['WEATHER DELAY FORECAST'],
+            ['Best Case Scenario:', `${results.weatherDelayRange.min} days`],
+            ['Most Likely Scenario:', `${results.weatherDelayRange.likely} days`],
+            ['Worst Case Scenario:', `${results.weatherDelayRange.max} days`],
+            [],
+            ['RISK ASSESSMENT'],
+            ['Weather Risk Score:', `${results.riskScore}/100`],
+            ['Workable Days:', `${results.workablePercent.toFixed(1)}%`],
+            [],
+            ['RECOMMENDED MARKUP'],
+            ['Minimum:', `${results.recommendedMarkup.min}%`],
+            ['Recommended:', `${results.recommendedMarkup.recommended}%`],
+            ['Maximum:', `${results.recommendedMarkup.max}%`],
+            ['Confidence Level:', results.recommendedMarkup.confidence]
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(summaryData);
+
+        // Set column widths
+        ws['!cols'] = [
+            {wch: 30},
+            {wch: 20}
+        ];
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Bid Summary');
+
+        // Sheet 2: Calculation Inputs
+        const inputsData = [
+            ['CALCULATION INPUTS'],
+            [],
+            ['Base Labor Cost:', `$${results.baseLabor.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Base Materials Cost:', `$${results.baseMaterials.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Base Equipment Cost:', `$${results.baseEquipment.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Daily Overhead Rate:', `$${results.dailyOverhead.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Delay Penalty (per day):', `$${results.delayPenalty.toLocaleString('en-US', {minimumFractionDigits: 2})}`],
+            ['Labor Delay Multiplier:', results.laborMultiplier],
+            [],
+            ['WEATHER ANALYSIS INPUTS'],
+            ['Project Risk Score:', `${results.riskScore}/100`],
+            ['Workable Days Percentage:', `${results.workablePercent.toFixed(1)}%`]
+        ];
+
+        const ws2 = XLSX.utils.aoa_to_sheet(inputsData);
+        ws2['!cols'] = [{wch: 30}, {wch: 20}];
+        XLSX.utils.book_append_sheet(wb, ws2, 'Inputs');
+
+        // Export file
+        const filename = `Bid_Contingency_${projectName.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, filename);
+
+        window.toastManager.success(`Exported bid summary to ${filename}`, 'Export Successful');
     }
 }
 
