@@ -3736,8 +3736,8 @@ class XyloclimePro {
                 // Work can continue with normal cold-weather/rain precautions
                 // More lenient thresholds than ideal days (includes ideal days)
                 // CLEAR RULES:
-                // ✓ Workable: Light freezing (>-5°C), light rain (<10mm), light wind (<30 km/h), hot but <110°F
-                // ✗ NOT Workable: Work-stopping cold (≤-5°C/≤23°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
+                // ✓ Workable: Light freezing (>-18°C / >0°F), light rain (<10mm), light wind (<30 km/h), hot but <110°F
+                // ✗ NOT Workable: Extreme cold stoppage (≤-18°C/≤0°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
@@ -3745,7 +3745,7 @@ class XyloclimePro {
                     const wind = daily.windspeed_10m_max[i];
 
                     // Check for work-stopping conditions
-                    const hasExtremeCold = temp_min !== null && temp_min <= -5;
+                    const hasExtremeCold = temp_min !== null && temp_min <= -18; // ≤0°F = true stoppage
                     const hasDangerousHeat = t !== null && t >= 43.33;  // ≥110°F (true work stoppage)
                     const hasHeavyRain = precip !== null && precip >= 10;
                     const hasSnow = snow !== null && snow > 10;
@@ -4936,13 +4936,13 @@ class XyloclimePro {
 
             if (workStoppingCold > 15) {
                 if (template?.name === 'Commercial Concrete Work') {
-                    recommendations.push(`Plan for ${workStoppingCold} work-stopping cold days (≤-5°C): heated enclosures and winter methods recommended`);
+                    recommendations.push(`Plan for ${workStoppingCold} extreme cold stoppage days (≤-18°C / ≤0°F): heated enclosures and winter methods required`);
                     recommendations.push('Concrete curing requires temps above 4°C (40°F). Use heated blankets and winter admixtures');
                 } else if (template?.name === 'Roofing Installation') {
-                    recommendations.push(`${workStoppingCold} very cold days expected. Asphalt shingles brittle below -5°C`);
+                    recommendations.push(`${workStoppingCold} extreme cold days expected (≤-18°C / ≤0°F). Asphalt shingles brittle below -5°C`);
                     recommendations.push('Use cold-weather adhesives. Work limited to above -5°C days');
                 } else {
-                    recommendations.push(`Plan for ${workStoppingCold} work-stopping cold days (≤-5°C): heated enclosures recommended`);
+                    recommendations.push(`Plan for ${workStoppingCold} extreme cold stoppage days (≤-18°C / ≤0°F): heated enclosures recommended`);
                     recommendations.push('Consider insulated materials and cold-weather equipment');
                 }
             }
@@ -7902,7 +7902,8 @@ class XyloclimePro {
                 ['Precipitation', 'Total Snow', this.formatSnow(analysis.totalSnowfall, false), this.unitSystem === 'imperial' ? 'in' : 'cm'],
                 ['Temperature Extremes', 'Freezing Days', analysis.freezingDays, 'days'],
                 ['Temperature Extremes', 'Extreme Heat Days', analysis.extremeHeatDays, 'days'],
-                ['Temperature Extremes', 'Work-Stopping Cold (≤-5°C)', analysis.extremeColdDays, 'days'],
+                ['Temperature Extremes', 'Extreme Cold Stoppage (≤-18°C / ≤0°F)', analysis.extremeColdDays, 'days'],
+                ['Temperature Extremes', 'Cold-Weather Methods Days (0-23°F)', analysis.coldWeatherMethodsDays || 0, 'days'],
                 ['Work Conditions', 'Workable Days', analysis.workableDays || analysis.optimalDays, 'days'],
                 ['Work Conditions', 'Ideal Days', analysis.idealDays || 0, 'days'],
                 ['Data Quality', 'Years Analyzed', analysis.yearsAnalyzed, 'years']

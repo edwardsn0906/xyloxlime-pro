@@ -408,13 +408,14 @@ class SmartRecommendations {
         const avgLow = analysis.avgTempMin;
         const totalDays = analysis.totalDays || analysis.actualProjectDays || 365;
 
-        // Work-stopping cold (≤-5°C) is the real issue
+        // EXTREME cold stoppage (≤-18°C / ≤0°F) is true work stoppage
         if (workStoppingCold > totalDays * 0.05) {
-            // >5% work-stopping cold = significant
+            // >5% extreme cold stoppage = significant
+            const coldMethodsDays = analysis.coldWeatherMethodsDays || 0;
             recommendations.critical.push({
                 icon: 'fa-snowflake',
                 title: 'Work-Stopping Cold Expected',
-                message: `${workStoppingCold} days expected ≤-5°C (≤23°F) requiring work stoppage. Concrete pours and major construction will be halted.`,
+                message: `${workStoppingCold} days expected ≤-18°C (≤0°F) requiring work stoppage. ${coldMethodsDays} additional days (0-23°F) workable with cold-weather methods. Concrete pours and major construction halted during extreme cold.`,
                 action: 'Plan for heated enclosures, winter additives, and extended cure times',
                 priority: 'high'
             });
@@ -423,7 +424,7 @@ class SmartRecommendations {
             recommendations.important.push({
                 icon: 'fa-snowflake',
                 title: 'Freezing Conditions Expected',
-                message: `${freezingDays} days below freezing (most workable with precautions). ${workStoppingCold} days require work stoppage (≤-5°C).`,
+                message: `${freezingDays} days below freezing (most workable with precautions). ${workStoppingCold} days require work stoppage (≤-18°C / ≤0°F).`,
                 action: 'Plan for cold-weather methods: heated blankets, winter mix concrete',
                 priority: 'medium'
             });
