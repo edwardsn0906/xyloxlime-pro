@@ -2177,7 +2177,7 @@ class XyloclimePro {
         const notificationsBtn = document.getElementById('notificationsBtn');
         if (notificationsBtn) {
             notificationsBtn.addEventListener('click', () => {
-                alert('Notifications:\n\n✓ System is running normally\n✓ All data saved locally\n✓ No issues detected\n\nNote: Real-time notifications coming in future version!');
+                this.showNotificationsPanel();
             });
         }
 
@@ -2844,6 +2844,137 @@ class XyloclimePro {
                 termsAcceptanceDate.textContent = 'Not set';
             }
         }
+    }
+
+    showNotificationsPanel() {
+        // Create notification panel overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 9999; display: flex; align-items: center; justify-content: center;';
+
+        // Get session and project data
+        const projectCount = this.projects.length;
+        const currentAnalysis = this.currentAnalysis;
+        const acceptance = this.termsManager.getAcceptance();
+        const acceptDate = acceptance ? new Date(acceptance.timestamp).toLocaleString() : 'Not set';
+
+        // Build notifications content
+        let notificationsHTML = `
+            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="color: var(--electric-cyan); margin: 0; font-size: 1.5rem;">
+                        <i class="fas fa-bell"></i> Notifications
+                    </h2>
+                    <button id="closeNotifications" style="background: none; border: none; color: var(--steel-silver); font-size: 1.5rem; cursor: pointer; padding: 0.25rem; transition: all 0.3s;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+        `;
+
+        // Session status
+        notificationsHTML += `
+            <div style="background: rgba(0, 212, 255, 0.1); border-left: 4px solid var(--electric-cyan); padding: 1rem; margin-bottom: 1rem; border-radius: 6px;">
+                <div style="color: var(--electric-cyan); font-weight: 600; margin-bottom: 0.5rem;">
+                    <i class="fas fa-check-circle"></i> System Status
+                </div>
+                <div style="color: var(--arctic-white); font-size: 0.9rem; line-height: 1.6;">
+                    ✓ Application running normally<br>
+                    ✓ All data saved locally<br>
+                    ✓ Terms accepted: ${acceptDate}<br>
+                    ✓ Session ID: ${this.sessionManager.sessionId.substring(0, 12)}...
+                </div>
+            </div>
+        `;
+
+        // Project activity
+        notificationsHTML += `
+            <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid #2ecc71; padding: 1rem; margin-bottom: 1rem; border-radius: 6px;">
+                <div style="color: #2ecc71; font-weight: 600; margin-bottom: 0.5rem;">
+                    <i class="fas fa-project-diagram"></i> Project Activity
+                </div>
+                <div style="color: var(--arctic-white); font-size: 0.9rem; line-height: 1.6;">
+                    ${projectCount} project${projectCount !== 1 ? 's' : ''} saved<br>
+                    ${currentAnalysis ? `Last analysis: ${currentAnalysis.projectName || 'Unnamed Project'}<br>` : 'No analysis run yet<br>'}
+                    ${currentAnalysis ? `Location: ${currentAnalysis.locationName || 'Unknown'}<br>` : ''}
+                    ${currentAnalysis ? `Risk Score: ${currentAnalysis.riskScore || 0}/100` : 'Run an analysis to see risk score'}
+                </div>
+            </div>
+        `;
+
+        // Data quality status
+        if (currentAnalysis) {
+            const dataQuality = currentAnalysis.dataQuality || 1.0;
+            const dataQualityPercent = (dataQuality * 100).toFixed(0);
+            const yearsAnalyzed = currentAnalysis.yearsAnalyzed || 0;
+
+            notificationsHTML += `
+                <div style="background: rgba(241, 196, 15, 0.1); border-left: 4px solid #f1c40f; padding: 1rem; margin-bottom: 1rem; border-radius: 6px;">
+                    <div style="color: #f1c40f; font-weight: 600; margin-bottom: 0.5rem;">
+                        <i class="fas fa-database"></i> Data Quality
+                    </div>
+                    <div style="color: var(--arctic-white); font-size: 0.9rem; line-height: 1.6;">
+                        ${dataQualityPercent}% data coverage<br>
+                        ${yearsAnalyzed} years of historical data analyzed<br>
+                        ${currentAnalysis.snowDataSource?.source === 'NOAA' ? '✓ High-quality NOAA snow data' : '⚠ ERA5 reanalysis snow data'}<br>
+                        Temperature & precipitation: ${currentAnalysis.snowDataSource?.source || 'ERA5'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tips & Info
+        notificationsHTML += `
+            <div style="background: rgba(155, 89, 182, 0.1); border-left: 4px solid #9b59b6; padding: 1rem; border-radius: 6px;">
+                <div style="color: #9b59b6; font-weight: 600; margin-bottom: 0.5rem;">
+                    <i class="fas fa-lightbulb"></i> Quick Tips
+                </div>
+                <div style="color: var(--arctic-white); font-size: 0.9rem; line-height: 1.6;">
+                    • Export reports to PDF for sharing<br>
+                    • Use templates for project-specific analysis<br>
+                    • Compare multiple projects to find optimal timing<br>
+                    • Switch units between metric/imperial in settings
+                </div>
+            </div>
+        `;
+
+        notificationsHTML += `</div>`;
+
+        overlay.innerHTML = notificationsHTML;
+        document.body.appendChild(overlay);
+
+        // Close button handler
+        const closeBtn = overlay.querySelector('#closeNotifications');
+        closeBtn.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
+        });
+
+        // Close on ESC key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                if (document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                }
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+
+        // Add hover effect to close button
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.color = '#e74c3c';
+            closeBtn.style.transform = 'scale(1.1)';
+        });
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.color = 'var(--steel-silver)';
+            closeBtn.style.transform = 'scale(1)';
+        });
     }
 
     updateVisualCrossingStatus() {
