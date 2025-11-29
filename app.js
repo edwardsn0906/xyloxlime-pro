@@ -4759,8 +4759,12 @@ class XyloclimePro {
             // Use actual wind data if available
             const highWindDays = parseInt(analysis.highWindDays) || 0;
             const windDaysRatio = highWindDays / totalDays;
-            windRisk = Math.min(100, windDaysRatio * 500); // High wind days drive risk
-            console.log(`[RISK] Wind: ${highWindDays} high wind days = ${windRisk.toFixed(1)} risk`);
+            // FIX: Changed multiplier from 500 to 200 for more reasonable scaling
+            // 50% of days with high wind = 100% risk (extreme)
+            // 25% of days = 50% risk (moderate)
+            // 20% of days = 40% risk (reasonable for windy climates)
+            windRisk = Math.min(100, windDaysRatio * 200);
+            console.log(`[RISK] Wind: ${highWindDays}/${totalDays} high wind days (${(windDaysRatio*100).toFixed(1)}%) = ${windRisk.toFixed(1)} risk`);
         } else {
             // No wind data available - set to null for special handling
             windRisk = null;
