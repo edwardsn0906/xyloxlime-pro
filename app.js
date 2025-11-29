@@ -6250,11 +6250,11 @@ class XyloclimePro {
 
         // Overall conditions assessment
         if (workablePercent > 75) {
-            summary += `<p><strong>Favorable Conditions:</strong> Excellent news! ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable with normal construction precautions. ${analysis.idealDays} days (${idealPercent}%) offer ideal conditions. This is significantly favorable for project execution.</p>`;
-        } else if (workablePercent > 55) {
-            summary += `<p><strong>Moderate Conditions:</strong> ${workablePercent}% of project days (${analysis.workableDays} days) are workable with standard precautions. ${analysis.idealDays} days (${idealPercent}%) offer ideal conditions. Within normal parameters for this timeframe and location.</p>`;
+            summary += `<p><strong>Higher Workability Period:</strong> ${workablePercent}% of project days (${analysis.workableDays} days) are expected to be workable with normal construction precautions. ${analysis.idealDays} days (${idealPercent}%) offer ideal conditions. Favorable conditions for this region.</p>`;
+        } else if (workablePercent > 50) {
+            summary += `<p><strong>Moderate Workability:</strong> ${workablePercent}% of project days (${analysis.workableDays} days) are workable with standard precautions. ${analysis.idealDays} days (${idealPercent}%) offer ideal conditions. Typical for this region and season - plan for standard weather contingencies.</p>`;
         } else {
-            summary += `<p><strong>Challenging Conditions:</strong> Only ${workablePercent}% of days (${analysis.workableDays}) are workable, with ${analysis.idealDays} ideal days (${idealPercent}%). Enhanced weather planning, mitigation strategies, and schedule flexibility strongly recommended.</p>`;
+            summary += `<p><strong>Winter-Heavy Period:</strong> ${workablePercent}% of days (${analysis.workableDays}) are workable, with ${analysis.idealDays} ideal days (${idealPercent}%). Significant winter weather expected - enhanced weather planning, cold-weather methods, and schedule flexibility strongly recommended.</p>`;
         }
 
         // Precipitation analysis
@@ -6885,7 +6885,7 @@ class XyloclimePro {
                 riskAssessment += ` Maintain minimum 10% schedule contingency for weather delays.`;
             }
         } else {
-            riskAssessment = `HIGH RISK: Significant weather challenges anticipated for this project period. Only ${workablePercent}% of days considered workable. Robust weather contingency planning recommended.`;
+            riskAssessment = `HIGH RISK: Significant weather challenges anticipated for this project period. ${workablePercent}% of days considered workable - winter-heavy conditions with substantial weather impact. Robust weather contingency planning and cold-weather methods required.`;
             if (contingencyRange) {
                 riskAssessment += ` Recommended schedule contingency: ${contingencyRange} minimum (~${netStoppage} stoppage days), plus alternative work strategies.`;
             } else {
@@ -7159,11 +7159,11 @@ class XyloclimePro {
             // Use already declared workablePercent and idealPercent from line 3855-3856
             let outlookText = '';
             if (workablePercent > 75) {
-                outlookText = `✓ FAVORABLE: ${workablePercent}% workable conditions (${idealPercent}% ideal). Excellent opportunity for efficient project execution with minimal weather delays.`;
-            } else if (workablePercent > 55) {
-                outlookText = `⚠ MODERATE: ${workablePercent}% workable conditions (${idealPercent}% ideal). Normal parameters for this timeframe. Weather contingency planning recommended based on work-stoppage analysis.`;
+                outlookText = `✓ HIGHER WORKABILITY: ${workablePercent}% workable conditions (${idealPercent}% ideal). Favorable for this region - good opportunity for efficient project execution.`;
+            } else if (workablePercent > 50) {
+                outlookText = `⚠ MODERATE WORKABILITY: ${workablePercent}% workable conditions (${idealPercent}% ideal). Typical for this region and season. Weather contingency planning recommended based on work-stoppage analysis.`;
             } else {
-                outlookText = `⚠ CHALLENGING: Only ${workablePercent}% workable conditions (${idealPercent}% ideal). Enhanced weather planning and mitigation strategies strongly recommended.`;
+                outlookText = `⚠ WINTER-HEAVY PERIOD: ${workablePercent}% workable conditions (${idealPercent}% ideal). Significant winter weather expected - enhanced weather planning, cold-weather methods, and mitigation strategies strongly recommended.`;
             }
             const outlookLines = doc.splitTextToSize(outlookText, 167);
             doc.text(outlookLines, 23, yPos);
