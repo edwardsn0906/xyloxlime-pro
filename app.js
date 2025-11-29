@@ -3774,6 +3774,23 @@ class XyloclimePro {
         const absMinTemp = Math.min(...allTempsMin);
         const absMaxTempMin = Math.max(...allTempsMin);
 
+        // TEMPERATURE DISTRIBUTION DEBUGGING
+        const tempBins = { below_minus20: 0, minus20_to_minus10: 0, minus10_to_0: 0, zero_to_10: 0, above_10: 0 };
+        allTempsMin.forEach(t => {
+            if (t <= -20) tempBins.below_minus20++;
+            else if (t <= -10) tempBins.minus20_to_minus10++;
+            else if (t <= 0) tempBins.minus10_to_0++;
+            else if (t <= 10) tempBins.zero_to_10++;
+            else tempBins.above_10++;
+        });
+        console.log('[TEMP DEBUG] Daily minimum temperature distribution (°C):', {
+            totalDays: allTempsMin.length,
+            avgMin: avgTempMin.toFixed(1),
+            avgMinF: this.convertTemp(avgTempMin, 'C').toFixed(1),
+            freezingDays: allTempsMin.filter(t => t <= 0).length,
+            histogram: tempBins
+        });
+
         console.log(`[TEMP STATS] Avg Min: ${avgTempMin.toFixed(1)}°C, Std Dev: ${tempMinStdDev.toFixed(1)}°C, Range: ${absMinTemp.toFixed(1)}°C to ${absMaxTempMin.toFixed(1)}°C`);
 
         // Average precipitation PER YEAR (not total of all years)
