@@ -6712,46 +6712,109 @@ class XyloclimePro {
         </div>`;
 
         // ========================================================================
-        // 4. CONCRETE WORK IMPACTS (MANDATORY NEW SECTION)
+        // 4. PROJECT-SPECIFIC IMPACTS (Template-Aware)
         // ========================================================================
+        const templateName = analysis.templateName || '';
+        const isPainting = templateName.toLowerCase().includes('paint');
+        const isRoofing = templateName.toLowerCase().includes('roof');
+        const isConcrete = templateName.toLowerCase().includes('concrete') || templateName.toLowerCase().includes('foundation') || templateName.toLowerCase().includes('slab');
+
+        const sectionTitle = isPainting ? 'Exterior Painting Conditions' :
+                           isRoofing ? 'Roofing Work Impacts' :
+                           isConcrete ? 'Concrete Work Impacts' :
+                           'Project-Specific Impacts';
+
+        const sectionIcon = isPainting ? 'fa-paint-roller' :
+                          isRoofing ? 'fa-home' :
+                          isConcrete ? 'fa-hard-hat' :
+                          'fa-wrench';
+
         summary += `<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(230, 126, 34, 0.1); border: 2px solid #e67e22; border-radius: 8px;">
-        <h3 style="color: #e67e22; margin: 0 0 1rem 0;"><i class="fas fa-hard-hat"></i> Concrete Work Impacts</h3>
+        <h3 style="color: #e67e22; margin: 0 0 1rem 0;"><i class="fas ${sectionIcon}"></i> ${sectionTitle}</h3>
         <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">`;
 
-        if (analysis.allFreezingDays > 10) {
-            const coldWeatherTotal = (analysis.coldWeatherMethodsDays || 0) + (analysis.lightFreezingDays || 0);
-            if (analysis.extremeColdDays > 0) {
-                summary += `<li><strong>Extreme cold stoppage</strong> – ${analysis.extremeColdDays} days with extreme cold (${this.formatThresholdTemp(-18, '≤')}) typically require work stoppage even with protection. ${analysis.coldWeatherMethodsDays || 0} additional days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) are workable with proper cold-weather methods: blankets, hot water mix, accelerators, and heated enclosures. ${analysis.lightFreezingDays} days (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}) need only light precautions (timing, blankets).</li>`;
-            } else if (coldWeatherTotal > 0) {
-                summary += `<li><strong>Cold-weather concrete methods required</strong> – ${analysis.coldWeatherMethodsDays || 0} days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) need accelerators, hot water, and enclosures. ${analysis.lightFreezingDays} days (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}) need light precautions (timing, blankets). No extreme cold stoppage days expected.</li>`;
+        // PAINTING-SPECIFIC CONTENT
+        if (isPainting) {
+            // Temperature and substrate conditions
+            if (analysis.allFreezingDays > 0) {
+                const avgLowF = this.convertTemp(parseFloat(analysis.avgTempMin), 'C');
+                summary += `<li><strong>Substrate moisture and temperature control</strong> – ${analysis.allFreezingDays} freezing days expected. Paint will not cure properly below ${this.formatThresholdTemp(10, '<')}. Surface must be above dew point to prevent moisture condensation under paint film. Allow frozen surfaces to thaw and dry completely before application.</li>`;
+            }
+
+            // Dew point and morning condensation
+            const avgTempC = (parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2;
+            if (avgTempC < 15 || analysis.rainyDays > 30) {
+                summary += `<li><strong>Morning dew and condensation concerns</strong> – High humidity environment. Expect delayed start times (10am-12pm) on many days while morning dew evaporates. Surface must be completely dry before paint application. Use moisture meters to verify substrate dryness.</li>`;
+            }
+
+            // Paint cure windows (rain risk)
+            if (analysis.heavyRainDays > 5) {
+                summary += `<li><strong>Paint cure windows require planning</strong> – ${analysis.heavyRainDays} heavy rain days threaten uncured paint. Require minimum 48-hour dry forecast before starting each coat. Monitor weather closely and have tarps ready for unexpected weather changes.</li>`;
+            }
+
+            // Application days
+            summary += `<li><strong>Optimal application windows</strong> – ${analysis.idealDays} ideal days identified with proper temperature (${this.formatThresholdTemp(10, '≥')} to ${this.formatThresholdTemp(29, '≤')}), dry conditions, and calm winds. Schedule critical exterior work during these periods for best adhesion and cure.</li>`;
+
+            // Wind impact on spray application
+            if (analysis.highWindDays > 15) {
+                summary += `<li><strong>Wind affects spray application quality</strong> – ${analysis.highWindDays} high-wind days (≥30 km/h) will cause overspray, uneven coverage, and material waste. Plan to use brush/roller on windy days or schedule spraying during calm periods.</li>`;
+            }
+
+            // Surface preparation in wet conditions
+            if (analysis.rainyDays > 40) {
+                summary += `<li><strong>Surface preparation challenges</strong> – ${analysis.rainyDays} rainy days make pressure washing, sanding, and priming difficult. Complete surface prep during dry streaks and protect prepared surfaces from rain before painting.</li>`;
             }
         }
-
-        if (analysis.heavyRainDays > 5) {
-            let riskLevel = '';
-            if (heavyRainOfTotalPercent < 2) {
-                riskLevel = 'manageable with proper scheduling';
-            } else if (heavyRainOfTotalPercent < 4) {
-                riskLevel = 'moderate impact requiring planning';
-            } else {
-                riskLevel = 'significant impact';
+        // CONCRETE-SPECIFIC CONTENT
+        else if (isConcrete) {
+            if (analysis.allFreezingDays > 10) {
+                const coldWeatherTotal = (analysis.coldWeatherMethodsDays || 0) + (analysis.lightFreezingDays || 0);
+                if (analysis.extremeColdDays > 0) {
+                    summary += `<li><strong>Extreme cold stoppage</strong> – ${analysis.extremeColdDays} days with extreme cold (${this.formatThresholdTemp(-18, '≤')}) typically require work stoppage even with protection. ${analysis.coldWeatherMethodsDays || 0} additional days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) are workable with proper cold-weather methods: blankets, hot water mix, accelerators, and heated enclosures. ${analysis.lightFreezingDays} days (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}) need only light precautions (timing, blankets).</li>`;
+                } else if (coldWeatherTotal > 0) {
+                    summary += `<li><strong>Cold-weather concrete methods required</strong> – ${analysis.coldWeatherMethodsDays || 0} days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) need accelerators, hot water, and enclosures. ${analysis.lightFreezingDays} days (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}) need light precautions (timing, blankets). No extreme cold stoppage days expected.</li>`;
+                }
             }
 
-            summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with ${this.formatThresholdPrecip(10)} rain (${heavyRainOfTotalPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
+            if (analysis.heavyRainDays > 5) {
+                let riskLevel = '';
+                if (heavyRainOfTotalPercent < 2) {
+                    riskLevel = 'manageable with proper scheduling';
+                } else if (heavyRainOfTotalPercent < 4) {
+                    riskLevel = 'moderate impact requiring planning';
+                } else {
+                    riskLevel = 'significant impact';
+                }
+
+                summary += `<li><strong>Heavy rain increases slab moisture exposure</strong> – ${analysis.heavyRainDays} days with ${this.formatThresholdPrecip(10)} rain (${heavyRainOfTotalPercent}% of project duration, ${riskLevel}). Implement waterproofing, drainage systems, and weather-protected pour areas.</li>`;
+            }
+
+            if (analysis.allFreezingDays > 0) {
+                if (analysis.extremeColdDays > 0) {
+                    summary += `<li><strong>Heated enclosures critical for extreme cold</strong> – Essential for ${analysis.extremeColdDays} extreme cold days (${this.formatThresholdTemp(-18, '≤')}). Maintain minimum ${this.formatThresholdTemp(10, '≥')} ambient temperature for proper curing.</li>`;
+                }
+                if ((analysis.coldWeatherMethodsDays || 0) > 0) {
+                    const hotWaterTemp = this.formatTemp(49, 'C'); // 120°F = 49°C
+                    summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Required for ${analysis.coldWeatherMethodsDays} cold-weather days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}). Type III cement or calcium chloride accelerators reduce cure time. Hot water mix (${hotWaterTemp}) recommended.</li>`;
+                }
+            }
+
+            summary += `<li><strong>Plan pours during optimal windows</strong> – ${analysis.idealDays} ideal days identified. Schedule critical pours during these periods for best results.</li>`;
+            summary += `<li><strong>Avoid early-morning winter pours</strong> – Unless blankets/heaters are used. Temperature drops overnight can damage fresh concrete.</li>`;
         }
+        // ROOFING OR OTHER TEMPLATES
+        else {
+            // Generic weather impacts for other project types
+            if (analysis.allFreezingDays > 10) {
+                summary += `<li><strong>Cold weather precautions</strong> – ${analysis.allFreezingDays} freezing days expected. Many materials become brittle or lose adhesion in cold temperatures. Plan for heated storage and proper installation timing.</li>`;
+            }
 
-        if (analysis.allFreezingDays > 0) {
-            if (analysis.extremeColdDays > 0) {
-                summary += `<li><strong>Heated enclosures critical for extreme cold</strong> – Essential for ${analysis.extremeColdDays} extreme cold days (${this.formatThresholdTemp(-18, '≤')}). Maintain minimum ${this.formatThresholdTemp(10, '≥')} ambient temperature for proper curing.</li>`;
+            if (analysis.heavyRainDays > 5) {
+                summary += `<li><strong>Heavy rain impacts</strong> – ${analysis.heavyRainDays} days with heavy rain (${this.formatThresholdPrecip(10)}). Weather protection and drainage systems critical.</li>`;
             }
-            if ((analysis.coldWeatherMethodsDays || 0) > 0) {
-                const hotWaterTemp = this.formatTemp(49, 'C'); // 120°F = 49°C
-                summary += `<li><strong>Use winter mix and accelerating admixtures</strong> – Required for ${analysis.coldWeatherMethodsDays} cold-weather days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}). Type III cement or calcium chloride accelerators reduce cure time. Hot water mix (${hotWaterTemp}) recommended.</li>`;
-            }
+
+            summary += `<li><strong>Plan work during optimal windows</strong> – ${analysis.idealDays} ideal days identified. Schedule critical activities during these periods for best results.</li>`;
         }
-
-        summary += `<li><strong>Plan pours during optimal windows</strong> – ${analysis.idealDays} ideal days identified. Schedule critical pours during these periods for best results.</li>`;
-        summary += `<li><strong>Avoid early-morning winter pours</strong> – Unless blankets/heaters are used. Temperature drops overnight can damage fresh concrete.</li>`;
 
         // Calculate weather contingency with proper math
         // NOTE: Each category counts calendar days independently, then overlaps are ESTIMATED (not calculated from actual same-day events)
