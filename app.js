@@ -3817,52 +3817,77 @@ class XyloclimePro {
                 // If a day is ideal, it is automatically also workable
                 // idealDays ≤ workableDays (always)
 
-                // Tier 1: IDEAL DAYS (renamed from "optimal")
-                // Perfect conditions - no precautions needed
-                // Stricter thresholds than workable days
-                // - Temp: Not freezing (>0°C) and comfortable (<100°F / 37.78°C)
-                // - Rain: Minimal (<5mm)
-                // - Wind: Calm (<20 km/h)
-                idealDays: daily.temperature_2m_max.filter((t, i) => {
-                    const temp_min = daily.temperature_2m_min[i];
-                    const precip = daily.precipitation_sum[i];
-                    const wind = daily.windspeed_10m_max[i];
-                    return t !== null && temp_min !== null && precip !== null && wind !== null &&
-                           temp_min > 0 && t < 37.78 && precip < 5 && wind < 20;
-                }).length,
-
                 // Tier 2: WORKABLE DAYS (realistic construction feasibility)
                 // Work can continue with normal cold-weather/rain precautions
-                // More lenient thresholds than ideal days (includes ideal days)
-                // CLEAR RULES:
-                // ✓ Workable: Above freezing preferred, or light freezing down to -5°C (23°F) with blankets
-                // TEMPLATE-SPECIFIC WORKABILITY CALCULATION
-                // Use template-specific thresholds if available, otherwise use defaults
+                // More lenient thresholds than ideal days
+                // IMPORTANT: workableDays >= idealDays (mathematical requirement)
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
                     const snow = daily.snowfall_sum[i];
                     const wind = daily.windspeed_10m_max[i];
 
-                    // Get thresholds from template or use defaults
-                    const thresholds = template?.workabilityThresholds || {
-                        criticalMinTemp: -5,  // °C (23°F) default
-                        maxTemp: 43.33,       // °C (110°F) default
-                        maxRain: 15,          // mm (0.6 in) default
-                        maxWind: 30,          // km/h default
-                        maxSnow: 10           // mm default
+                    // Default lenient thresholds for workability
+                    const defaultThresholds = {
+                        criticalMinTemp: -5,  // °C (23°F) - general construction minimum
+                        maxTemp: 43.33,       // °C (110°F) - heat safety limit
+                        maxRain: 15,          // mm (0.6 in) - heavy rain threshold
+                        maxWind: 60,          // km/h - high wind tolerance
+                        maxSnow: 10           // mm - work-stopping snow
                     };
 
-                    // Check for work-stopping conditions using template-specific thresholds
-                    const hasColdWeatherNeeded = temp_min !== null && temp_min <= thresholds.criticalMinTemp;
-                    const hasDangerousHeat = t !== null && t >= thresholds.maxTemp;
-                    const hasHeavyRain = precip !== null && precip >= thresholds.maxRain;
-                    const hasSnow = snow !== null && snow > thresholds.maxSnow;
-                    const hasHighWind = wind !== null && wind >= thresholds.maxWind;
+                    // For workable days, use lenient thresholds
+                    // Template thresholds are often too strict for "workable" - they define "ideal"
+                    const workableThresholds = {
+                        criticalMinTemp: -5,   // °C (23°F) - work possible with precautions
+                        maxTemp: 43.33,        // °C (110°F) - heat safety limit
+                        maxRain: 15,           // mm - heavy rain stops work
+                        maxWind: 60,           // km/h - very high wind stops work
+                        maxSnow: 10            // mm - heavy snow stops work
+                    };
+
+                    // Check for work-stopping conditions using lenient thresholds
+                    const hasColdWeatherNeeded = temp_min !== null && temp_min <= workableThresholds.criticalMinTemp;
+                    const hasDangerousHeat = t !== null && t >= workableThresholds.maxTemp;
+                    const hasHeavyRain = precip !== null && precip >= workableThresholds.maxRain;
+                    const hasSnow = snow !== null && snow > workableThresholds.maxSnow;
+                    const hasHighWind = wind !== null && wind >= workableThresholds.maxWind;
 
                     // Day is workable if NO work-stopping conditions present
                     return t !== null && temp_min !== null &&
                            !hasColdWeatherNeeded && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
+                }).length,
+
+                // Tier 1: IDEAL DAYS (Perfect conditions subset)
+                // Perfect conditions - no precautions needed
+                // Stricter thresholds than workable days
+                // Uses template-specific thresholds if available, otherwise defaults
+                // IMPORTANT: idealDays <= workableDays (mathematical requirement)
+                idealDays: daily.temperature_2m_max.filter((t, i) => {
+                    const temp_min = daily.temperature_2m_min[i];
+                    const precip = daily.precipitation_sum[i];
+                    const wind = daily.windspeed_10m_max[i];
+
+                    // Use template-specific ideal thresholds if available
+                    if (template?.workabilityThresholds) {
+                        const idealThresholds = template.workabilityThresholds;
+
+                        // For ideal days, use smart temperature logic:
+                        // - Daily low must be above criticalMinTemp (for curing/overnight)
+                        // - Daily high must be above idealMinTemp (for application/daytime work)
+                        const meetsTemp = temp_min !== null && t !== null &&
+                                        temp_min >= idealThresholds.criticalMinTemp &&
+                                        t >= (idealThresholds.idealMinTemp || idealThresholds.criticalMinTemp) &&
+                                        t <= idealThresholds.maxTemp;
+                        const meetsRain = precip !== null && precip <= (idealThresholds.maxRain || 0);
+                        const meetsWind = wind !== null && wind <= (idealThresholds.maxWind || 20);
+
+                        return meetsTemp && meetsRain && meetsWind;
+                    } else {
+                        // Default ideal thresholds (generic)
+                        return t !== null && temp_min !== null && precip !== null && wind !== null &&
+                               temp_min > 0 && t < 37.78 && precip < 5 && wind < 20;
+                    }
                 }).length
             };
 
