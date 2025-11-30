@@ -4013,9 +4013,14 @@ class XyloclimePro {
             } else if (metric.includes('Dry Work Days') || metric.includes('Ground Dry')) {
                 // Days with minimal precipitation
                 value = yearlyStats.reduce((sum, y) => {
-                    const dryDays = y.daysInYear - (y.rainyDays || 0);
+                    const dryDays = (y.daysInYear || 365) - (y.rainyDays || 0);
                     return sum + dryDays;
                 }, 0) / yearlyStats.length;
+                // Safety check: prevent NaN in professional reports
+                if (isNaN(value) || !isFinite(value)) {
+                    console.error('[KPI] Dry Work Days calculation resulted in NaN, using fallback');
+                    value = 365 - (yearlyStats[0]?.rainyDays || 100);
+                }
             } else if (metric.includes('Saturated Soil')) {
                 // Days with heavy rain
                 value = yearlyStats.reduce((sum, y) => sum + (y.heavyRainDays || 0), 0) / yearlyStats.length;
@@ -6732,11 +6737,11 @@ class XyloclimePro {
             }
 
             summary += `<p><strong>Cold Weather Analysis:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${coldBreakdown}.
-            <br><br><strong>Temperature Workability Tiers:</strong>
+            <br><br><strong>Temperature Workability Tiers (General Construction Standards):</strong>
             <br>• <strong style="color: #27ae60;">${analysis.tempTiers.easilyWorkable} days</strong> - Easily workable (${this.formatThresholdTemp(-5, '>')} with normal precautions)
             <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - expensive but workable with accelerators, hot water mix, heated enclosures
             <br>• <strong style="color: #e74c3c;">${analysis.tempTiers.extremeStoppage} days</strong> - Extreme cold stoppage (${this.formatThresholdTemp(-18, '≤')}) - true work stoppage even with protection
-            <br><br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: "Workable days" (${analysis.workableDays}) excludes the ${analysis.tempTiers.coldMethodsNeeded} cold-weather method days for realistic planning. These days are technically workable but require significant added cost and difficulty. Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
+            <br><br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: ${analysis.templateName ? `<strong>${analysis.templateName} template uses custom thresholds</strong> for workable day calculations, which may differ from general standards shown above. ` : ''}"Workable days" count (${analysis.workableDays}) is calculated using ${analysis.templateName ? 'template-specific' : 'general construction'} thresholds. The ${analysis.tempTiers.coldMethodsNeeded} cold-weather method days shown above represent general construction standards. Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
 
             if (isUnusualDistribution) {
                 summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
