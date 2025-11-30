@@ -6607,10 +6607,9 @@ class XyloclimePro {
         // Gross total (sum of all categories - INCLUDES overlaps)
         const grossStoppageDays = heavyRain + workStoppingCold + heavySnow;
 
-        // Estimate overlap reduction (conservative assumption: ~25% of days have multiple stoppage conditions)
-        // This is an ESTIMATE, not calculated from actual day-by-day overlap detection
-        const estimatedOverlap = Math.round(grossStoppageDays * 0.25);
-        const netStoppageDays = grossStoppageDays - estimatedOverlap;
+        // Use ACTUAL overlap count from daily data analysis if available, otherwise estimate
+        const actualOverlap = analysis.multiStoppageDays || Math.round(grossStoppageDays * 0.25);
+        const netStoppageDays = grossStoppageDays - actualOverlap;
 
         // Direct stoppage percentage
         const directStoppagePercent = ((netStoppageDays / totalProjectDays) * 100).toFixed(1);
