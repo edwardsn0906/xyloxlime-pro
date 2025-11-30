@@ -3854,8 +3854,9 @@ class XyloclimePro {
                     const hasHighWind = wind !== null && wind >= workableThresholds.maxWind;
 
                     // Day is workable if NO work-stopping conditions present
-                    return t !== null && temp_min !== null &&
+                    const isWorkable = t !== null && temp_min !== null &&
                            !hasColdWeatherNeeded && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
+                    return isWorkable;
                 }).length,
 
                 // Tier 1: IDEAL DAYS (Perfect conditions subset)
@@ -3975,7 +3976,9 @@ class XyloclimePro {
             years: yearsCount,
             avgDataQuality: `${(avgDataQuality * 100).toFixed(1)}%`,
             rainyDays: `${rainyDays} ± ${Math.round(rainyDaysStdDev)}`,
-            extremeEvents: extremeEvents.length
+            extremeEvents: extremeEvents.length,
+            workableDays: workableDays,
+            idealDays: idealDays
         });
 
         return {
