@@ -33,6 +33,28 @@ class ProjectTemplatesLibrary {
                     wind: 'MEDIUM',
                     seasonal: 'HIGH'
                 },
+                // Custom risk weighting for this project type
+                riskWeights: {
+                    precipitation: 0.35,  // Higher weight - rain critically affects concrete
+                    temperature: 0.35,    // Higher weight - temperature crucial for curing
+                    wind: 0.15,           // Lower weight - wind less critical
+                    workability: 0.15     // Lower weight - more flexible scheduling around conditions
+                },
+                // Template-specific workability thresholds
+                workabilityThresholds: {
+                    criticalMinTemp: 4,   // °C (40°F) - absolute minimum for pour
+                    idealMinTemp: 10,     // °C (50°F) - ideal pour temp
+                    maxTemp: 35,          // °C (95°F) - too hot
+                    maxRain: 1,           // mm - any rain stops pour
+                    maxWind: 40,          // km/h - high wind tolerance
+                    maxSnow: 0            // cm - no snow allowed
+                },
+                // Key performance indicators specific to concrete work
+                kpis: [
+                    { metric: 'Pour Windows', description: 'Consecutive days with temp >40°F and no rain', unit: 'days' },
+                    { metric: 'Curing Risk Days', description: 'Days where post-pour temps drop below freezing', unit: 'days' },
+                    { metric: 'Heat Mitigation Days', description: 'Days requiring cooling measures (>90°F)', unit: 'days' }
+                ],
                 tips: [
                     'Concrete needs temps above 40°F (4°C) to cure properly',
                     'Avoid pouring during rain or within 24hrs of predicted rain',
@@ -64,6 +86,26 @@ class ProjectTemplatesLibrary {
                     wind: 'CRITICAL',
                     seasonal: 'MEDIUM'
                 },
+                // Custom risk weighting - wind and rain are critical for roofing safety
+                riskWeights: {
+                    precipitation: 0.40,  // Critical - any rain stops work
+                    temperature: 0.15,    // Medium - workable in wide temp range
+                    wind: 0.35,           // Critical - safety hazard at heights
+                    workability: 0.10     // Low - can adapt to short weather windows
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: -5,  // °C (23°F) - shingles become brittle
+                    idealMinTemp: 4,      // °C (40°F) - ideal for adhesive seal
+                    maxTemp: 40,          // °C (104°F) - too hot to handle materials
+                    maxRain: 0,           // mm - zero tolerance for rain
+                    maxWind: 30,          // km/h - safety limit for elevated work
+                    maxSnow: 0            // cm - no snow/ice allowed
+                },
+                kpis: [
+                    { metric: 'Safe Work Windows', description: 'Days with no rain, wind <30km/h, temp >23°F', unit: 'days' },
+                    { metric: 'High Wind Days', description: 'Days with unsafe wind speeds for roofing', unit: 'days' },
+                    { metric: 'Emergency Tarp Days', description: 'Days with sudden weather requiring tarping', unit: 'days' }
+                ],
                 tips: [
                     'No work during rain or high winds (important for safety)',
                     'Asphalt shingles work best with temps above 40°F (4°C)',
@@ -96,6 +138,25 @@ class ProjectTemplatesLibrary {
                     wind: 'LOW',
                     seasonal: 'MEDIUM'
                 },
+                riskWeights: {
+                    precipitation: 0.50,  // Highest weight - saturated soil stops work
+                    temperature: 0.15,    // Low - equipment works in wide temp range
+                    wind: 0.10,           // Lowest - high wind tolerance
+                    workability: 0.25     // Medium - soil conditions matter
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: -10, // °C (14°F) - frost depth issues
+                    idealMinTemp: 5,      // °C (41°F) - ideal soil conditions
+                    maxTemp: 45,          // °C (113°F) - equipment/operator heat limit
+                    maxRain: 15,          // mm - heavy rain creates mud
+                    maxWind: 50,          // km/h - high tolerance
+                    maxSnow: 5            // cm - light snow workable
+                },
+                kpis: [
+                    { metric: 'Dry Work Days', description: 'Days with <10mm rain for optimal soil conditions', unit: 'days' },
+                    { metric: 'Saturated Soil Days', description: 'Days with soil too wet for equipment', unit: 'days' },
+                    { metric: 'Frost Days', description: 'Days with frozen ground requiring special equipment', unit: 'days' }
+                ],
                 tips: [
                     'Heavy rain creates muddy, unsafe conditions',
                     'Soil conditions vary greatly with moisture',
@@ -128,6 +189,25 @@ class ProjectTemplatesLibrary {
                     wind: 'HIGH',
                     seasonal: 'CRITICAL'
                 },
+                riskWeights: {
+                    precipitation: 0.40,  // Critical - ruins uncured paint
+                    temperature: 0.30,    // High - narrow temp range for curing
+                    wind: 0.20,           // Medium - affects spray quality
+                    workability: 0.10     // Low - short windows acceptable
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: 10,  // °C (50°F) - minimum cure temp
+                    idealMinTemp: 15,     // °C (59°F) - ideal application temp
+                    maxTemp: 32,          // °C (90°F) - too hot for quality
+                    maxRain: 0,           // mm - zero tolerance
+                    maxWind: 25,          // km/h - affects spray pattern
+                    maxSnow: 0            // cm - no moisture allowed
+                },
+                kpis: [
+                    { metric: 'Paint Windows', description: '3+ consecutive dry days with ideal temps (50-85°F)', unit: 'windows' },
+                    { metric: 'Cure Risk Days', description: 'Days where rain within 48hrs ruins fresh paint', unit: 'days' },
+                    { metric: 'Application Days', description: 'Days meeting temp + humidity + wind requirements', unit: 'days' }
+                ],
                 tips: [
                     'Need 48 hours of dry weather after painting',
                     'Morning dew can delay start time',
@@ -160,6 +240,25 @@ class ProjectTemplatesLibrary {
                     wind: 'LOW',
                     seasonal: 'HIGH'
                 },
+                riskWeights: {
+                    precipitation: 0.25,  // Medium - some work rain-tolerant
+                    temperature: 0.20,    // Medium - seasonal planting matters
+                    wind: 0.10,           // Low - high wind tolerance
+                    workability: 0.45     // High - seasonal timing critical for plant success
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: 0,   // °C (32°F) - ground must not be frozen
+                    idealMinTemp: 10,     // °C (50°F) - ideal planting temp
+                    maxTemp: 38,          // °C (100°F) - heat stress for plants/workers
+                    maxRain: 15,          // mm - moderate rain workable
+                    maxWind: 40,          // km/h - good tolerance
+                    maxSnow: 2            // cm - light snow OK
+                },
+                kpis: [
+                    { metric: 'Planting Windows', description: 'Days with ideal temps (50-80°F) for plant establishment', unit: 'days' },
+                    { metric: 'Soil Workability', description: 'Days with appropriate moisture (not too wet/dry)', unit: 'days' },
+                    { metric: 'Heat Stress Days', description: 'Days requiring intensive watering for new plants', unit: 'days' }
+                ],
                 tips: [
                     'Planting season critical for success',
                     'Avoid working soil when too wet (compaction)',
@@ -192,6 +291,25 @@ class ProjectTemplatesLibrary {
                     wind: 'MEDIUM',
                     seasonal: 'LOW'
                 },
+                riskWeights: {
+                    precipitation: 0.30,  // Medium - electrical work sensitive
+                    temperature: 0.20,    // Low - refrigerant work has wide range
+                    wind: 0.25,           // Medium - affects heavy equipment lifts
+                    workability: 0.25     // Medium - flexible scheduling
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: -5,  // °C (23°F) - refrigerant work limit
+                    idealMinTemp: 10,     // °C (50°F) - ideal working temp
+                    maxTemp: 38,          // °C (100°F) - equipment/worker heat limit
+                    maxRain: 3,           // mm - light rain OK with protection
+                    maxWind: 35,          // km/h - crane/lift operations
+                    maxSnow: 5            // cm - light snow workable
+                },
+                kpis: [
+                    { metric: 'Install Days', description: 'Days with dry conditions for electrical connections', unit: 'days' },
+                    { metric: 'Equipment Protection', description: 'Days requiring tarps/covers during install', unit: 'days' },
+                    { metric: 'Refrigerant Work', description: 'Days with temps ideal for charging system', unit: 'days' }
+                ],
                 tips: [
                     'Protect equipment from moisture during install',
                     'Electrical work requires dry conditions',
@@ -223,6 +341,25 @@ class ProjectTemplatesLibrary {
                     wind: 'LOW',
                     seasonal: 'HIGH'
                 },
+                riskWeights: {
+                    precipitation: 0.40,  // Critical - ruins paving quality
+                    temperature: 0.40,    // Critical - narrow temp window for compaction
+                    wind: 0.05,           // Very low - minimal wind impact
+                    workability: 0.15     // Low - short season but flexible within it
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: 10,  // °C (50°F) - absolute minimum for compaction
+                    idealMinTemp: 15,     // °C (59°F) - ideal paving temp
+                    maxTemp: 35,          // °C (95°F) - asphalt too soft to work
+                    maxRain: 0,           // mm - zero tolerance
+                    maxWind: 30,          // km/h - good tolerance
+                    maxSnow: 0            // cm - no moisture allowed
+                },
+                kpis: [
+                    { metric: 'Paving Windows', description: '2+ consecutive dry days with temps 50-90°F', unit: 'windows' },
+                    { metric: 'Ground Dry Days', description: 'Days with dry substrate for quality bond', unit: 'days' },
+                    { metric: 'Compaction Days', description: 'Days with optimal temps for asphalt compaction', unit: 'days' }
+                ],
                 tips: [
                     'Asphalt requires warm, dry conditions',
                     'Ground must be dry before paving',
@@ -255,6 +392,25 @@ class ProjectTemplatesLibrary {
                     wind: 'MEDIUM',
                     seasonal: 'MEDIUM'
                 },
+                riskWeights: {
+                    precipitation: 0.30,  // Standard weight - balanced impact
+                    temperature: 0.25,    // Standard weight - moderate impact
+                    wind: 0.20,           // Standard weight - moderate impact
+                    workability: 0.25     // Standard weight - balanced scheduling
+                },
+                workabilityThresholds: {
+                    criticalMinTemp: 0,   // °C (32°F) - general cold-weather methods
+                    idealMinTemp: 10,     // °C (50°F) - ideal working temp
+                    maxTemp: 38,          // °C (100°F) - heat safety limit
+                    maxRain: 8,           // mm - moderate rain workable for some tasks
+                    maxWind: 40,          // km/h - standard wind tolerance
+                    maxSnow: 3            // cm - light snow manageable
+                },
+                kpis: [
+                    { metric: 'Exterior Work Days', description: 'Days suitable for outdoor construction activities', unit: 'days' },
+                    { metric: 'Interior Fallback Days', description: 'Weather-delayed days requiring indoor work', unit: 'days' },
+                    { metric: 'Inspection Windows', description: 'Dry days suitable for inspections and quality checks', unit: 'days' }
+                ],
                 tips: [
                     'Different phases have different weather requirements',
                     'Plan weather-sensitive tasks during stable periods',

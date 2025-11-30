@@ -752,6 +752,27 @@ class XyloclimePro {
                         ${template.tips.map(tip => `<li>${tip}</li>`).join('')}
                     </ul>
                 </div>
+
+                ${analysis.templateKPIs && analysis.templateKPIs.length > 0 ? `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+                        <strong style="color: var(--electric-cyan);">Template-Specific Metrics:</strong>
+                        <div style="margin: 0.5rem 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
+                            ${analysis.templateKPIs.map(kpi => `
+                                <div style="padding: 0.75rem; background: rgba(0, 0, 0, 0.2); border-radius: 6px; border-left: 3px solid var(--electric-cyan);">
+                                    <div style="font-weight: 600; color: var(--electric-cyan); margin-bottom: 0.25rem;">
+                                        ${kpi.metric}
+                                    </div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">
+                                        ${kpi.value} <span style="font-size: 0.9rem; font-weight: 400; color: var(--steel-silver);">${kpi.unit}</span>
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--steel-silver);">
+                                        ${kpi.description}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
             </div>
         `;
 
@@ -3079,7 +3100,12 @@ class XyloclimePro {
                 endDate
             );
 
-            const analysis = this.analyzeDataForPrediction(historicalData, startDate, endDate);
+            // Get selected template for template-specific analysis
+            const template = this.selectedTemplate && this.templatesLibrary
+                ? this.templatesLibrary.getTemplate(this.selectedTemplate)
+                : null;
+
+            const analysis = this.analyzeDataForPrediction(historicalData, startDate, endDate, template);
 
             this.currentProject = {
                 id: Date.now().toString(),
@@ -3631,8 +3657,11 @@ class XyloclimePro {
         return allYearsData;
     }
 
-    analyzeDataForPrediction(historicalData, projectStartDate, projectEndDate) {
+    analyzeDataForPrediction(historicalData, projectStartDate, projectEndDate, template = null) {
         console.log('[ANALYSIS] Starting weather analysis with', historicalData.length, 'years of data');
+        if (template) {
+            console.log('[ANALYSIS] Using template-specific thresholds:', template.name);
+        }
 
         // Calculate actual project duration
         const projectStart = new Date(projectStartDate);
@@ -3752,20 +3781,29 @@ class XyloclimePro {
                 // More lenient thresholds than ideal days (includes ideal days)
                 // CLEAR RULES:
                 // ✓ Workable: Above freezing preferred, or light freezing down to -5°C (23°F) with blankets
-                // ⚠️ Cold-Weather Methods (0-23°F): Technically workable but requires expensive methods (not counted as "workable")
-                // ✗ NOT Workable: Cold (≤-5°C/≤23°F), heavy rain (≥15mm / ≥0.6 in), high wind (≥30 km/h), dangerous heat (≥110°F), heavy snow (>10mm)
+                // TEMPLATE-SPECIFIC WORKABILITY CALCULATION
+                // Use template-specific thresholds if available, otherwise use defaults
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
                     const snow = daily.snowfall_sum[i];
                     const wind = daily.windspeed_10m_max[i];
 
-                    // Check for work-stopping conditions
-                    const hasColdWeatherNeeded = temp_min !== null && temp_min <= -5; // ≤23°F = needs expensive cold-weather methods
-                    const hasDangerousHeat = t !== null && t >= 43.33;  // ≥110°F (true work stoppage)
-                    const hasHeavyRain = precip !== null && precip >= 15; // >15mm = 0.6 in (realistic work stoppage)
-                    const hasSnow = snow !== null && snow > 10;
-                    const hasHighWind = wind !== null && wind >= 30;  // 30 km/h restricts crane, elevated work
+                    // Get thresholds from template or use defaults
+                    const thresholds = template?.workabilityThresholds || {
+                        criticalMinTemp: -5,  // °C (23°F) default
+                        maxTemp: 43.33,       // °C (110°F) default
+                        maxRain: 15,          // mm (0.6 in) default
+                        maxWind: 30,          // km/h default
+                        maxSnow: 10           // mm default
+                    };
+
+                    // Check for work-stopping conditions using template-specific thresholds
+                    const hasColdWeatherNeeded = temp_min !== null && temp_min <= thresholds.criticalMinTemp;
+                    const hasDangerousHeat = t !== null && t >= thresholds.maxTemp;
+                    const hasHeavyRain = precip !== null && precip >= thresholds.maxRain;
+                    const hasSnow = snow !== null && snow > thresholds.maxSnow;
+                    const hasHighWind = wind !== null && wind >= thresholds.maxWind;
 
                     // Day is workable if NO work-stopping conditions present
                     return t !== null && temp_min !== null &&
@@ -3932,8 +3970,149 @@ class XyloclimePro {
             monthlyBreakdown: this.calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats),
 
             // NEW - Snow data source for proper warning display
-            snowDataSource: snowDataSource
+            snowDataSource: snowDataSource,
+
+            // TEMPLATE-SPECIFIC KPIs
+            // Calculate KPIs based on selected template if available
+            templateKPIs: template ? this.calculateTemplateKPIs(template, historicalData, yearlyStats) : null,
+            templateName: template?.name || null
         };
+    }
+
+    calculateTemplateKPIs(template, historicalData, yearlyStats) {
+        const kpis = [];
+
+        // Calculate each KPI defined by the template
+        template.kpis?.forEach(kpiDef => {
+            let value = 0;
+            const metric = kpiDef.metric;
+
+            // Calculate KPI based on metric type
+            if (metric.includes('Pour Windows') || metric.includes('Paving Windows') || metric.includes('Paint Windows')) {
+                // Count consecutive good weather windows
+                value = this.calculateWeatherWindows(historicalData, template);
+            } else if (metric.includes('Curing Risk')) {
+                // Days where temps drop below freezing after potential pour
+                value = yearlyStats.reduce((sum, y) => sum + (y.freezingDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Heat Mitigation')) {
+                // Days above 90°F requiring cooling measures
+                value = yearlyStats.reduce((sum, y) => sum + (y.extremeHeatDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Safe Work Windows')) {
+                // Template-specific safe days
+                value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('High Wind')) {
+                value = yearlyStats.reduce((sum, y) => sum + (y.highWindDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Dry Work Days') || metric.includes('Ground Dry')) {
+                // Days with minimal precipitation
+                value = yearlyStats.reduce((sum, y) => {
+                    const dryDays = y.totalDays - (y.rainyDays || 0);
+                    return sum + dryDays;
+                }, 0) / yearlyStats.length;
+            } else if (metric.includes('Saturated Soil')) {
+                // Days with heavy rain
+                value = yearlyStats.reduce((sum, y) => sum + (y.heavyRainDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Frost')) {
+                value = yearlyStats.reduce((sum, y) => sum + (y.freezingDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Application Days')) {
+                // Days meeting all template criteria
+                value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Planting Windows')) {
+                // Days with ideal temps for planting (50-80°F / 10-27°C)
+                value = this.calculatePlantingDays(historicalData);
+            } else if (metric.includes('Exterior Work')) {
+                value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Interior Fallback')) {
+                value = yearlyStats.reduce((sum, y) => sum + (y.totalDays - (y.workableDays || 0)), 0) / yearlyStats.length;
+            } else if (metric.includes('Inspection Windows')) {
+                // Dry days suitable for inspections
+                value = yearlyStats.reduce((sum, y) => {
+                    const dryDays = y.totalDays - (y.rainyDays || 0);
+                    return sum + dryDays;
+                }, 0) / yearlyStats.length;
+            } else if (metric.includes('Compaction Days')) {
+                // Days with temps > 50°F for asphalt
+                value = this.calculateCompactionDays(historicalData);
+            } else {
+                // Default: use workable days
+                value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
+            }
+
+            kpis.push({
+                metric: kpiDef.metric,
+                description: kpiDef.description,
+                value: Math.round(value),
+                unit: kpiDef.unit
+            });
+        });
+
+        return kpis;
+    }
+
+    calculateWeatherWindows(historicalData, template) {
+        // Count consecutive weather windows meeting template criteria
+        let windows = 0;
+        const consecutiveDays = template.weatherCriteria?.consecutiveDays || 2;
+
+        historicalData.forEach(yearData => {
+            const daily = yearData.data.daily;
+            let currentStreak = 0;
+
+            for (let i = 0; i < daily.time.length; i++) {
+                const temp_min = daily.temperature_2m_min[i];
+                const temp_max = daily.temperature_2m_max[i];
+                const precip = daily.precipitation_sum[i];
+                const wind = daily.windspeed_10m_max?.[i];
+
+                const meetsTemp = temp_min >= template.weatherCriteria.minTemp && temp_max <= template.weatherCriteria.maxTemp;
+                const meetsRain = precip <= template.weatherCriteria.maxRain;
+                const meetsWind = !wind || wind <= template.weatherCriteria.maxWind;
+
+                if (meetsTemp && meetsRain && meetsWind) {
+                    currentStreak++;
+                    if (currentStreak === consecutiveDays) {
+                        windows++;
+                        currentStreak = 0; // Reset to count non-overlapping windows
+                    }
+                } else {
+                    currentStreak = 0;
+                }
+            }
+        });
+
+        return Math.round(windows / historicalData.length);
+    }
+
+    calculatePlantingDays(historicalData) {
+        let plantingDays = 0;
+
+        historicalData.forEach(yearData => {
+            const daily = yearData.data.daily;
+            for (let i = 0; i < daily.time.length; i++) {
+                const temp_max = daily.temperature_2m_max[i];
+                if (temp_max >= 10 && temp_max <= 27) { // 50-80°F
+                    plantingDays++;
+                }
+            }
+        });
+
+        return Math.round(plantingDays / historicalData.length);
+    }
+
+    calculateCompactionDays(historicalData) {
+        let compactionDays = 0;
+
+        historicalData.forEach(yearData => {
+            const daily = yearData.data.daily;
+            for (let i = 0; i < daily.time.length; i++) {
+                const temp_max = daily.temperature_2m_max[i];
+                const precip = daily.precipitation_sum[i];
+                if (temp_max >= 10 && precip === 0) { // >50°F and dry
+                    compactionDays++;
+                }
+            }
+        });
+
+        return Math.round(compactionDays / historicalData.length);
     }
 
     average(arr) {
@@ -4824,23 +5003,44 @@ class XyloclimePro {
         const seasonRisk = Math.max(0, Math.min(100, (1 - favorableRatio) * 100));
         console.log(`[RISK] Seasonal: ${workableDays}/${totalDays} workable (${(favorableRatio*100).toFixed(1)}% favorable) = ${seasonRisk.toFixed(1)} risk`);
 
+        // Get template for project-specific risk weighting
+        let template = null;
+        if (this.selectedTemplate && this.templatesLibrary) {
+            template = this.templatesLibrary.getTemplate(this.selectedTemplate);
+        }
+
+        // Use template-specific weights if available, otherwise use default weights
+        const weights = template?.riskWeights || {
+            precipitation: 0.30,
+            temperature: 0.25,
+            wind: 0.20,
+            workability: 0.25
+        };
+
+        console.log('[RISK] Using weights:', template ? `${template.name} template` : 'default', weights);
+
         // Calculate weighted total score
-        // If wind data unavailable, redistribute its 20% weight to other factors proportionally
+        // If wind data unavailable, redistribute its weight to other factors proportionally
         let totalScore;
         if (windRisk === null) {
-            // Redistribute wind's 20% weight: precip gets +6.7%, temp +6.7%, seasonal +6.6%
+            // Redistribute wind weight proportionally to other factors
+            const totalWithoutWind = weights.precipitation + weights.temperature + weights.workability;
+            const precipWeight = weights.precipitation / totalWithoutWind;
+            const tempWeight = weights.temperature / totalWithoutWind;
+            const seasonWeight = weights.workability / totalWithoutWind;
+
             totalScore = Math.round(
-                (precipRisk * 0.367) +  // 30% + 6.7%
-                (tempRisk * 0.317) +    // 25% + 6.7%
-                (seasonRisk * 0.316)    // 25% + 6.6%
+                (precipRisk * precipWeight) +
+                (tempRisk * tempWeight) +
+                (seasonRisk * seasonWeight)
             );
-            console.log('[RISK] Wind data unavailable, redistributing weight');
+            console.log('[RISK] Wind data unavailable, redistributing weight proportionally');
         } else {
             totalScore = Math.round(
-                (precipRisk * 0.30) +
-                (tempRisk * 0.25) +
-                (windRisk * 0.20) +
-                (seasonRisk * 0.25)
+                (precipRisk * weights.precipitation) +
+                (tempRisk * weights.temperature) +
+                (windRisk * weights.wind) +
+                (seasonRisk * weights.workability)
             );
         }
 
@@ -4867,13 +5067,7 @@ class XyloclimePro {
             riskColor = '#e74c3c';
         }
 
-        // Get template for project-specific recommendations
-        let template = null;
-        if (this.selectedTemplate && this.templatesLibrary) {
-            template = this.templatesLibrary.getTemplate(this.selectedTemplate);
-        }
-
-        // Generate recommendations based on risk factors
+        // Generate recommendations based on risk factors (template already fetched above)
         const recommendations = this.generateRiskRecommendations({
             totalScore,
             precipRisk,
@@ -5519,6 +5713,21 @@ class XyloclimePro {
             rows.push([`Location: ${project.locationName}`]);
             rows.push([`Date Range: ${project.startDate} to ${project.endDate}`]);
             rows.push([`Years Analyzed: ${historicalData ? historicalData.length : 0}`]);
+
+            // Add template information if available
+            if (project.analysis?.templateName) {
+                rows.push([`Project Template: ${project.analysis.templateName}`]);
+
+                // Add template-specific KPIs
+                if (project.analysis.templateKPIs && project.analysis.templateKPIs.length > 0) {
+                    rows.push([]); // Empty row
+                    rows.push([`TEMPLATE-SPECIFIC METRICS - ${project.analysis.templateName}`]);
+                    project.analysis.templateKPIs.forEach(kpi => {
+                        rows.push([`  ${kpi.metric}:`, `${kpi.value} ${kpi.unit}`, `-`, kpi.description]);
+                    });
+                }
+            }
+
             rows.push([`Generated: ${new Date().toLocaleDateString()}`]);
             rows.push([]); // Empty row
 
