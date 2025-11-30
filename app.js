@@ -3751,8 +3751,9 @@ class XyloclimePro {
                 // Work can continue with normal cold-weather/rain precautions
                 // More lenient thresholds than ideal days (includes ideal days)
                 // CLEAR RULES:
-                // ✓ Workable: Light freezing (>-18°C / >0°F), light rain (<10mm), light wind (<30 km/h), hot but <110°F
-                // ✗ NOT Workable: Extreme cold stoppage (≤-18°C/≤0°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
+                // ✓ Workable: Above freezing preferred, or light freezing down to -5°C (23°F) with blankets
+                // ⚠️ Cold-Weather Methods (0-23°F): Technically workable but requires expensive methods (not counted as "workable")
+                // ✗ NOT Workable: Cold (≤-5°C/≤23°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
@@ -3760,7 +3761,7 @@ class XyloclimePro {
                     const wind = daily.windspeed_10m_max[i];
 
                     // Check for work-stopping conditions
-                    const hasExtremeCold = temp_min !== null && temp_min <= -18; // ≤0°F = true stoppage
+                    const hasColdWeatherNeeded = temp_min !== null && temp_min <= -5; // ≤23°F = needs expensive cold-weather methods
                     const hasDangerousHeat = t !== null && t >= 43.33;  // ≥110°F (true work stoppage)
                     const hasHeavyRain = precip !== null && precip >= 10;
                     const hasSnow = snow !== null && snow > 10;
@@ -3768,7 +3769,7 @@ class XyloclimePro {
 
                     // Day is workable if NO work-stopping conditions present
                     return t !== null && temp_min !== null &&
-                           !hasExtremeCold && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
+                           !hasColdWeatherNeeded && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
                 }).length
             };
 
@@ -3878,6 +3879,13 @@ class XyloclimePro {
             extremeColdDays,          // EXTREME COLD STOPPAGE (≤-18°C/≤0°F) - true work stoppage
             extremeHeatDays,          // Days above 37°C (NOT workable)
             freezingDays: allFreezingDays,  // Backward compatibility
+
+            // Temperature tier breakdown (for report transparency)
+            tempTiers: {
+                easilyWorkable: workableDays,  // Days >23°F with no other stoppage conditions
+                coldMethodsNeeded: coldWeatherMethodsDays,  // 0-23°F (expensive, requires special methods)
+                extremeStoppage: extremeColdDays  // ≤0°F (true work stoppage)
+            },
 
             // Event days - Precipitation
             rainyDays,                // All rainy days (>1mm)
@@ -6508,7 +6516,11 @@ class XyloclimePro {
             }
 
             summary += `<p><strong>Cold Weather Analysis:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${coldBreakdown}.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Modern cold-weather concrete practices allow work in temps as low as ${this.formatThresholdTemp(-18)} with proper methods (hot water mix, accelerators, heated enclosures, insulated blankets). Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
+            <br><br><strong>Temperature Workability Tiers:</strong>
+            <br>• <strong style="color: #27ae60;">${analysis.tempTiers.easilyWorkable} days</strong> - Easily workable (${this.formatThresholdTemp(-5, '>')} with normal precautions)
+            <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - expensive but workable with accelerators, hot water mix, heated enclosures
+            <br>• <strong style="color: #e74c3c;">${analysis.tempTiers.extremeStoppage} days</strong> - Extreme cold stoppage (${this.formatThresholdTemp(-18, '≤')}) - true work stoppage even with protection
+            <br><br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: "Workable days" (${analysis.workableDays}) excludes the ${analysis.tempTiers.coldMethodsNeeded} cold-weather method days for realistic planning. These days are technically workable but require significant added cost and difficulty. Average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean—individual days can drop significantly below this average.`;
 
             if (isUnusualDistribution) {
                 summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
