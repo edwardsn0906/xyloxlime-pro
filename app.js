@@ -3247,23 +3247,31 @@ class XyloclimePro {
                 }
 
                 // Convert to Open-Meteo format for compatibility
-                // NOAA returns SNOW in inches, convert to mm
+                // NOAA returns SNOW in inches of DEPTH, convert to mm WATER EQUIVALENT
+                // ERA5 uses water equivalent, so we must convert NOAA depth to water equivalent
                 const snowfall_sum = [];
                 const dates = [];
 
                 for (const record of data) {
                     dates.push(record.DATE);
                     const snowInches = parseFloat(record.SNOW || 0);
-                    const snowMm = snowInches * 25.4; // Convert inches to mm
-                    snowfall_sum.push(snowMm);
+
+                    // Convert snow depth to water equivalent
+                    // Typical snow-to-water ratio is 10:1 to 12:1 (use 10:1 for conservative estimate)
+                    // 10 inches of snow = 1 inch of water
+                    const snowMm = snowInches * 25.4; // Convert inches depth to mm depth
+                    const waterEquivalentMm = snowMm / 10; // Convert depth to water equivalent (10:1 ratio)
+
+                    snowfall_sum.push(waterEquivalentMm);
                 }
 
                 // Log snow statistics for validation
                 const snowDays = snowfall_sum.filter(s => s > 0).length;
                 const heavySnowDays = snowfall_sum.filter(s => s > 10).length;
                 const maxSnow = Math.max(...snowfall_sum);
+                const maxSnowDepth = maxSnow * 10; // Convert back to depth for display
                 console.log(`[NOAA] ✓ Successfully fetched ${data.length} days of data from ${stationId}`);
-                console.log(`[NOAA] Snow stats: ${snowDays} snowy days, ${heavySnowDays} heavy (>10mm), max: ${maxSnow.toFixed(1)}mm`);
+                console.log(`[NOAA] Snow stats: ${snowDays} snowy days, ${heavySnowDays} heavy (>10mm water equiv / >4in depth), max: ${maxSnow.toFixed(1)}mm water equiv (${(maxSnowDepth/10).toFixed(1)}cm / ${(maxSnowDepth/25.4).toFixed(1)}in depth)`);
 
                 return {
                     daily: {
