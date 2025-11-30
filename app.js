@@ -3713,6 +3713,21 @@ class XyloclimePro {
                 avgWindSpeed: this.average(daily.windspeed_10m_max),
                 maxWindSpeed: Math.max(...daily.windspeed_10m_max.filter(w => w !== null)),
 
+                // WORK STOPPAGE OVERLAP ANALYSIS
+                // Count days with multiple work-stopping conditions (for accurate contingency calculations)
+                multiStoppageDays: daily.temperature_2m_min.filter((t, i) => {
+                    const temp_min = daily.temperature_2m_min[i];
+                    const precip = daily.precipitation_sum[i];
+                    const snow = daily.snowfall_sum[i];
+
+                    let stoppageCount = 0;
+                    if (temp_min !== null && temp_min <= -18) stoppageCount++; // Extreme cold
+                    if (precip !== null && precip > 10) stoppageCount++; // Heavy rain
+                    if (snow !== null && snow > 10) stoppageCount++; // Heavy snow
+
+                    return stoppageCount >= 2; // Days with 2+ stoppage conditions
+                }).length,
+
                 // WORKABILITY TIERS - Two levels of work feasibility
                 // IMPORTANT: Ideal Days are a SUBSET of Workable Days (not additive)
                 // If a day is ideal, it is automatically also workable
@@ -3808,6 +3823,7 @@ class XyloclimePro {
         const snowyDays = Math.round(this.average(yearlyStats.map(y => y.snowyDays)));
         const heavySnowDays = Math.round(this.average(yearlyStats.map(y => y.heavySnowDays)));
         const highWindDays = Math.round(this.average(yearlyStats.map(y => y.highWindDays)));
+        const multiStoppageDays = Math.round(this.average(yearlyStats.map(y => y.multiStoppageDays)));
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
 
@@ -3873,6 +3889,9 @@ class XyloclimePro {
             highWindDays,             // High wind (≥30 km/h) - construction impact
             avgWindSpeed: this.average(yearlyStats.map(y => y.avgWindSpeed)).toFixed(1),
             maxWindSpeed: Math.max(...yearlyStats.map(y => y.maxWindSpeed)).toFixed(1),
+
+            // Stoppage overlap analysis (for accurate contingency calculations)
+            multiStoppageDays,        // Days with 2+ work-stopping conditions (actual overlap count)
 
             // Workability tiers
             idealDays,
@@ -4883,10 +4902,20 @@ class XyloclimePro {
         const heavySnow = analysis.heavySnowDays || 0;
         const grossStoppageDays = heavyRain + workStoppingCold + heavySnow;
 
-        // Estimate overlap (e.g., cold + snowy same day)
-        const estimatedOverlap = Math.round(grossStoppageDays * 0.25);
-        const netStoppageDays = grossStoppageDays - estimatedOverlap;
+        // Use ACTUAL overlap count from daily data analysis (not arbitrary estimate)
+        const actualOverlap = analysis.multiStoppageDays || 0;
+        const netStoppageDays = grossStoppageDays - actualOverlap;
         const directStoppagePercent = ((netStoppageDays / totalProjectDays) * 100).toFixed(1);
+
+        console.log('[STOPPAGE] Overlap analysis:', {
+            heavyRain,
+            extremeCold: workStoppingCold,
+            heavySnow,
+            gross: grossStoppageDays,
+            actualOverlap,
+            net: netStoppageDays,
+            percent: directStoppagePercent
+        });
 
         // Recommended contingency includes:
         // 1. Direct stoppage days (baseline)
@@ -6382,8 +6411,8 @@ class XyloclimePro {
             const maxContingency = Math.ceil(parseFloat(directStoppagePercent) * 1.5);
             recommendedContingency = `${minContingency}-${maxContingency}%`;
 
-            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} extreme cold (${this.formatThresholdTemp(-18, '≤')}) + ${heavySnow} heavy snow, accounting for overlap). `;
-            justification += `Recommended schedule contingency: ${recommendedContingency}.`;
+            justification = `Weather-stoppage analysis indicates ~${netStoppageDays} unique stoppage days (${heavyRain} heavy rain + ${workStoppingCold} extreme cold (${this.formatThresholdTemp(-18, '≤')}) + ${heavySnow} heavy snow = ${grossStoppageDays} gross days, minus ${actualOverlap} days with multiple conditions). `;
+            justification += `Recommended schedule contingency: ${recommendedContingency}. Note: ${analysis.highWindDays || 0} high-wind days may restrict crane/elevated work but don't always stop all construction.`;
 
             const coldWeatherDays = (analysis.coldWeatherMethodsDays || 0);
             if (coldWeatherDays > 10) {
