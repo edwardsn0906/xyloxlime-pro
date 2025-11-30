@@ -4071,9 +4071,14 @@ class XyloclimePro {
             if (metric.includes('Pour Windows') || metric.includes('Paving Windows') || metric.includes('Paint Windows')) {
                 // Count consecutive good weather windows
                 value = this.calculateWeatherWindows(historicalData, template);
-            } else if (metric.includes('Curing Risk')) {
-                // Days where temps drop below freezing after potential pour
-                value = yearlyStats.reduce((sum, y) => sum + (y.allFreezingDays || 0), 0) / yearlyStats.length;
+            } else if (metric.includes('Curing Risk') || metric.includes('Cure Risk')) {
+                // For painting: Days where rain within 48hrs would ruin fresh paint
+                // For concrete: Days where temps drop below freezing after potential pour
+                if (template.name.toLowerCase().includes('paint')) {
+                    value = this.calculatePaintCureRiskDays(historicalData);
+                } else {
+                    value = yearlyStats.reduce((sum, y) => sum + (y.allFreezingDays || 0), 0) / yearlyStats.length;
+                }
             } else if (metric.includes('Heat Mitigation')) {
                 // Days above 90°F requiring cooling measures
                 value = yearlyStats.reduce((sum, y) => sum + (y.extremeHeatDays || 0), 0) / yearlyStats.length;
@@ -4099,8 +4104,13 @@ class XyloclimePro {
             } else if (metric.includes('Frost')) {
                 value = yearlyStats.reduce((sum, y) => sum + (y.allFreezingDays || 0), 0) / yearlyStats.length;
             } else if (metric.includes('Application Days')) {
-                // Days meeting all template criteria
-                value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
+                // Days meeting template-specific application criteria
+                if (template.name.toLowerCase().includes('paint')) {
+                    value = this.calculatePaintApplicationDays(historicalData, template);
+                } else {
+                    // Default: use workable days
+                    value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
+                }
             } else if (metric.includes('Planting Windows')) {
                 // Days with ideal temps for planting (50-80°F / 10-27°C)
                 value = this.calculatePlantingDays(historicalData);
@@ -4198,6 +4208,68 @@ class XyloclimePro {
         });
 
         return Math.round(compactionDays / historicalData.length);
+    }
+
+    calculatePaintApplicationDays(historicalData, template) {
+        // Days meeting painting requirements: temp (50-85°F), dry, calm wind
+        let applicationDays = 0;
+
+        const minTemp = template.workabilityThresholds?.criticalMinTemp || 10;  // 50°F default
+        const maxTemp = template.workabilityThresholds?.maxTemp || 29.4;        // 85°F default
+        const maxWind = template.workabilityThresholds?.maxWind || 25;          // 25 km/h default
+        const maxRain = template.workabilityThresholds?.maxRain || 0;           // Dry required
+
+        historicalData.forEach(yearData => {
+            const daily = yearData.data.daily;
+            for (let i = 0; i < daily.time.length; i++) {
+                const temp_min = daily.temperature_2m_min[i];
+                const temp_max = daily.temperature_2m_max[i];
+                const precip = daily.precipitation_sum[i];
+                const wind = daily.windspeed_10m_max?.[i] || 0;
+
+                // Check if day meets painting requirements
+                const tempOK = temp_min >= minTemp && temp_max <= maxTemp;
+                const dryOK = precip <= maxRain;
+                const windOK = wind <= maxWind;
+
+                if (tempOK && dryOK && windOK) {
+                    applicationDays++;
+                }
+            }
+        });
+
+        return Math.round(applicationDays / historicalData.length);
+    }
+
+    calculatePaintCureRiskDays(historicalData) {
+        // Days where rain within next 48 hours would ruin fresh paint
+        let cureRiskDays = 0;
+
+        historicalData.forEach(yearData => {
+            const daily = yearData.data.daily;
+            for (let i = 0; i < daily.time.length; i++) {
+                const currentPrecip = daily.precipitation_sum[i];
+
+                // Check if it's dry today (potential painting day)
+                if (currentPrecip <= 1) {  // Essentially dry (≤1mm)
+                    // Look ahead 48 hours (2 days) for rain
+                    let rainWithin48hrs = false;
+                    for (let j = i + 1; j <= Math.min(i + 2, daily.time.length - 1); j++) {
+                        const futurePrecip = daily.precipitation_sum[j];
+                        if (futurePrecip > 1) {  // Any measurable rain
+                            rainWithin48hrs = true;
+                            break;
+                        }
+                    }
+
+                    if (rainWithin48hrs) {
+                        cureRiskDays++;
+                    }
+                }
+            }
+        });
+
+        return Math.round(cureRiskDays / historicalData.length);
     }
 
     average(arr) {
