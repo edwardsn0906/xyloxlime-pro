@@ -4001,7 +4001,7 @@ class XyloclimePro {
                 value = this.calculateWeatherWindows(historicalData, template);
             } else if (metric.includes('Curing Risk')) {
                 // Days where temps drop below freezing after potential pour
-                value = yearlyStats.reduce((sum, y) => sum + (y.freezingDays || 0), 0) / yearlyStats.length;
+                value = yearlyStats.reduce((sum, y) => sum + (y.allFreezingDays || 0), 0) / yearlyStats.length;
             } else if (metric.includes('Heat Mitigation')) {
                 // Days above 90°F requiring cooling measures
                 value = yearlyStats.reduce((sum, y) => sum + (y.extremeHeatDays || 0), 0) / yearlyStats.length;
@@ -4013,14 +4013,14 @@ class XyloclimePro {
             } else if (metric.includes('Dry Work Days') || metric.includes('Ground Dry')) {
                 // Days with minimal precipitation
                 value = yearlyStats.reduce((sum, y) => {
-                    const dryDays = y.totalDays - (y.rainyDays || 0);
+                    const dryDays = y.daysInYear - (y.rainyDays || 0);
                     return sum + dryDays;
                 }, 0) / yearlyStats.length;
             } else if (metric.includes('Saturated Soil')) {
                 // Days with heavy rain
                 value = yearlyStats.reduce((sum, y) => sum + (y.heavyRainDays || 0), 0) / yearlyStats.length;
             } else if (metric.includes('Frost')) {
-                value = yearlyStats.reduce((sum, y) => sum + (y.freezingDays || 0), 0) / yearlyStats.length;
+                value = yearlyStats.reduce((sum, y) => sum + (y.allFreezingDays || 0), 0) / yearlyStats.length;
             } else if (metric.includes('Application Days')) {
                 // Days meeting all template criteria
                 value = yearlyStats.reduce((sum, y) => sum + (y.workableDays || 0), 0) / yearlyStats.length;
