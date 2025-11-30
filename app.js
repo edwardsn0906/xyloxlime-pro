@@ -3693,12 +3693,12 @@ class XyloclimePro {
                 extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37.78).length,  // Days ≥100°F (informational - not work-stopping)
 
                 // PRECIPITATION CATEGORIES:
-                // - Light rain (1-10mm): Workable with rain gear/drainage
-                // - Heavy rain (> 10mm): Work stoppage
+                // - Light rain (1-15mm): Workable with rain gear/drainage
+                // - Heavy rain (> 15mm / >0.6 in): Work stoppage (realistic industry threshold)
                 // - Measurable snow (> 1mm): Light dusting to moderate snow (filters out trace amounts < 1mm)
                 // - Heavy snow (> 10mm): Work stoppage
                 rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,  // All rainy days
-                heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 10).length,  // Work-stopping rain
+                heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 15).length,  // Work-stopping rain (15mm = 0.6 in)
                 snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (excludes trace < 1mm)
                 heavySnowDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow
 
@@ -3722,7 +3722,7 @@ class XyloclimePro {
 
                     let stoppageCount = 0;
                     if (temp_min !== null && temp_min <= -18) stoppageCount++; // Extreme cold
-                    if (precip !== null && precip > 10) stoppageCount++; // Heavy rain
+                    if (precip !== null && precip > 15) stoppageCount++; // Heavy rain (15mm = 0.6 in)
                     if (snow !== null && snow > 10) stoppageCount++; // Heavy snow
 
                     return stoppageCount >= 2; // Days with 2+ stoppage conditions
@@ -3753,7 +3753,7 @@ class XyloclimePro {
                 // CLEAR RULES:
                 // ✓ Workable: Above freezing preferred, or light freezing down to -5°C (23°F) with blankets
                 // ⚠️ Cold-Weather Methods (0-23°F): Technically workable but requires expensive methods (not counted as "workable")
-                // ✗ NOT Workable: Cold (≤-5°C/≤23°F), heavy rain (≥10mm), high wind (≥30 km/h), dangerous heat (≥110°F), snow (>10mm)
+                // ✗ NOT Workable: Cold (≤-5°C/≤23°F), heavy rain (≥15mm / ≥0.6 in), high wind (≥30 km/h), dangerous heat (≥110°F), heavy snow (>10mm)
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
@@ -3763,7 +3763,7 @@ class XyloclimePro {
                     // Check for work-stopping conditions
                     const hasColdWeatherNeeded = temp_min !== null && temp_min <= -5; // ≤23°F = needs expensive cold-weather methods
                     const hasDangerousHeat = t !== null && t >= 43.33;  // ≥110°F (true work stoppage)
-                    const hasHeavyRain = precip !== null && precip >= 10;
+                    const hasHeavyRain = precip !== null && precip >= 15; // >15mm = 0.6 in (realistic work stoppage)
                     const hasSnow = snow !== null && snow > 10;
                     const hasHighWind = wind !== null && wind >= 30;  // 30 km/h restricts crane, elevated work
 
@@ -3889,7 +3889,7 @@ class XyloclimePro {
 
             // Event days - Precipitation
             rainyDays,                // All rainy days (>1mm)
-            heavyRainDays,            // Heavy rain (>10mm) - work stoppage
+            heavyRainDays,            // Heavy rain (>15mm / >0.6 in) - work stoppage
             snowyDays,                // Any snowfall (>0mm) - FIXED
             heavySnowDays,            // Heavy snow (>10mm) - work stoppage
 
