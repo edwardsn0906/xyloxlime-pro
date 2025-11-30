@@ -620,31 +620,38 @@
                     <!-- NEW: Weather Risk Analysis Dashboard -->
                     <div class="risk-analysis-section">
                         <h3><i class="fas fa-exclamation-triangle"></i> Weather Risk Analysis</h3>
+                        <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.9rem; color: var(--steel-silver);">
+                            <strong>Composite Score Calculation:</strong> Each factor is weighted and combined to produce the total risk score (0-100):
+                            <br>• Precipitation (30%) + Temperature (25%) + Wind (20%) + Schedule Flexibility (25%) = Total Risk
+                        </div>
                         <div class="risk-breakdown-container">
                             <div class="risk-breakdown-grid">
                                 <div class="risk-item">
-                                    <div class="risk-category">Precipitation Risk</div>
+                                    <div class="risk-category">Precipitation Risk <span style="color: var(--steel-silver); font-size: 0.85em;">(30% weight)</span></div>
                                     <div class="risk-bar">
                                         <div class="risk-bar-fill" id="precipRiskBar" style="width: 0%"></div>
                                     </div>
                                     <div class="risk-score-text" id="precipRiskScore">0%</div>
                                 </div>
                                 <div class="risk-item">
-                                    <div class="risk-category">Temperature Risk</div>
+                                    <div class="risk-category">Temperature Risk <span style="color: var(--steel-silver); font-size: 0.85em;">(25% weight)</span></div>
                                     <div class="risk-bar">
                                         <div class="risk-bar-fill" id="tempRiskBar" style="width: 0%"></div>
                                     </div>
                                     <div class="risk-score-text" id="tempRiskScore">0%</div>
                                 </div>
                                 <div class="risk-item">
-                                    <div class="risk-category">Wind Risk</div>
+                                    <div class="risk-category">Wind Risk <span style="color: var(--steel-silver); font-size: 0.85em;">(20% weight)</span></div>
                                     <div class="risk-bar">
                                         <div class="risk-bar-fill" id="windRiskBar" style="width: 0%"></div>
                                     </div>
                                     <div class="risk-score-text" id="windRiskScore">0%</div>
                                 </div>
                                 <div class="risk-item">
-                                    <div class="risk-category">Schedule Flexibility Risk</div>
+                                    <div class="risk-category">
+                                        Workability Risk <span style="color: var(--steel-silver); font-size: 0.85em;">(25% weight)</span>
+                                        <div style="font-size: 0.75em; color: var(--steel-silver); margin-top: 0.2rem;">Based on % of days suitable for construction</div>
+                                    </div>
                                     <div class="risk-bar">
                                         <div class="risk-bar-fill" id="seasonRiskBar" style="width: 0%"></div>
                                     </div>
