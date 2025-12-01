@@ -6587,7 +6587,7 @@ class XyloclimePro {
 
         // Format snow/wind data properly
         const snowDisplay = analysis.totalSnowfall > 0 ?
-            (analysis.totalSnowfall < 0.1 ? 'Trace' : `${analysis.totalSnowfall} cm`) : '0 cm';
+            (analysis.totalSnowfall < 0.1 ? 'Trace' : this.formatSnow(analysis.totalSnowfall)) : this.formatSnow(0);
         const windDisplay = analysis.avgWindSpeed || 'Calculating...';
         const maxWindDisplay = analysis.maxWindSpeed || 'Calculating...';
 
@@ -6923,10 +6923,10 @@ class XyloclimePro {
 
             // Add note if all snow days are heavy (could indicate NOAA reporting threshold or mountain climate)
             if (allSnowIsHeavy && usingNOAA && analysis.snowyDays > 3) {
-                snowVariabilityNote += ` Note: All measured snow days exceed 10mm (0.4 in) - NOAA may have a reporting threshold for light snow, or location experiences predominantly heavy snowfall events (typical for mountain regions).`;
+                snowVariabilityNote += ` Note: All measured snow days exceed 10mm water equiv (~4 in depth) - NOAA may have a reporting threshold for light snow, or location experiences predominantly heavy snowfall events (typical for mountain regions).`;
             }
 
-            summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm) typically require work stoppage.
+            summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm water equiv / >4 in depth) typically require work stoppage.
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">${snowVariabilityNote}</em>
             <br>Winter construction protocols recommended.</p>`;
         }
