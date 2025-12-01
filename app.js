@@ -6744,10 +6744,10 @@ class XyloclimePro {
                 summary += `<li><strong>Substrate moisture and temperature control</strong> – ${analysis.allFreezingDays} freezing days expected. Paint will not cure properly below ${this.formatThresholdTemp(10, '<')}. Surface must be above dew point to prevent moisture condensation under paint film. Allow frozen surfaces to thaw and dry completely before application.</li>`;
             }
 
-            // Dew point and morning condensation
+            // High rainfall areas (potential moisture concerns)
             const avgTempC = (parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2;
-            if (avgTempC < 15 || analysis.rainyDays > 30) {
-                summary += `<li><strong>Morning dew and condensation concerns</strong> – High humidity environment. Expect delayed start times (10am-12pm) on many days while morning dew evaporates. Surface must be completely dry before paint application. Use moisture meters to verify substrate dryness.</li>`;
+            if (analysis.rainyDays > 40) {
+                summary += `<li><strong>High-moisture environment</strong> – ${analysis.rainyDays} rainy days indicate frequent moisture. Verify substrate is completely dry before painting. Consider moisture meters for critical applications. Note: Humidity and dew point data not currently included in analysis.</li>`;
             }
 
             // Paint cure windows (rain risk)

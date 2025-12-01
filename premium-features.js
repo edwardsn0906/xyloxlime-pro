@@ -206,20 +206,20 @@ class ProjectTemplatesLibrary {
                 kpis: [
                     { metric: 'Paint Windows', description: '3+ consecutive dry days with ideal temps (50-85°F)', unit: 'windows' },
                     { metric: 'Cure Risk Days', description: 'Days where rain within 48hrs ruins fresh paint', unit: 'days' },
-                    { metric: 'Application Days', description: 'Days meeting temp + humidity + wind requirements', unit: 'days' }
+                    { metric: 'Application Days', description: 'Days meeting temp + precipitation + wind requirements', unit: 'days' }
                 ],
                 tips: [
                     'Need 48 hours of dry weather after painting',
-                    'Morning dew can delay start time',
+                    'Morning dew can delay start time (not calculated)',
                     'Ideal temps: 50-85°F (10-29°C)',
                     'High winds affect spray application quality',
-                    'Humidity above 85% slows drying significantly'
+                    'Note: Humidity data not currently included in analysis'
                 ],
                 seasonalAdvice: {
                     winter: 'Not recommended. Paint won\'t cure properly in cold.',
                     spring: 'Watch for morning dew and afternoon storms.',
                     summer: 'Best season but avoid extreme heat. Work morning/evening.',
-                    fall: 'Excellent season. Stable temps and low humidity.'
+                    fall: 'Excellent season. Stable temps and less rain.'
                 }
             },
             'landscaping': {
