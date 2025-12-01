@@ -7117,22 +7117,25 @@ class XyloclimePro {
             let optimalDaysCount = 0;
 
             window.forEach(day => {
-                let dayIsWorkable = true; // Using WORKABLE criteria (more lenient)
+                let dayIsWorkable = true; // Using WORKABLE criteria (lenient - matches main calculation)
                 let dayIsIdeal = true;    // Using IDEAL criteria (strict)
 
-                // Heavy rain penalty (>10mm = work-stopping rain)
-                if (day.precip > 10) {
+                // IMPORTANT: Use same thresholds as main workability calculation (lines 3841-3854)
+                // to avoid contradictions in the report
+
+                // Heavy rain penalty (≥15mm = work-stopping rain - MATCHES MAIN CALC)
+                if (day.precip >= 15) {
                     rainyDays++;
                     score -= 7;  // Heavy penalty for work stoppage
                     dayIsWorkable = false;
                     dayIsIdeal = false;
                 } else if (day.precip > 5) {
-                    // Light rain (5-10mm) - workable but not ideal
+                    // Light rain (5-15mm) - workable but not ideal
                     score -= 2;  // Minor penalty
                     dayIsIdeal = false;
                 }
 
-                // Snow penalty (>10mm = difficult conditions)
+                // Snow penalty (>10mm = difficult conditions - MATCHES MAIN CALC)
                 if (day.snow > 10) {
                     snowyDays++;
                     score -= 7;
@@ -7140,19 +7143,18 @@ class XyloclimePro {
                     dayIsIdeal = false;
                 }
 
-                // Wind penalty (≥30 km/h restricts crane, elevated work, material handling)
-                if (day.wind >= 40) {
+                // Wind penalty (≥60 km/h = very high wind - MATCHES MAIN CALC)
+                if (day.wind >= 60) {
                     highWindDays++;
                     score -= 6;  // High wind - major restrictions
                     dayIsWorkable = false;
                     dayIsIdeal = false;
                 } else if (day.wind >= 30) {
-                    score -= 3;  // Moderate wind - some restrictions
-                    dayIsWorkable = false;
+                    score -= 3;  // Moderate wind - some restrictions, but workable
                     dayIsIdeal = false;
                 }
 
-                // Work-stopping cold penalty (≤-5°C/≤23°F = construction work stoppage)
+                // Work-stopping cold penalty (≤-5°C/≤23°F - MATCHES MAIN CALC)
                 if (day.temp_min !== null && day.temp_min <= -5) {
                     freezingDays++;
                     score -= 5;
@@ -7164,8 +7166,8 @@ class XyloclimePro {
                     dayIsIdeal = false;
                 }
 
-                // Extreme heat penalty (>37°C = dangerous)
-                if (day.temp_max !== null && day.temp_max > 37) {
+                // Extreme heat penalty (≥43.33°C/≥110°F - MATCHES MAIN CALC)
+                if (day.temp_max !== null && day.temp_max >= 43.33) {
                     heatDays++;
                     score -= 5;
                     dayIsWorkable = false;
