@@ -521,7 +521,7 @@ class SmartRecommendations {
             recommendations.critical.push({
                 icon: 'fa-cloud-showers-heavy',
                 title: 'High Heavy Rain Risk',
-                message: `Expect ${heavyRainDays} days with heavy rain (>10mm), ${Math.round(heavyRainPercent)}% of project duration. Significant impact expected.`,
+                message: `Expect ${heavyRainDays} days with heavy rain (>15mm), ${Math.round(heavyRainPercent)}% of project duration. Significant impact expected.`,
                 action: `Add ${recommendedContingency} contingency time for weather delays (includes rain impact)`,
                 priority: 'high'
             });
@@ -530,7 +530,7 @@ class SmartRecommendations {
             recommendations.important.push({
                 icon: 'fa-cloud-showers-heavy',
                 title: 'Moderate Heavy Rain Impact',
-                message: `Expect ${heavyRainDays} days with heavy rain (>10mm), ${Math.round(heavyRainPercent)}% of project duration. Manageable with planning.`,
+                message: `Expect ${heavyRainDays} days with heavy rain (>15mm), ${Math.round(heavyRainPercent)}% of project duration. Manageable with planning.`,
                 action: `Schedule contingency: ${recommendedContingency} (includes rain impact)`,
                 priority: 'medium'
             });
