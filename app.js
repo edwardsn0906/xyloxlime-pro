@@ -3779,12 +3779,12 @@ class XyloclimePro {
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-15mm): Workable with rain gear/drainage
                 // - Heavy rain (> 15mm / >0.6 in): Work stoppage (realistic industry threshold)
-                // - Measurable snow (> 1mm): Light dusting to moderate snow (filters out trace amounts < 1mm)
-                // - Heavy snow (> 10mm): Work stoppage
+                // - Measurable snow (> 1mm water equiv): ~0.4 in depth - filters out trace amounts
+                // - Heavy snow (> 10mm water equiv): ~4 in depth - work stoppage (10:1 snow:water ratio)
                 rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,  // All rainy days
                 heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 15).length,  // Work-stopping rain (15mm = 0.6 in)
-                snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (excludes trace < 1mm)
-                heavySnowDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow
+                snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (>1mm water equiv)
+                heavySnowDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow (>10mm water equiv = ~4in depth)
 
                 // WIND THRESHOLD: 30 km/h (18.6 mph)
                 // Industry standard for construction impact:
@@ -3824,39 +3824,45 @@ class XyloclimePro {
                 workableDays: daily.temperature_2m_max.filter((t, i) => {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
-                    const snow = daily.snowfall_sum[i];
                     const wind = daily.windspeed_10m_max[i];
 
-                    // Default lenient thresholds for workability
-                    const defaultThresholds = {
-                        criticalMinTemp: -5,  // °C (23°F) - general construction minimum
-                        maxTemp: 43.33,       // °C (110°F) - heat safety limit
-                        maxRain: 15,          // mm (0.6 in) - heavy rain threshold
-                        maxWind: 60,          // km/h - high wind tolerance
-                        maxSnow: 10           // mm - work-stopping snow
-                    };
+                    // Use template-specific workable thresholds if available, otherwise use defaults
+                    if (template?.workabilityThresholds) {
+                        const workableThresholds = template.workabilityThresholds;
 
-                    // For workable days, use lenient thresholds
-                    // Template thresholds are often too strict for "workable" - they define "ideal"
-                    const workableThresholds = {
-                        criticalMinTemp: -5,   // °C (23°F) - work possible with precautions
-                        maxTemp: 43.33,        // °C (110°F) - heat safety limit
-                        maxRain: 15,           // mm - heavy rain stops work
-                        maxWind: 60,           // km/h - very high wind stops work
-                        maxSnow: 10            // mm - heavy snow stops work
-                    };
+                        // For template-based workable days, use template thresholds (relaxed vs ideal)
+                        // - Daily low must be above criticalMinTemp (for curing/overnight)
+                        // - Daily high must be within workable range
+                        const meetsTemp = temp_min !== null && t !== null &&
+                                        temp_min >= workableThresholds.criticalMinTemp &&
+                                        t <= workableThresholds.maxTemp;
+                        const meetsRain = precip !== null && precip <= (workableThresholds.maxRain || 0);
+                        const meetsWind = wind !== null && wind <= (workableThresholds.maxWind || 20);
 
-                    // Check for work-stopping conditions using lenient thresholds
-                    const hasColdWeatherNeeded = temp_min !== null && temp_min <= workableThresholds.criticalMinTemp;
-                    const hasDangerousHeat = t !== null && t >= workableThresholds.maxTemp;
-                    const hasHeavyRain = precip !== null && precip >= workableThresholds.maxRain;
-                    const hasSnow = snow !== null && snow > workableThresholds.maxSnow;
-                    const hasHighWind = wind !== null && wind >= workableThresholds.maxWind;
+                        return meetsTemp && meetsRain && meetsWind;
+                    } else {
+                        // Default lenient thresholds for general construction
+                        const defaultThresholds = {
+                            criticalMinTemp: -5,   // °C (23°F) - work possible with precautions
+                            maxTemp: 43.33,        // °C (110°F) - heat safety limit
+                            maxRain: 15,           // mm - heavy rain stops work
+                            maxWind: 60,           // km/h - very high wind stops work
+                            maxSnow: 10            // mm - heavy snow stops work
+                        };
 
-                    // Day is workable if NO work-stopping conditions present
-                    const isWorkable = t !== null && temp_min !== null &&
-                           !hasColdWeatherNeeded && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
-                    return isWorkable;
+                        const snow = daily.snowfall_sum[i];
+
+                        // Check for work-stopping conditions using lenient thresholds
+                        const hasColdWeatherNeeded = temp_min !== null && temp_min <= defaultThresholds.criticalMinTemp;
+                        const hasDangerousHeat = t !== null && t >= defaultThresholds.maxTemp;
+                        const hasHeavyRain = precip !== null && precip >= defaultThresholds.maxRain;
+                        const hasSnow = snow !== null && snow > defaultThresholds.maxSnow;
+                        const hasHighWind = wind !== null && wind >= defaultThresholds.maxWind;
+
+                        // Day is workable if NO work-stopping conditions present
+                        return t !== null && temp_min !== null &&
+                               !hasColdWeatherNeeded && !hasDangerousHeat && !hasHeavyRain && !hasSnow && !hasHighWind;
+                    }
                 }).length,
 
                 // Tier 1: IDEAL DAYS (Perfect conditions subset)
@@ -3991,7 +3997,7 @@ class XyloclimePro {
 
             // Precipitation (FIXED - averaged not summed)
             totalPrecip: avgPrecipPerYear.toFixed(1),
-            totalSnowfall: (avgSnowfallPerYear / 10).toFixed(1), // Convert mm to cm
+            totalSnowfall: avgSnowfallPerYear.toFixed(1), // mm water equiv = cm depth (10:1 ratio)
 
             // Event days - Temperature
             allFreezingDays,          // All days at/below freezing (informational)
@@ -4389,7 +4395,7 @@ class XyloclimePro {
                 monthlyStats[monthIndex].totalDays++;
 
                 // Count work-stopping conditions
-                const hasHeavyRain = precip !== null && precip >= 10;
+                const hasHeavyRain = precip !== null && precip > 15;  // Match yearly threshold (15mm = 0.6 in)
                 const hasWorkStoppingCold = temp_min !== null && temp_min <= -5;
                 const hasHeavySnow = snow !== null && snow > 10;
                 const hasHighWind = wind !== null && wind >= 30;
@@ -4406,7 +4412,7 @@ class XyloclimePro {
                 }
 
                 // Check if day is ideal (no extremes at all)
-                const hasLightRain = precip !== null && precip > 1 && precip < 10;
+                const hasLightRain = precip !== null && precip > 1 && precip <= 15;  // Light rain = between trace and heavy
                 const hasLightFreezing = temp_min !== null && temp_min > -5 && temp_min <= 0;
                 const hasExtremeHeat = temp_max !== null && temp_max >= 37.78;  // ≥100°F
                 const isIdeal = !hasHeavyRain && !hasLightRain && !hasWorkStoppingCold && !hasLightFreezing &&
@@ -6654,7 +6660,7 @@ class XyloclimePro {
         <td style="padding: 0.75rem; text-align: right;">${rainyPercent}%</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <td style="padding: 0.75rem;">Heavy Rain Days (>10mm)</td>
+        <td style="padding: 0.75rem;">Heavy Rain Days (>15mm)</td>
         <td style="padding: 0.75rem; text-align: right;">${analysis.heavyRainDays}</td>
         <td style="padding: 0.75rem; text-align: right;">${heavyRainOfRainyPercent}% of rainy days</td>
         </tr>
@@ -6895,11 +6901,11 @@ class XyloclimePro {
         if (analysis.rainyDays > 0) {
             const rainyDaysMin = analysis.rainyDaysMin || Math.round(analysis.rainyDays * 0.85);
             const rainyDaysMax = analysis.rainyDaysMax || Math.round(analysis.rainyDays * 1.15);
-            summary += `<p><strong>Precipitation Analysis:</strong> Approximately <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax} days, ${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>10mm). ${heavyRainOfRainyPercent}% of rainy days qualify as heavy rain`;
+            summary += `<p><strong>Precipitation Analysis:</strong> Approximately <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax} days, ${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>15mm). ${heavyRainOfRainyPercent}% of rainy days qualify as heavy rain`;
             if (heavyRainOfRainyPercent > 40) {
                 summary += ` – <em>higher than typical 15-30% proportion</em>`;
             }
-            summary += `. Light rain days (<10mm) are included in workable counts as work can continue with rain gear and drainage.
+            summary += `. Light rain days (<15mm) are included in workable counts as work can continue with rain gear and drainage.
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Precipitation values represent historical averages. Actual conditions may vary ±15-20% from these projections year-to-year.</em></p>`;
         }
 
@@ -7824,7 +7830,7 @@ class XyloclimePro {
                 [`Workable Days`, `${analysis.workableDays || analysis.optimalDays} days (${workablePercent}%)`],
                 [`Ideal Days`, `${analysis.idealDays || analysis.optimalDays} days (${idealPercent}%)`],
                 [`Expected Rainy Days`, `${analysis.rainyDays} days (any precipitation)`],
-                [`Heavy Rain Days`, `${analysis.heavyRainDays || 0} days (>10mm = work stoppage)`],
+                [`Heavy Rain Days`, `${analysis.heavyRainDays || 0} days (>15mm = work stoppage)`],
                 [`Expected Snow Days`, `${analysis.snowyDays} days`],
                 [`Freezing Days (<0°C)`, `${analysis.freezingDays} days`],
                 [`Total Precipitation`, `${this.formatPrecip(parseFloat(analysis.totalPrecip))}`]
@@ -7962,9 +7968,9 @@ class XyloclimePro {
 
             const tiersTable = [
                 ['Tier', 'Criteria', 'Description'],
-                ['Workable Days', `Temp: >-5°C, Rain: <10mm, Wind: <30 km/h`, `Realistic construction feasibility with standard precautions`],
+                ['Workable Days', `Temp: >-5°C, Rain: <15mm, Wind: <60 km/h`, `Realistic construction feasibility with standard precautions`],
                 ['Ideal Days', `Temp: >0°C, Rain: <5mm, Wind: <20 km/h`, `Perfect conditions - no weather precautions needed`],
-                ['Heavy Rain', `Precipitation >10mm/day`, `Work-stopping rainfall requiring schedule adjustment`],
+                ['Heavy Rain', `Precipitation >15mm/day`, `Work-stopping rainfall requiring schedule adjustment`],
                 ['High Wind', `Wind Speed ≥30 km/h`, `Restricts crane operations, elevated work, and material handling`]
             ];
 
