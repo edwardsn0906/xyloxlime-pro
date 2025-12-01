@@ -4348,7 +4348,7 @@ class XyloclimePro {
                 extremeEvents.push({
                     year: year.year,
                     type: 'Severe Cold Year',
-                    value: `${year.extremeColdDays} work-stopping cold days (≤-5°C)`,
+                    value: `${year.extremeColdDays} work-stopping cold days (≤-18°C / ≤0°F)`,
                     severity: 'High'
                 });
             }
@@ -4396,7 +4396,7 @@ class XyloclimePro {
 
                 // Count work-stopping conditions
                 const hasHeavyRain = precip !== null && precip > 15;  // Match yearly threshold (15mm = 0.6 in)
-                const hasWorkStoppingCold = temp_min !== null && temp_min <= -5;
+                const hasWorkStoppingCold = temp_min !== null && temp_min <= -18;  // Match yearly threshold (0°F)
                 const hasHeavySnow = snow !== null && snow > 10;
                 const hasHighWind = wind !== null && wind >= 30;
                 const hasDangerousHeat = temp_max !== null && temp_max >= 43.33;  // ≥110°F
@@ -5763,6 +5763,9 @@ class XyloclimePro {
         tableHTML += `
                     </tbody>
                 </table>
+                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--steel-silver); font-style: italic;">
+                    Note: Work-Stopping Cold = days ≤0°F (≤-18°C) requiring work stoppage. Days between 0-23°F are workable with cold-weather methods.
+                </p>
             </div>
         `;
 
