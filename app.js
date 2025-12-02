@@ -7207,9 +7207,9 @@ class XyloclimePro {
         if (!this.weatherData || !Array.isArray(this.weatherData)) {
             console.warn('[PERIODS] No weather data available');
             if (bestPeriodEl) bestPeriodEl.textContent = 'Data Not Available';
-            if (bestReasonEl) bestReasonEl.textContent = 'Insufficient historical data for period analysis.';
+            if (bestReasonEl) bestReasonEl.textContent = 'Insufficient historical data for period analysis. Need at least 5 years of weather patterns.';
             if (worstPeriodEl) worstPeriodEl.textContent = 'Data Not Available';
-            if (worstReasonEl) worstReasonEl.textContent = 'Insufficient historical data for period analysis.';
+            if (worstReasonEl) worstReasonEl.textContent = 'Insufficient historical data for period analysis. Need at least 5 years of weather patterns.';
             return;
         }
 
@@ -7274,9 +7274,9 @@ class XyloclimePro {
         if (dailyData.length < 14) {
             console.warn('[PERIODS] Not enough data for 2-week analysis');
             if (bestPeriodEl) bestPeriodEl.textContent = 'Data Not Available';
-            if (bestReasonEl) bestReasonEl.textContent = 'Project period too short for 2-week analysis (minimum 14 days required).';
+            if (bestReasonEl) bestReasonEl.textContent = 'Project period too short for 2-week analysis (minimum 14 days required). Analysis based on ~5 years of historical data.';
             if (worstPeriodEl) worstPeriodEl.textContent = 'Data Not Available';
-            if (worstReasonEl) worstReasonEl.textContent = 'Project period too short for 2-week analysis (minimum 14 days required).';
+            if (worstReasonEl) worstReasonEl.textContent = 'Project period too short for 2-week analysis (minimum 14 days required). Analysis based on ~5 years of historical data.';
             return;
         }
 
@@ -7409,9 +7409,9 @@ class XyloclimePro {
         if (!bestPeriod || !worstPeriod) {
             console.warn('[PERIODS] Could not determine best/worst periods');
             if (bestPeriodEl) bestPeriodEl.textContent = 'Unable to Analyze';
-            if (bestReasonEl) bestReasonEl.textContent = 'Insufficient data variation for period comparison.';
+            if (bestReasonEl) bestReasonEl.textContent = 'Insufficient data variation for period comparison (analysis based on ~5 years of historical patterns).';
             if (worstPeriodEl) worstPeriodEl.textContent = 'Unable to Analyze';
-            if (worstReasonEl) worstReasonEl.textContent = 'Insufficient data variation for period comparison.';
+            if (worstReasonEl) worstReasonEl.textContent = 'Insufficient data variation for period comparison (analysis based on ~5 years of historical patterns).';
             return;
         }
 
@@ -7444,7 +7444,7 @@ class XyloclimePro {
             if (displayStart > projectEnd || displayEnd < projectStart) {
                 // Period is outside project timeline, skip it
                 if (bestPeriodEl) bestPeriodEl.textContent = 'N/A';
-                if (bestReasonEl) bestReasonEl.textContent = 'Optimal period falls outside project timeline.';
+                if (bestReasonEl) bestReasonEl.textContent = 'Optimal period falls outside project timeline (analysis based on ~5 years of historical patterns).';
                 console.log('[PERIODS] Best period outside project timeline, skipping');
             } else {
                 const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -7481,9 +7481,10 @@ class XyloclimePro {
             }
 
             if (bestReasonEl) {
-                bestReasonEl.textContent = reasons.length > 0
-                    ? reasons.join(', ').charAt(0).toUpperCase() + reasons.join(', ').slice(1) + '.'
-                    : 'Best overall weather conditions for this project period.';
+                const reasonText = reasons.length > 0
+                    ? reasons.join(', ').charAt(0).toUpperCase() + reasons.join(', ').slice(1)
+                    : 'Best overall weather conditions for this project period';
+                bestReasonEl.textContent = `${reasonText} (based on last ~5 years of historical patterns).`;
             }
 
             console.log('[PERIODS] Best period:', startDate, '-', endDate, 'Score:', bestScore);
@@ -7519,7 +7520,7 @@ class XyloclimePro {
             if (displayStart > projectEnd || displayEnd < projectStart) {
                 // Period is outside project timeline, skip it
                 if (worstPeriodEl) worstPeriodEl.textContent = 'N/A';
-                if (worstReasonEl) worstReasonEl.textContent = 'Challenging period falls outside project timeline.';
+                if (worstReasonEl) worstReasonEl.textContent = 'Challenging period falls outside project timeline (analysis based on ~5 years of historical patterns).';
                 console.log('[PERIODS] Worst period outside project timeline, skipping');
             } else {
                 const startDate = displayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -7552,9 +7553,10 @@ class XyloclimePro {
             }
 
             if (worstReasonEl) {
-                worstReasonEl.textContent = issues.length > 0
-                    ? issues.join(', ').charAt(0).toUpperCase() + issues.join(', ').slice(1) + '.'
-                    : 'Most challenging weather conditions for this project period.';
+                const issueText = issues.length > 0
+                    ? issues.join(', ').charAt(0).toUpperCase() + issues.join(', ').slice(1)
+                    : 'Most challenging weather conditions for this project period';
+                worstReasonEl.textContent = `${issueText} (based on last ~5 years of historical patterns).`;
             }
 
             console.log('[PERIODS] Worst period:', startDate, '-', endDate, 'Score:', worstScore);
