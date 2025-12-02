@@ -7034,8 +7034,8 @@ class XyloclimePro {
 
             <br><br><strong>🌡️ Annual Temperature Distribution</strong> <em style="color: var(--steel-silver); font-size: 0.85em;">(All 365 days by minimum temperature - TEMPERATURE ONLY, excludes rain/wind)</em>:
             <br>• <strong style="color: #27ae60;">${analysis.tempTiers.comfortableTemps} days</strong> - Comfortable working temps (${this.formatThresholdTemp(-5, '>')}) - standard precautions only
-            <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - workable but expensive (accelerators, hot water, heated enclosures)
-            <br>• <strong style="color: #e74c3c;">${analysis.tempTiers.extremeStoppage} days</strong> - Extreme cold stoppage (${this.formatThresholdTemp(-18, '≤')}) - true work stoppage even with protection
+            <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - ${this.getColdWeatherMethodsDescription(analysis.templateName)}
+            <br>• <strong style="color: #e74c3c;">${analysis.tempTiers.extremeStoppage} days</strong> - Extreme cold stoppage (${this.formatThresholdTemp(-18, '≤')}) - ${this.getExtremeStoppageDescription(analysis.templateName)}
             <br><em style="color: var(--steel-silver); font-size: 0.85em; display: block; margin-top: 0.5rem;">Verification: ${analysis.tempTiers.comfortableTemps} + ${analysis.tempTiers.coldMethodsNeeded} + ${analysis.tempTiers.extremeStoppage} = ${analysis.tempTiers.comfortableTemps + analysis.tempTiers.coldMethodsNeeded + analysis.tempTiers.extremeStoppage} days (should equal ~365)</em>
             <br><br><strong>🏗️ Overall Workability vs Temperature-Only Tiers:</strong>
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">The "Annual Temperature Distribution" above shows temperature breakdown ONLY (all 365 days). This is DIFFERENT from "Workable Days" (${analysis.workableDays} days), which factors in temperature AND rain AND wind. ${analysis.templateName ? `The <strong>${analysis.templateName} template uses custom thresholds</strong> for workable day calculations, which differ from the general temperature tiers shown above. ` : ''}Your actual workable days (${analysis.workableDays}) are lower because they exclude days with heavy rain, high wind, or other conditions—not just extreme cold.</em>
@@ -7047,14 +7047,14 @@ class XyloclimePro {
             }
 
             summary += `</em>
-            <br>Plan cold-weather protocols: blankets, accelerators, hot water, and enclosures as needed.</p>`;
+            <br>${this.getColdWeatherActionPlan(analysis.templateName)}</p>`;
         } else if (analysis.extremeColdDays > 0) {
             summary += `<p><strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ${this.formatThresholdTemp(-18, '≤')} typically require work stoppage even with protection.
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: This represents ${analysis.extremeColdDays} specific days projected to reach extreme cold, even though the average low is ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}.</em>
-            <br>Plan heated enclosures and schedule around these extreme conditions.</p>`;
+            <br>${this.getExtremeColdActionPlan(analysis.templateName)}</p>`;
         } else if ((analysis.coldWeatherMethodsDays || 0) > 0) {
-            summary += `<p><strong>Cold-Weather Methods Required:</strong> ${analysis.coldWeatherMethodsDays} days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} require accelerators, hot water mix, and curing blankets. No extreme cold stoppage expected.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Concrete work is feasible year-round with proper cold-weather practices.</em></p>`;
+            summary += `<p><strong>Cold-Weather Methods Required:</strong> ${analysis.coldWeatherMethodsDays} days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} ${this.getColdWeatherMethodsDescription(analysis.templateName)}. No extreme cold stoppage expected.
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">${this.getYearRoundWorkDescription(analysis.templateName)}</em></p>`;
         }
 
         summary += `</div>`;
@@ -7098,6 +7098,102 @@ class XyloclimePro {
         </div>`;
 
         container.innerHTML = summary;
+    }
+
+    // Template-specific cold weather descriptions
+    getColdWeatherMethodsDescription(templateName) {
+        if (!templateName) {
+            return 'workable but expensive (accelerators, hot water mix, heated enclosures)';
+        }
+
+        switch (templateName) {
+            case 'Commercial Concrete Work':
+                return `workable with expensive cold-weather methods (accelerators, hot water mix ${this.formatTemp(49, 'C')}, heated enclosures)`;
+            case 'Roofing Installation':
+                return 'limited work possible (shingles brittle, adhesives slow-curing, safety concerns on icy surfaces)';
+            case 'Exterior Painting':
+                return `paint curing severely impaired (most paints won't cure properly below ${this.formatTemp(-5, 'C')})`;
+            case 'Landscaping':
+                return 'soil frozen and unworkable (heavy equipment damage risk, planting impossible until spring thaw)';
+            default:
+                return 'workable with specialized cold-weather methods and equipment';
+        }
+    }
+
+    getExtremeStoppageDescription(templateName) {
+        if (!templateName) {
+            return 'true work stoppage even with protection';
+        }
+
+        switch (templateName) {
+            case 'Commercial Concrete Work':
+                return 'true concrete work stoppage (even heated enclosures struggle at these temperatures)';
+            case 'Roofing Installation':
+                return 'true work stoppage (extreme shingle brittleness, adhesive failure, severe safety hazards)';
+            case 'Exterior Painting':
+                return 'complete paint work stoppage (no paint formulas cure at these temperatures)';
+            case 'Landscaping':
+                return 'complete landscape stoppage (deeply frozen ground, equipment inoperable, survival conditions)';
+            default:
+                return 'true work stoppage - most construction activities unsafe/impossible';
+        }
+    }
+
+    getColdWeatherActionPlan(templateName) {
+        if (!templateName) {
+            return 'Plan cold-weather protocols: blankets, accelerators, hot water, and enclosures as needed.';
+        }
+
+        switch (templateName) {
+            case 'Commercial Concrete Work':
+                return 'Plan cold-weather concrete protocols: curing blankets, accelerators, hot water mix, and heated enclosures as needed.';
+            case 'Roofing Installation':
+                return 'Plan roofing cold-weather protocols: work during warmest hours, hand-seal shingles, heated adhesive storage, fall protection on ice.';
+            case 'Exterior Painting':
+                return 'Plan painting cold-weather protocols: use cold-weather paint formulas, work during warmest hours, monitor surface and air temps.';
+            case 'Landscaping':
+                return 'Plan landscape cold-weather protocols: schedule dormant season work (hardscaping, non-planting tasks), prepare for spring planting push.';
+            default:
+                return 'Plan cold-weather protocols appropriate for your specific work type.';
+        }
+    }
+
+    getExtremeColdActionPlan(templateName) {
+        if (!templateName) {
+            return 'Plan heated enclosures and schedule around these extreme conditions.';
+        }
+
+        switch (templateName) {
+            case 'Commercial Concrete Work':
+                return 'Schedule critical concrete pours outside extreme cold periods, or budget for industrial-grade heated enclosures.';
+            case 'Roofing Installation':
+                return 'Schedule roofing work outside extreme cold periods - winter roofing becomes impractical and dangerous.';
+            case 'Exterior Painting':
+                return 'Schedule painting work outside extreme cold periods - no paint will cure at these temperatures.';
+            case 'Landscaping':
+                return 'Schedule landscape work outside extreme cold periods - use this time for planning, ordering materials, equipment maintenance.';
+            default:
+                return 'Schedule work outside extreme cold periods whenever possible.';
+        }
+    }
+
+    getYearRoundWorkDescription(templateName) {
+        if (!templateName) {
+            return 'Work is feasible year-round with proper cold-weather practices.';
+        }
+
+        switch (templateName) {
+            case 'Commercial Concrete Work':
+                return 'Concrete work is feasible year-round with proper cold-weather methods and budget for additional costs.';
+            case 'Roofing Installation':
+                return 'Roofing is feasible year-round but expect reduced productivity and increased costs during cold periods.';
+            case 'Exterior Painting':
+                return 'Painting is possible year-round with cold-weather formulas, though ideal conditions produce better results.';
+            case 'Landscaping':
+                return 'Hardscaping work is feasible year-round, but planting limited to dormant/early-spring periods in cold months.';
+            default:
+                return 'Work is feasible year-round with appropriate cold-weather adaptations.';
+        }
     }
 
     findBestWorstPeriods(analysis) {
