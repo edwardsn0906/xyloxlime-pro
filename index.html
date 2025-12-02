@@ -883,21 +883,27 @@
                             <div class="definition-card">
                                 <h4>💨 Wind Metrics</h4>
                                 <div class="threshold-item">
-                                    <div class="threshold-label">HIGH WIND DAYS:</div>
-                                    <div class="threshold-desc">Restricts crane operations, elevated work, material handling</div>
+                                    <div class="threshold-label">ELEVATED WIND DAYS (monitoring threshold):</div>
+                                    <div class="threshold-desc">Safety restrictions apply - work proceeds with caution</div>
                                     <ul class="threshold-criteria">
                                         <li>Threshold: <strong>≥30 km/h</strong> (≥19 mph)</li>
-                                        <li>Impact: Crane/scaffolding restrictions, delays in elevated work</li>
+                                        <li>Impact: Crane/scaffolding restrictions, elevated work requires extra precautions</li>
+                                        <li>Note: Work can continue with safety protocols (not counted as work stoppage)</li>
                                     </ul>
                                 </div>
                                 <div class="threshold-item">
-                                    <div class="threshold-label">VERY HIGH WIND:</div>
-                                    <div class="threshold-desc">Severe restrictions or work stoppage</div>
+                                    <div class="threshold-label">WORK-STOPPING HIGH WIND:</div>
+                                    <div class="threshold-desc">General construction work stoppage</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>≥40 km/h</strong> (≥25 mph)</li>
-                                        <li>Impact: Most outdoor work stops, safety hazard</li>
+                                        <li>Threshold: <strong>≥60 km/h</strong> (≥37 mph) for general construction</li>
+                                        <li>Template-specific: <strong>≥25-50 km/h</strong> varies by work type (roofing, painting, etc.)</li>
+                                        <li>Impact: True work stoppage - safety hazard for most outdoor activities</li>
+                                        <li>Note: This threshold used for workable days calculations</li>
                                     </ul>
                                 </div>
+                                <p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--steel-silver); font-style: italic;">
+                                    <strong>Wind Tiers Explained:</strong> Days with 30-59 km/h winds are counted as "elevated wind" for monitoring but still considered workable (with restrictions). Days ≥60 km/h (or template-specific threshold) are true work stoppage. Template-specific thresholds (roofing ≥30 km/h, painting ≥25 km/h) are more conservative for safety-sensitive work.
+                                </p>
                             </div>
                         </div>
 
@@ -1087,7 +1093,7 @@
                             </div>
                             <div class="cost-input-group">
                                 <label for="costHighWindDay">
-                                    <i class="fas fa-wind"></i> Cost per High Wind Day
+                                    <i class="fas fa-wind"></i> Cost per Elevated Wind Day (≥30 km/h)
                                 </label>
                                 <div class="input-with-currency">
                                     <span class="currency">$</span>
@@ -1148,7 +1154,7 @@
                                     <span class="item-total" id="heatTotal">$0</span>
                                 </div>
                                 <div class="breakdown-item">
-                                    <span class="item-label"><i class="fas fa-wind"></i> High Wind Impact</span>
+                                    <span class="item-label"><i class="fas fa-wind"></i> Elevated Wind Impact (≥30 km/h)</span>
                                     <span class="item-calc" id="windCalc">0 × $0</span>
                                     <span class="item-total" id="windTotal">$0</span>
                                 </div>

@@ -1054,10 +1054,10 @@ class XyloclimePro {
                 <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
                     <strong style="color: #e67e22;">⚠️ High Wind Safety & Underlayment Risk</strong>
                     <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
-                        <strong>${highWindDays} days (${windStoppagePercent}%)</strong> with winds ${this.formatThresholdWind(30)} create safety hazards for elevated work.
-                        <br><strong>Safety Risk:</strong> Fall hazard increases significantly above ${this.formatWind(32)}. Stop work above ${this.formatWind(30)}.
-                        <br><strong>Underlayment Risk:</strong> High winds can tear loosely fastened underlayment before shingles are applied. Ensure proper fastening density.
-                        <br><strong>Mitigation:</strong> No elevated work during high winds. Secure all materials. Double-check underlayment fastening before wind events.
+                        <strong>${highWindDays} days (${windStoppagePercent}%)</strong> with elevated winds ${this.formatThresholdWind(30)} require safety restrictions for roofing work.
+                        <br><strong>Roofing-Specific Risk:</strong> For elevated roofing work, winds ${this.formatThresholdWind(30)} create fall hazards and material handling challenges. Many contractors stop roof work at ${this.formatWind(30)}.
+                        <br><strong>Underlayment Risk:</strong> Elevated winds can tear loosely fastened underlayment before shingles are applied. Ensure proper fastening density.
+                        <br><strong>Mitigation:</strong> No elevated work during winds ${this.formatThresholdWind(30)}. Secure all materials. Double-check underlayment fastening before wind events.
                     </p>
                 </div>
             `;
@@ -2849,7 +2849,7 @@ class XyloclimePro {
             { label: 'Snowy Days', key: 'snowyDays', format: (p) => p.analysis?.snowyDays || 0 },
             { label: 'Freezing Days', key: 'freezingDays', format: (p) => p.analysis?.freezingDays || 0 },
             { label: 'Extreme Heat Days', key: 'extremeHeatDays', format: (p) => p.analysis?.extremeHeatDays || 0 },
-            { label: 'High Wind Days', key: 'highWindDays', format: (p) => p.analysis?.highWindDays || 0 },
+            { label: 'Elevated Wind Days (≥30 km/h)', key: 'highWindDays', format: (p) => p.analysis?.highWindDays || 0 },
             { label: 'Avg Temperature', key: 'avgTemp', format: (p) => {
                 const temp = p.analysis?.avgTemp;
                 return temp != null ? `${this.convertTemp(temp, 'C').toFixed(1)}°${this.tempUnit}` : 'N/A';
@@ -3866,7 +3866,7 @@ class XyloclimePro {
                 // - Material handling becomes challenging at 30+ km/h
                 // - Light wind (< 30 km/h): Safe for all construction activities
                 // - High wind (≥ 30 km/h): Restricts crane operations, elevated work, material handling
-                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Construction impact threshold
+                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Elevated wind (monitoring threshold, not work-stopping)
                 avgWindSpeed: this.average(daily.windspeed_10m_max),
                 maxWindSpeed: Math.max(...daily.windspeed_10m_max.filter(w => w !== null)),
 
@@ -4098,7 +4098,7 @@ class XyloclimePro {
             heavySnowDays,            // Heavy snow (>10mm) - work stoppage
 
             // Event days - Wind
-            highWindDays,             // High wind (≥30 km/h) - construction impact
+            highWindDays,             // Elevated wind (≥30 km/h) - monitoring threshold, restrictions apply but work continues
             avgWindSpeed: this.average(yearlyStats.map(y => y.avgWindSpeed)).toFixed(1),
             maxWindSpeed: Math.max(...yearlyStats.map(y => y.maxWindSpeed)).toFixed(1),
 
