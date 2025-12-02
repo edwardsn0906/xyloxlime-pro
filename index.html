@@ -592,7 +592,7 @@
                                 <span>Extreme Heat</span>
                             </div>
                             <div class="tile-value" id="extremeHeatDays">--</div>
-                            <div class="tile-detail">Days over 100°F</div>
+                            <div class="tile-detail" id="extremeHeatThreshold">Days over 100°F</div>
                             <div class="tile-criteria">Reduces ideal days</div>
                         </div>
 
@@ -794,18 +794,18 @@
                                     <div class="threshold-label">WORKABLE DAYS:</div>
                                     <div class="threshold-desc">Construction feasible with normal precautions</div>
                                     <ul class="threshold-criteria">
-                                        <li>Temperature: <strong>-5°C to 37°C</strong> (23°F to 99°F)</li>
-                                        <li>Precipitation: <strong>&lt;15mm/day</strong> (&lt;0.6 inches)</li>
-                                        <li>Wind Speed: <strong>&lt;60 km/h</strong> (&lt;37 mph)</li>
+                                        <li>Temperature: <strong id="workableTempRange">-5°C to 37°C (23°F to 99°F)</strong></li>
+                                        <li>Precipitation: <strong id="workableRainThreshold">&lt;15mm/day (&lt;0.6 inches)</strong></li>
+                                        <li>Wind Speed: <strong id="workableWindThreshold">&lt;60 km/h (&lt;37 mph)</strong></li>
                                     </ul>
                                 </div>
                                 <div class="threshold-item">
                                     <div class="threshold-label">IDEAL DAYS (subset of Workable):</div>
                                     <div class="threshold-desc">Perfect conditions, no precautions needed</div>
                                     <ul class="threshold-criteria">
-                                        <li>Temperature: <strong>0°C to 37.7°C</strong> (32°F to 100°F)</li>
-                                        <li>Precipitation: <strong>&lt;5mm/day</strong> (&lt;0.2 inches)</li>
-                                        <li>Wind Speed: <strong>&lt;20 km/h</strong> (&lt;12 mph)</li>
+                                        <li>Temperature: <strong id="idealTempRange">0°C to 37.7°C (32°F to 100°F)</strong></li>
+                                        <li>Precipitation: <strong id="idealRainThreshold">&lt;5mm/day (&lt;0.2 inches)</strong></li>
+                                        <li>Wind Speed: <strong id="idealWindThreshold">&lt;20 km/h (&lt;12 mph)</strong></li>
                                     </ul>
                                 </div>
                             </div>
@@ -847,7 +847,7 @@
                                     <div class="threshold-label">FREEZING DAYS:</div>
                                     <div class="threshold-desc">Cold-weather precautions needed</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>Minimum ≤0°C</strong> (≤32°F)</li>
+                                        <li>Threshold: <strong id="freezingThreshold">Minimum ≤0°C (≤32°F)</strong></li>
                                         <li>Impact: Heaters, cold-weather materials required</li>
                                     </ul>
                                 </div>
@@ -855,8 +855,8 @@
                                     <div class="threshold-label">COLD-WEATHER METHODS REQUIRED:</div>
                                     <div class="threshold-desc">Workable with proper cold-weather practices</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>0°F to 23°F</strong> (-18°C to -5°C)</li>
-                                        <li>Impact: Requires accelerators, hot water mix (120°F), heated enclosures, insulated curing blankets</li>
+                                        <li>Threshold: <strong id="coldMethodsThreshold">0°F to 23°F (-18°C to -5°C)</strong></li>
+                                        <li>Impact: Requires accelerators, hot water mix <span id="hotWaterTemp">(120°F)</span>, heated enclosures, insulated curing blankets</li>
                                         <li>Note: Concrete work feasible with modern cold-weather methods</li>
                                     </ul>
                                 </div>
@@ -864,7 +864,7 @@
                                     <div class="threshold-label">EXTREME COLD STOPPAGE:</div>
                                     <div class="threshold-desc">True work stoppage - even protected pours risky</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>Minimum ≤-18°C</strong> (≤0°F)</li>
+                                        <li>Threshold: <strong id="extremeColdThreshold">Minimum ≤-18°C (≤0°F)</strong></li>
                                         <li>Impact: Work stoppage required - severe conditions make even protected concrete work unsafe/unreliable</li>
                                         <li>Note: Used for contingency calculations in this tool</li>
                                     </ul>
@@ -873,7 +873,7 @@
                                     <div class="threshold-label">EXTREME HEAT DAYS:</div>
                                     <div class="threshold-desc">Heat safety concerns</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong>Maximum ≥37.7°C</strong> (≥100°F)</li>
+                                        <li>Threshold: <strong id="extremeHeatThresholdDefinition">Maximum ≥37.7°C (≥100°F)</strong></li>
                                         <li>Impact: Heat illness risk, reduced productivity</li>
                                     </ul>
                                 </div>
@@ -962,7 +962,7 @@
                     <div class="monthly-breakdown">
                         <div class="monthly-header">
                             <h3><i class="fas fa-calendar-alt"></i> Monthly Risk Analysis for Concrete Pours</h3>
-                            <p class="monthly-subtitle">Plan seasonal concrete work based on historical heavy rain (>15mm), extreme cold (≤0°F), and heavy snow (>4in) patterns</p>
+                            <p class="monthly-subtitle" id="monthlyTableSubtitle">Plan seasonal concrete work based on historical heavy rain (>15mm), extreme cold (≤0°F), and heavy snow (>4in) patterns</p>
                         </div>
                         <div id="monthlyBreakdownContainer">
                             <p class="summary-loading">Calculating monthly breakdown...</p>

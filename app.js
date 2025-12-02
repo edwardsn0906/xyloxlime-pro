@@ -569,7 +569,80 @@ class XyloclimePro {
             metricBtn.classList.toggle('active', this.unitSystem === 'metric');
         }
 
+        // Update all threshold displays based on unit system
+        this.updateThresholdDisplays();
+
         console.log(`[UNITS] Unit system updated to: ${this.unitSystem}`);
+    }
+
+    updateThresholdDisplays() {
+        // Extreme Heat tile
+        const extremeHeatThreshold = document.getElementById('extremeHeatThreshold');
+        if (extremeHeatThreshold) {
+            extremeHeatThreshold.textContent = `Days over ${this.formatTemp(37.78, 'C')}`;
+        }
+
+        // Workable Days thresholds
+        const workableTempRange = document.getElementById('workableTempRange');
+        if (workableTempRange) {
+            workableTempRange.textContent = `${this.formatTemp(-5, 'C')} to ${this.formatTemp(37, 'C')}`;
+        }
+        const workableRainThreshold = document.getElementById('workableRainThreshold');
+        if (workableRainThreshold) {
+            workableRainThreshold.innerHTML = `&lt;${this.formatPrecip(15)}/day`;
+        }
+        const workableWindThreshold = document.getElementById('workableWindThreshold');
+        if (workableWindThreshold) {
+            workableWindThreshold.innerHTML = `&lt;${this.formatWind(60)}`;
+        }
+
+        // Ideal Days thresholds
+        const idealTempRange = document.getElementById('idealTempRange');
+        if (idealTempRange) {
+            idealTempRange.textContent = `${this.formatTemp(0, 'C')} to ${this.formatTemp(37.78, 'C')}`;
+        }
+        const idealRainThreshold = document.getElementById('idealRainThreshold');
+        if (idealRainThreshold) {
+            idealRainThreshold.innerHTML = `&lt;${this.formatPrecip(5)}/day`;
+        }
+        const idealWindThreshold = document.getElementById('idealWindThreshold');
+        if (idealWindThreshold) {
+            idealWindThreshold.innerHTML = `&lt;${this.formatWind(20)}`;
+        }
+
+        // Freezing threshold
+        const freezingThreshold = document.getElementById('freezingThreshold');
+        if (freezingThreshold) {
+            freezingThreshold.textContent = `Minimum ${this.formatThresholdTemp(0, '≤')}`;
+        }
+
+        // Cold-weather methods threshold
+        const coldMethodsThreshold = document.getElementById('coldMethodsThreshold');
+        if (coldMethodsThreshold) {
+            coldMethodsThreshold.textContent = `${this.formatTemp(-18, 'C')} to ${this.formatTemp(-5, 'C')}`;
+        }
+        const hotWaterTemp = document.getElementById('hotWaterTemp');
+        if (hotWaterTemp) {
+            hotWaterTemp.textContent = `(${this.formatTemp(49, 'C')})`;
+        }
+
+        // Extreme cold threshold
+        const extremeColdThreshold = document.getElementById('extremeColdThreshold');
+        if (extremeColdThreshold) {
+            extremeColdThreshold.textContent = `Minimum ${this.formatThresholdTemp(-18, '≤')}`;
+        }
+
+        // Extreme heat threshold (definition box)
+        const extremeHeatThresholdDefinition = document.getElementById('extremeHeatThresholdDefinition');
+        if (extremeHeatThresholdDefinition) {
+            extremeHeatThresholdDefinition.textContent = `Maximum ${this.formatThresholdTemp(37.78, '≥')}`;
+        }
+
+        // Monthly table subtitle
+        const monthlyTableSubtitle = document.getElementById('monthlyTableSubtitle');
+        if (monthlyTableSubtitle) {
+            monthlyTableSubtitle.textContent = `Plan seasonal concrete work based on historical heavy rain (${this.formatPrecip(15, '>')}), extreme cold (${this.formatThresholdTemp(-18, '≤')}), and heavy snow (${this.formatSnow(10, '>')}) patterns`;
+        }
     }
 
     updateTempUnitUI() {
@@ -4348,7 +4421,7 @@ class XyloclimePro {
                 extremeEvents.push({
                     year: year.year,
                     type: 'Severe Cold Year',
-                    value: `${year.extremeColdDays} work-stopping cold days (≤-18°C / ≤0°F)`,
+                    value: `${year.extremeColdDays} work-stopping cold days (${this.formatThresholdTemp(-18, '≤')})`,
                     severity: 'High'
                 });
             }
@@ -5333,22 +5406,22 @@ class XyloclimePro {
 
             if (workStoppingCold > 15) {
                 if (template?.name === 'Commercial Concrete Work') {
-                    recommendations.push(`Plan for ${workStoppingCold} extreme cold stoppage days (≤-18°C / ≤0°F): heated enclosures and winter methods required`);
-                    recommendations.push('Concrete curing requires temps above 4°C (40°F). Use heated blankets and winter admixtures');
+                    recommendations.push(`Plan for ${workStoppingCold} extreme cold stoppage days (${this.formatThresholdTemp(-18, '≤')}): heated enclosures and winter methods required`);
+                    recommendations.push(`Concrete curing requires temps above ${this.formatThresholdTemp(4, '>')}. Use heated blankets and winter admixtures`);
                 } else if (template?.name === 'Roofing Installation') {
-                    recommendations.push(`${workStoppingCold} extreme cold days expected (≤-18°C / ≤0°F). Asphalt shingles brittle below -5°C`);
-                    recommendations.push('Use cold-weather adhesives. Work limited to above -5°C days');
+                    recommendations.push(`${workStoppingCold} extreme cold days expected (${this.formatThresholdTemp(-18, '≤')}). Asphalt shingles brittle below ${this.formatTemp(- 5, 'C')}`);
+                    recommendations.push(`Use cold-weather adhesives. Work limited to above ${this.formatTemp(-5, 'C')} days`);
                 } else {
-                    recommendations.push(`Plan for ${workStoppingCold} extreme cold stoppage days (≤-18°C / ≤0°F): heated enclosures recommended`);
+                    recommendations.push(`Plan for ${workStoppingCold} extreme cold stoppage days (${this.formatThresholdTemp(-18, '≤')}): heated enclosures recommended`);
                     recommendations.push('Consider insulated materials and cold-weather equipment');
                 }
             }
 
             if (parseInt(analysis.extremeHeatDays) > 20) {
                 if (template?.name === 'Commercial Concrete Work') {
-                    recommendations.push('Pour concrete early morning during heat. Use retarders above 32°C (90°F)');
+                    recommendations.push(`Pour concrete early morning during heat. Use retarders above ${this.formatThresholdTemp(32, '>')}`);
                 } else if (template?.name === 'Exterior Painting') {
-                    recommendations.push('Paint in morning/evening during heat. Avoid midday temps above 32°C');
+                    recommendations.push(`Paint in morning/evening during heat. Avoid midday temps above ${this.formatTemp(32, 'C')}`);
                 } else {
                     recommendations.push('Schedule heat-sensitive work during cooler hours. Plan worker heat safety');
                 }
@@ -5764,7 +5837,7 @@ class XyloclimePro {
                     </tbody>
                 </table>
                 <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--steel-silver); font-style: italic;">
-                    Note: Work-Stopping Cold = days ≤0°F (≤-18°C) requiring work stoppage. Days between 0-23°F are workable with cold-weather methods.
+                    Note: Work-Stopping Cold = days ${this.formatThresholdTemp(-18, '≤')} requiring work stoppage. Days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} are workable with cold-weather methods.
                 </p>
             </div>
         `;
@@ -6675,7 +6748,7 @@ class XyloclimePro {
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
         <td style="padding: 0.75rem;">Freezing Days (Total)</td>
         <td style="padding: 0.75rem; text-align: right;">${analysis.allFreezingDays}</td>
-        <td style="padding: 0.75rem; text-align: right;">Work-stopping cold (≤-5°C): ${analysis.extremeColdDays}</td>
+        <td style="padding: 0.75rem; text-align: right;">Work-stopping cold (${this.formatThresholdTemp(-18, '≤')}): ${analysis.extremeColdDays}</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
         <td style="padding: 0.75rem;">Wind Speed (Avg/Max)</td>
@@ -7835,7 +7908,7 @@ class XyloclimePro {
                 [`Expected Rainy Days`, `${analysis.rainyDays} days (any precipitation)`],
                 [`Heavy Rain Days`, `${analysis.heavyRainDays || 0} days (>15mm = work stoppage)`],
                 [`Expected Snow Days`, `${analysis.snowyDays} days`],
-                [`Freezing Days (<0°C)`, `${analysis.freezingDays} days`],
+                [`Freezing Days (${this.formatThresholdTemp(0, '≤')})`, `${analysis.freezingDays} days`],
                 [`Total Precipitation`, `${this.formatPrecip(parseFloat(analysis.totalPrecip))}`]
             ];
 
@@ -7971,10 +8044,10 @@ class XyloclimePro {
 
             const tiersTable = [
                 ['Tier', 'Criteria', 'Description'],
-                ['Workable Days', `Temp: >-5°C, Rain: <15mm, Wind: <60 km/h`, `Realistic construction feasibility with standard precautions`],
-                ['Ideal Days', `Temp: >0°C, Rain: <5mm, Wind: <20 km/h`, `Perfect conditions - no weather precautions needed`],
-                ['Heavy Rain', `Precipitation >15mm/day`, `Work-stopping rainfall requiring schedule adjustment`],
-                ['High Wind', `Wind Speed ≥30 km/h`, `Restricts crane operations, elevated work, and material handling`]
+                ['Workable Days', `Temp: ${this.formatThresholdTemp(-5, '>')}, Rain: ${this.formatPrecip(15, '<')}, Wind: ${this.formatWind(60, '<')}`, `Realistic construction feasibility with standard precautions`],
+                ['Ideal Days', `Temp: ${this.formatThresholdTemp(0, '>')}, Rain: ${this.formatPrecip(5, '<')}, Wind: ${this.formatWind(20, '<')}`, `Perfect conditions - no weather precautions needed`],
+                ['Heavy Rain', `Precipitation ${this.formatPrecip(15, '>')}/day`, `Work-stopping rainfall requiring schedule adjustment`],
+                ['High Wind', `Wind Speed ${this.formatWind(30, '≥')}`, `Restricts crane operations, elevated work, and material handling`]
             ];
 
             tiersTable.forEach((row, i) => {
@@ -8385,8 +8458,8 @@ class XyloclimePro {
                 ['Precipitation', 'Total Snow', this.formatSnow(analysis.totalSnowfall, false), this.unitSystem === 'imperial' ? 'in' : 'cm'],
                 ['Temperature Extremes', 'Freezing Days', analysis.freezingDays, 'days'],
                 ['Temperature Extremes', 'Extreme Heat Days', analysis.extremeHeatDays, 'days'],
-                ['Temperature Extremes', 'Extreme Cold Stoppage (≤-18°C / ≤0°F)', analysis.extremeColdDays, 'days'],
-                ['Temperature Extremes', 'Cold-Weather Methods Days (0-23°F)', analysis.coldWeatherMethodsDays || 0, 'days'],
+                ['Temperature Extremes', `Extreme Cold Stoppage (${this.formatThresholdTemp(-18, '≤')})`, analysis.extremeColdDays, 'days'],
+                ['Temperature Extremes', `Cold-Weather Methods Days (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')})`, analysis.coldWeatherMethodsDays || 0, 'days'],
                 ['Work Conditions', 'Workable Days', analysis.workableDays || analysis.optimalDays, 'days'],
                 ['Work Conditions', 'Ideal Days', analysis.idealDays || 0, 'days'],
                 ['Data Quality', 'Years Analyzed', analysis.yearsAnalyzed, 'years']
