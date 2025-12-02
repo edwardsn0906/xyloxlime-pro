@@ -3901,16 +3901,19 @@ class XyloclimePro {
 
                     // Use template-specific workable thresholds if available, otherwise use defaults
                     if (template?.workabilityThresholds) {
-                        const workableThresholds = template.workabilityThresholds;
+                        // CRITICAL FIX: Workable should use MORE LENIENT thresholds than ideal
+                        // For workable, use general construction defaults (lenient) modified by template minimums
+                        // This ensures workable >> ideal, not workable ≈ ideal
+                        const templateMin = template.workabilityThresholds.criticalMinTemp;
+                        const templateMax = template.workabilityThresholds.maxTemp;
 
-                        // For template-based workable days, use template thresholds (relaxed vs ideal)
-                        // - Daily low must be above criticalMinTemp (for curing/overnight)
-                        // - Daily high must be within workable range
+                        // Use LENIENT general construction thresholds for rain/wind
+                        // Only use template for temperature minimums (safety-critical)
                         const meetsTemp = temp_min !== null && t !== null &&
-                                        temp_min >= workableThresholds.criticalMinTemp &&
-                                        t <= workableThresholds.maxTemp;
-                        const meetsRain = precip !== null && precip <= (workableThresholds.maxRain || 0);
-                        const meetsWind = wind !== null && wind <= (workableThresholds.maxWind || 20);
+                                        temp_min >= templateMin &&  // Template safety minimum
+                                        t <= (templateMax + 5);      // Slightly more lenient than template max
+                        const meetsRain = precip !== null && precip < 15;  // General heavy rain threshold (lenient)
+                        const meetsWind = wind !== null && wind < 60;      // General high wind threshold (lenient)
 
                         return meetsTemp && meetsRain && meetsWind;
                     } else {
@@ -4971,6 +4974,22 @@ class XyloclimePro {
                 fix: 'Check calculation logic'
             });
             criticalIssues++;
+        }
+
+        // CRITICAL: Check workable vs ideal days math
+        const workableNonIdeal = workableDays - idealDays;
+        const highWindDays = parseInt(analysis.highWindDays) || 0;
+        const heavyRainDays = parseInt(analysis.heavyRainDays) || 0;
+        const freezingDays = parseInt(analysis.freezingDays) || 0;
+
+        // If there are many weather events but few workable-non-ideal days, something is wrong
+        if (workableNonIdeal < 20 && (highWindDays > 50 || heavyRainDays > 20 || freezingDays > 100)) {
+            findings.impossibleValues.push({
+                status: '⚠',
+                issue: `Workable/Ideal math suspicious: ${workableDays} workable vs ${idealDays} ideal = only ${workableNonIdeal} workable-non-ideal days, but ${highWindDays} high-wind + ${heavyRainDays} heavy-rain + ${freezingDays} freezing days`,
+                severity: 'HIGH',
+                fix: 'Workable thresholds may be too strict - should be more lenient than ideal'
+            });
         }
 
         if (totalPrecip < 0 || analysis.totalSnowfall < 0) {
