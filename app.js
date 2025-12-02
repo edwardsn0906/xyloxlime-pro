@@ -4080,11 +4080,12 @@ class XyloclimePro {
             extremeHeatDays,          // Days above 37°C (NOT workable)
             freezingDays: allFreezingDays,  // Backward compatibility
 
-            // Temperature tier breakdown (for report transparency)
+            // Temperature tier breakdown (TEMPERATURE ONLY - excludes rain/wind)
+            // This is separate from workableDays which includes weather conditions
             tempTiers: {
-                easilyWorkable: workableDays,  // Days >23°F with no other stoppage conditions
-                coldMethodsNeeded: coldWeatherMethodsDays,  // 0-23°F (expensive, requires special methods)
-                extremeStoppage: extremeColdDays  // ≤0°F (true work stoppage)
+                comfortableTemps: daily.temperature_2m_min.filter(t => t !== null && t > -5).length,  // Days >-5°C / >23°F (comfortable working temps)
+                coldMethodsNeeded: coldWeatherMethodsDays,  // -18°C to -5°C / 0-23°F (expensive, requires special methods)
+                extremeStoppage: extremeColdDays  // ≤-18°C / ≤0°F (true work stoppage)
             },
 
             // Event days - Precipitation
@@ -7028,12 +7029,18 @@ class XyloclimePro {
                 coldBreakdown += `${analysis.lightFreezingDays} <strong>light precaution days</strong> (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}, blankets/timing needed)`;
             }
 
-            summary += `<p><strong>Cold Weather Analysis:</strong> ${analysis.allFreezingDays} total freezing days broken down as: ${coldBreakdown}.
-            <br><br><strong>Temperature Workability Tiers (General Construction Standards):</strong>
-            <br>• <strong style="color: #27ae60;">${analysis.tempTiers.easilyWorkable} days</strong> - Easily workable (${this.formatThresholdTemp(-5, '>')} with normal precautions)
-            <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - expensive but workable with accelerators, hot water mix, heated enclosures
+            summary += `<p><strong>❄️ Freezing Days Breakdown:</strong> ${analysis.allFreezingDays} total days below freezing (${this.formatThresholdTemp(0, '≤')}), categorized as: ${coldBreakdown}.
+            <br><em style="color: var(--steel-silver); font-size: 0.85em; display: block; margin-top: 0.5rem;">Note: These categories are SUBSETS of the ${analysis.allFreezingDays} freezing days shown above, not additional days. The breakdown shows how those freezing days are distributed by severity.</em>
+
+            <br><br><strong>🌡️ Annual Temperature Distribution</strong> <em style="color: var(--steel-silver); font-size: 0.85em;">(All 365 days by minimum temperature - TEMPERATURE ONLY, excludes rain/wind)</em>:
+            <br>• <strong style="color: #27ae60;">${analysis.tempTiers.comfortableTemps} days</strong> - Comfortable working temps (${this.formatThresholdTemp(-5, '>')}) - standard precautions only
+            <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - workable but expensive (accelerators, hot water, heated enclosures)
             <br>• <strong style="color: #e74c3c;">${analysis.tempTiers.extremeStoppage} days</strong> - Extreme cold stoppage (${this.formatThresholdTemp(-18, '≤')}) - true work stoppage even with protection
-            <br><br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: ${analysis.templateName ? `<strong>${analysis.templateName} template uses custom thresholds</strong> for workable day calculations, which may differ from general standards shown above. ` : ''}"Workable days" count (${analysis.workableDays}) is calculated using ${analysis.templateName ? 'template-specific' : 'general construction'} thresholds. The ${analysis.tempTiers.coldMethodsNeeded} cold-weather method days shown above represent general construction standards. <strong>Understanding Temperature Averages:</strong> The average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean across all 365 days—it does NOT mean temperatures cluster near this value. In continental climates with distinct seasons, winter months (Dec-Mar) can have nearly all days below freezing, while summer months (May-Sep) have warm lows that pull the annual average upward. This is why ${analysis.allFreezingDays} freezing days (${(analysis.allFreezingDays / 365 * 100).toFixed(1)}% of the year) is statistically valid even with this average—most freezing occurs during 3-4 harsh winter months.`;
+            <br><em style="color: var(--steel-silver); font-size: 0.85em; display: block; margin-top: 0.5rem;">Verification: ${analysis.tempTiers.comfortableTemps} + ${analysis.tempTiers.coldMethodsNeeded} + ${analysis.tempTiers.extremeStoppage} = ${analysis.tempTiers.comfortableTemps + analysis.tempTiers.coldMethodsNeeded + analysis.tempTiers.extremeStoppage} days (should equal ~365)</em>
+            <br><br><strong>🏗️ Overall Workability vs Temperature-Only Tiers:</strong>
+            <br><em style="color: var(--steel-silver); font-size: 0.9em;">The "Annual Temperature Distribution" above shows temperature breakdown ONLY (all 365 days). This is DIFFERENT from "Workable Days" (${analysis.workableDays} days), which factors in temperature AND rain AND wind. ${analysis.templateName ? `The <strong>${analysis.templateName} template uses custom thresholds</strong> for workable day calculations, which differ from the general temperature tiers shown above. ` : ''}Your actual workable days (${analysis.workableDays}) are lower because they exclude days with heavy rain, high wind, or other conditions—not just extreme cold.</em>
+
+            <br><br><em style="color: var(--steel-silver); font-size: 0.9em;"><strong>Understanding Temperature Averages:</strong> The average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean across all 365 days—it does NOT mean temperatures cluster near this value. In continental climates with distinct seasons, winter months (Dec-Mar) can have nearly all days below freezing, while summer months (May-Sep) have warm lows that pull the annual average upward. This is why ${analysis.allFreezingDays} freezing days (${(analysis.allFreezingDays / 365 * 100).toFixed(1)}% of the year) is statistically valid even with this average—most freezing occurs during 3-4 harsh winter months.`;
 
             if (isUnusualDistribution) {
                 summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
