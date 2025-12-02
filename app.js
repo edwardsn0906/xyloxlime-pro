@@ -541,6 +541,24 @@ class XyloclimePro {
         }
     }
 
+    formatThresholdSnow(mmWaterEquiv, operator = '>', bothUnits = false) {
+        // Format snow thresholds for display
+        // Input is mm water equivalent, which numerically equals cm snow depth (via 10:1 snow-to-water ratio)
+        // Example: 10mm water equiv = 10cm snow depth = 3.9 inches snow depth
+        const cmSnowDepth = mmWaterEquiv; // 1mm water ≈ 1cm snow (10:1 ratio)
+        const inchesSnowDepth = (cmSnowDepth / 2.54).toFixed(1);
+
+        if (bothUnits) {
+            return `${operator}${cmSnowDepth}cm / ${operator}${inchesSnowDepth} in snow depth (${mmWaterEquiv}mm water equiv)`;
+        } else {
+            if (this.unitSystem === 'imperial') {
+                return `${operator}${inchesSnowDepth} in`;
+            } else {
+                return `${operator}${cmSnowDepth}cm`;
+            }
+        }
+    }
+
     setUnitSystem(system) {
         this.unitSystem = system;
         this.tempUnit = system === 'imperial' ? 'F' : 'C';
@@ -641,7 +659,7 @@ class XyloclimePro {
         // Monthly table subtitle
         const monthlyTableSubtitle = document.getElementById('monthlyTableSubtitle');
         if (monthlyTableSubtitle) {
-            monthlyTableSubtitle.textContent = `Plan seasonal concrete work based on historical heavy rain (${this.formatPrecip(15, '>')}), extreme cold (${this.formatThresholdTemp(-18, '≤')}), and heavy snow (${this.formatSnow(10, '>')}) patterns`;
+            monthlyTableSubtitle.textContent = `Plan seasonal concrete work based on historical heavy rain (${this.formatPrecip(15, '>')}), extreme cold (${this.formatThresholdTemp(-18, '≤')}), and heavy snow (${this.formatThresholdSnow(10, '>')}) patterns`;
         }
     }
 
@@ -3852,8 +3870,9 @@ class XyloclimePro {
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-15mm): Workable with rain gear/drainage
                 // - Heavy rain (> 15mm / >0.6 in): Work stoppage (realistic industry threshold)
-                // - Measurable snow (> 1mm water equiv): ~0.4 in depth - filters out trace amounts
-                // - Heavy snow (> 10mm water equiv): ~4 in depth - work stoppage (10:1 snow:water ratio)
+                // - Measurable snow (> 1mm water equiv = ~1cm snow depth = ~0.4 in depth): Filters out trace amounts
+                // - Heavy snow (> 10mm water equiv = ~10cm snow depth = ~4 in depth): Work stoppage
+                // Note: Snowfall API data is in mm water equivalent; 10:1 snow-to-water ratio means 1mm water ≈ 1cm snow depth
                 rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,  // All rainy days
                 heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 15).length,  // Work-stopping rain (15mm = 0.6 in)
                 snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (>1mm water equiv)
@@ -4073,7 +4092,7 @@ class XyloclimePro {
 
             // Precipitation (FIXED - averaged not summed)
             totalPrecip: avgPrecipPerYear.toFixed(1),
-            totalSnowfall: avgSnowfallPerYear.toFixed(1), // mm water equiv = cm depth (10:1 ratio)
+            totalSnowfall: avgSnowfallPerYear.toFixed(1), // mm water equiv; displayed as cm snow depth (1mm water ≈ 1cm snow via 10:1 ratio)
 
             // Event days - Temperature
             allFreezingDays,          // All days at/below freezing (informational)
@@ -7016,10 +7035,10 @@ class XyloclimePro {
 
             // Add note if all snow days are heavy (could indicate NOAA reporting threshold or mountain climate)
             if (allSnowIsHeavy && usingNOAA && analysis.snowyDays > 3) {
-                snowVariabilityNote += ` Note: All measured snow days exceed 10mm water equiv (~4 in depth) - NOAA may have a reporting threshold for light snow, or location experiences predominantly heavy snowfall events (typical for mountain regions).`;
+                snowVariabilityNote += ` Note: All measured snow days exceed 10mm water equiv (~10cm / ~4 in snow depth) - NOAA may have a reporting threshold for light snow, or location experiences predominantly heavy snowfall events (typical for mountain regions).`;
             }
 
-            summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm water equiv / >4 in depth) typically require work stoppage.
+            summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm water equiv = ~10cm / ~4 in snow depth) typically require work stoppage.
             <br><em style="color: var(--steel-silver); font-size: 0.9em;">${snowVariabilityNote}</em>
             <br>Winter construction protocols recommended.</p>`;
         }
