@@ -2567,9 +2567,9 @@ class XyloclimePro {
                     reasons.push(`Rain: ${this.formatPrecip(precip)}`);
                 }
 
-                if (snow / 10 > criteria.maxSnow) { // Convert mm to cm
+                if (snow > criteria.maxSnow) { // snow in mm water equiv numerically equals cm depth (10:1 ratio)
                     isWorkable = false;
-                    reasons.push(`Snow: ${this.formatSnow(snow / 10)}`);
+                    reasons.push(`Snow: ${this.formatSnow(snow)}`);  // snow (mm water equiv) = cm depth numerically
                 }
 
                 if (wind > criteria.maxWind) {
@@ -3476,10 +3476,11 @@ class XyloclimePro {
 
             for (const day of data.days) {
                 dates.push(day.datetime);
-                // Visual Crossing returns snow in cm, convert to mm
+                // Visual Crossing returns snow depth in cm
+                // Convert to mm water equivalent: cm depth numerically equals mm water equiv (10:1 snow-to-water ratio)
                 const snowCm = parseFloat(day.snow || 0);
-                const snowMm = snowCm * 10;
-                snowfall_sum.push(snowMm);
+                const snowMmWaterEquiv = snowCm;  // Numeric equality: 10cm snow = 1cm water = 10mm water
+                snowfall_sum.push(snowMmWaterEquiv);
             }
 
             console.log('Successfully fetched Visual Crossing snow data');
@@ -6091,7 +6092,7 @@ class XyloclimePro {
                                 tempMax != null ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMax, 'C').toFixed(1) : tempMax.toFixed(1)) : '',
                                 tempMin != null ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMin, 'C').toFixed(1) : tempMin.toFixed(1)) : '',
                                 precip != null ? (this.unitSystem === 'imperial' ? this.mmToInches(precip).toFixed(2) : precip.toFixed(1)) : '',
-                                snow != null ? (this.unitSystem === 'imperial' ? this.cmToInches(snow / 10).toFixed(2) : (snow / 10).toFixed(1)) : '',
+                                snow != null ? (this.unitSystem === 'imperial' ? this.cmToInches(snow).toFixed(2) : snow.toFixed(1)) : '',  // snow in mm water equiv = cm depth numerically
                                 wind != null ? (this.unitSystem === 'imperial' ? this.kmhToMph(wind).toFixed(1) : wind.toFixed(1)) : ''
                             ]);
                         });
@@ -6448,14 +6449,14 @@ class XyloclimePro {
         if (this.unitSystem === 'imperial') {
             // Convert mm to inches for rain
             precipData = monthlyData.precip.map(p => p != null ? this.mmToInches(p) : 0);
-            // Convert mm to cm, then to inches for snow
-            snowData = monthlyData.snow.map(s => s != null ? this.cmToInches(s / 10) : 0);
+            // Snow: mm water equiv = cm depth numerically (10:1 ratio), convert cm to inches
+            snowData = monthlyData.snow.map(s => s != null ? this.cmToInches(s) : 0);
             precipLabel = 'Rain (in)';
             snowLabel = 'Snow (in)';
         } else {
-            // Keep metric (mm for rain, cm for snow)
+            // Keep metric (mm for rain, snow in mm water equiv = cm depth numerically)
             precipData = monthlyData.precip;
-            snowData = monthlyData.snow.map(s => s != null ? s / 10 : 0);
+            snowData = monthlyData.snow;  // Already in cm depth equivalent
             precipLabel = 'Rain (mm)';
             snowLabel = 'Snow (cm)';
         }
