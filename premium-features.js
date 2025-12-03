@@ -331,7 +331,7 @@ class ProjectTemplatesLibrary {
                     maxRain: 0,
                     maxWind: 30,
                     minTemp: 10,          // °C (50°F) - asphalt won't compact below
-                    maxTemp: 35,
+                    maxTemp: 43.33,       // °C (110°F) - dangerous heat
                     maxSnow: 0,
                     consecutiveDays: 2
                 },
@@ -350,7 +350,7 @@ class ProjectTemplatesLibrary {
                 workabilityThresholds: {
                     criticalMinTemp: 10,  // °C (50°F) - absolute minimum for compaction
                     idealMinTemp: 15,     // °C (59°F) - ideal paving temp
-                    maxTemp: 35,          // °C (95°F) - asphalt too soft to work
+                    maxTemp: 43.33,       // °C (110°F) - dangerous heat (worker safety, not material limit)
                     maxRain: 0,           // mm - zero tolerance
                     maxWind: 30,          // km/h - good tolerance
                     maxSnow: 0            // cm - no moisture allowed
