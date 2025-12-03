@@ -3918,7 +3918,7 @@ class XyloclimePro {
                 // - Heavy snow (> 10mm water equiv = ~10cm snow depth = ~4 in depth): Work stoppage
                 // Note: Snowfall API data is in mm water equivalent; 10:1 snow-to-water ratio means 1mm water ≈ 1cm snow depth
                 rainyDays: daily.precipitation_sum.filter(p => p !== null && p > 1).length,  // All rainy days
-                heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p > 15).length,  // Work-stopping rain (15mm = 0.6 in)
+                heavyRainDays: daily.precipitation_sum.filter(p => p !== null && p >= 15).length,  // Work-stopping rain (≥15mm = 0.6 in)
                 snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (>1mm water equiv)
                 heavySnowDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow (>10mm water equiv = ~4in depth)
 
@@ -3942,7 +3942,7 @@ class XyloclimePro {
 
                     let stoppageCount = 0;
                     if (temp_min !== null && temp_min <= -18) stoppageCount++; // Extreme cold
-                    if (precip !== null && precip > 15) stoppageCount++; // Heavy rain (15mm = 0.6 in)
+                    if (precip !== null && precip >= 15) stoppageCount++; // Heavy rain (≥15mm = 0.6 in)
                     if (snow !== null && snow > 10) stoppageCount++; // Heavy snow
 
                     return stoppageCount >= 2; // Days with 2+ stoppage conditions
@@ -4540,7 +4540,7 @@ class XyloclimePro {
                 monthlyStats[monthIndex].totalDays++;
 
                 // Count work-stopping conditions
-                const hasHeavyRain = precip !== null && precip > 15;  // Match yearly threshold (15mm = 0.6 in)
+                const hasHeavyRain = precip !== null && precip >= 15;  // Match yearly threshold (≥15mm = 0.6 in)
                 const hasWorkStoppingCold = temp_min !== null && temp_min <= -18;  // Match yearly threshold (0°F)
                 const hasHeavySnow = snow !== null && snow > 10;
                 const hasWorkStoppingWind = wind !== null && wind >= 60;  // Match yearly threshold (60 km/h = work-stopping for general construction)
