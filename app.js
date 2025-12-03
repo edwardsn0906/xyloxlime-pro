@@ -3865,6 +3865,7 @@ class XyloclimePro {
                 lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -5 && t <= 0).length,  // Light precautions (blankets, timing)
                 coldWeatherMethodsDays: daily.temperature_2m_min.filter(t => t !== null && t <= -5 && t > -18).length,  // Workable with proper methods (accelerators, hot water, enclosures)
                 extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -18).length,  // TRUE work stoppage (≤0°F)
+                comfortableTemps: daily.temperature_2m_min.filter(t => t !== null && t > -5).length,  // Days >-5°C / >23°F (comfortable working temps)
                 extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37.78).length,  // Days ≥100°F (informational - not work-stopping)
 
                 // PRECIPITATION CATEGORIES:
@@ -4038,6 +4039,7 @@ class XyloclimePro {
         const lightFreezingDays = Math.round(this.average(yearlyStats.map(y => y.lightFreezingDays)));
         const coldWeatherMethodsDays = Math.round(this.average(yearlyStats.map(y => y.coldWeatherMethodsDays)));
         const extremeColdDays = Math.round(this.average(yearlyStats.map(y => y.extremeColdDays)));
+        const comfortableTemps = Math.round(this.average(yearlyStats.map(y => y.comfortableTemps)));
         const extremeHeatDays = Math.round(this.average(yearlyStats.map(y => y.extremeHeatDays)));
         const rainyDays = Math.round(this.average(yearlyStats.map(y => y.rainyDays)));
         const heavyRainDays = Math.round(this.average(yearlyStats.map(y => y.heavyRainDays)));
@@ -4105,7 +4107,7 @@ class XyloclimePro {
             // Temperature tier breakdown (TEMPERATURE ONLY - excludes rain/wind)
             // This is separate from workableDays which includes weather conditions
             tempTiers: {
-                comfortableTemps: allTempsMin.filter(t => t !== null && t > -5).length,  // Days >-5°C / >23°F (comfortable working temps)
+                comfortableTemps: comfortableTemps,  // Days >-5°C / >23°F (comfortable working temps) - AVERAGED across years
                 coldMethodsNeeded: coldWeatherMethodsDays,  // -18°C to -5°C / 0-23°F (expensive, requires special methods)
                 extremeStoppage: extremeColdDays  // ≤-18°C / ≤0°F (true work stoppage)
             },
