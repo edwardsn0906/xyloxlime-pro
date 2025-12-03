@@ -5885,6 +5885,9 @@ class XyloclimePro {
                 <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--steel-silver); font-style: italic;">
                     Note: Work-Stopping Cold = days ${this.formatThresholdTemp(-18, '≤')} requiring work stoppage. Days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} are workable with cold-weather methods.
                 </p>
+                <p style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; font-size: 0.9rem; color: var(--steel-silver);">
+                    <strong>Monthly Risk vs. Composite Risk:</strong> Monthly risk levels shown above count only work-stopping events (heavy rain + extreme cold + heavy snow). The overall <strong>Composite Risk Score</strong> uses a weighted formula including all weather factors: precipitation (30%), temperature (25%), wind (20%), and workability (25%). This is why months can show "Low" risk while the project has "Moderate" composite risk.
+                </p>
             </div>
         `;
 
