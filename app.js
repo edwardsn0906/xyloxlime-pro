@@ -3851,7 +3851,7 @@ class XyloclimePro {
 
                 // Precipitation stats (for THIS YEAR only - FIX BUG #3)
                 totalPrecip: this.sum(daily.precipitation_sum),
-                totalSnowfall: this.sum(daily.snowfall_sum),
+                totalSnowfall: this.sum(daily.snowfall_sum.filter(s => s !== null && s > 1)),  // Only sum measurable snow (>1mm threshold) - matches snowyDays logic
 
                 // Count event days for THIS YEAR
                 // TEMPERATURE CATEGORIES (construction-specific thresholds):
