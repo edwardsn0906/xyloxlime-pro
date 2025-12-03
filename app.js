@@ -4105,7 +4105,7 @@ class XyloclimePro {
             // Temperature tier breakdown (TEMPERATURE ONLY - excludes rain/wind)
             // This is separate from workableDays which includes weather conditions
             tempTiers: {
-                comfortableTemps: daily.temperature_2m_min.filter(t => t !== null && t > -5).length,  // Days >-5°C / >23°F (comfortable working temps)
+                comfortableTemps: allTempsMin.filter(t => t !== null && t > -5).length,  // Days >-5°C / >23°F (comfortable working temps)
                 coldMethodsNeeded: coldWeatherMethodsDays,  // -18°C to -5°C / 0-23°F (expensive, requires special methods)
                 extremeStoppage: extremeColdDays  // ≤-18°C / ≤0°F (true work stoppage)
             },
