@@ -5895,6 +5895,7 @@ class XyloclimePro {
         let heatmapHTML = `
             <div class="monthly-heatmap">
                 <h4 class="heatmap-title"><i class="fas fa-chart-bar"></i> Concrete Pour Risk Heatmap</h4>
+                <p style="margin: 0.5rem 0 1rem 0; font-size: 0.85rem; color: var(--steel-silver); font-style: italic;">Total work-stopping days per month (Heavy Rain + Extreme Cold + Heavy Snow)</p>
                 <div class="heatmap-grid">
         `;
 
@@ -5926,7 +5927,7 @@ class XyloclimePro {
                     <div class="heatmap-month-label">${month.month}</div>
                     <div class="heatmap-bar-container">
                         <div class="heatmap-bar ${riskClass}" style="width: ${Math.max(15, riskPercent)}%;"
-                             title="${month.month}: ${totalRiskDays} risk days (${riskPercent.toFixed(0)}%)">
+                             title="${month.month}: ${totalRiskDays} total work-stopping days (${month.heavyRainDays} rain + ${month.workStoppingColdDays} cold + ${month.heavySnowDays} snow)">
                             ${totalRiskDays} days
                         </div>
                     </div>
