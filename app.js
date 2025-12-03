@@ -3960,6 +3960,7 @@ class XyloclimePro {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
                     const wind = daily.windspeed_10m_max[i];
+                    const snow = daily.snowfall_sum[i];
 
                     // Use template-specific workable thresholds if available, otherwise use defaults
                     if (template?.workabilityThresholds) {
@@ -3969,15 +3970,16 @@ class XyloclimePro {
                         const templateMin = template.workabilityThresholds.criticalMinTemp;
                         const templateMax = template.workabilityThresholds.maxTemp;
 
-                        // Use LENIENT general construction thresholds for rain/wind
+                        // Use LENIENT general construction thresholds for rain/wind/snow
                         // Only use template for temperature minimums (safety-critical)
                         const meetsTemp = temp_min !== null && t !== null &&
                                         temp_min >= templateMin &&  // Template safety minimum
                                         t <= (templateMax + 5);      // Slightly more lenient than template max
                         const meetsRain = precip !== null && precip < 15;  // General heavy rain threshold: 15mm (0.6 in)
                         const meetsWind = wind !== null && wind < 60;      // General work-stopping wind: 60 km/h (37 mph)
+                        const meetsSnow = snow === null || snow <= 10;     // No heavy snow: ≤10mm water equiv
 
-                        return meetsTemp && meetsRain && meetsWind;
+                        return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {
                         // Default lenient thresholds for general construction
                         const defaultThresholds = {
@@ -4012,6 +4014,7 @@ class XyloclimePro {
                     const temp_min = daily.temperature_2m_min[i];
                     const precip = daily.precipitation_sum[i];
                     const wind = daily.windspeed_10m_max[i];
+                    const snow = daily.snowfall_sum[i];
 
                     // Use template-specific ideal thresholds if available
                     if (template?.workabilityThresholds) {
@@ -4026,8 +4029,9 @@ class XyloclimePro {
                                         t <= idealThresholds.maxTemp;
                         const meetsRain = precip !== null && precip <= (idealThresholds.maxRain || 0);
                         const meetsWind = wind !== null && wind <= (idealThresholds.maxWind || 20);
+                        const meetsSnow = snow === null || snow <= (idealThresholds.maxSnow || 0);  // Ideal: no snow (or use template maxSnow)
 
-                        return meetsTemp && meetsRain && meetsWind;
+                        return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {
                         // Default ideal thresholds (generic)
                         return t !== null && temp_min !== null && precip !== null && wind !== null &&
