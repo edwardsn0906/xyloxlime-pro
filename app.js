@@ -4494,7 +4494,8 @@ class XyloclimePro {
                 const hasHeavyRain = precip !== null && precip > 15;  // Match yearly threshold (15mm = 0.6 in)
                 const hasWorkStoppingCold = temp_min !== null && temp_min <= -18;  // Match yearly threshold (0°F)
                 const hasHeavySnow = snow !== null && snow > 10;
-                const hasHighWind = wind !== null && wind >= 30;
+                const hasWorkStoppingWind = wind !== null && wind >= 60;  // Match yearly threshold (60 km/h = work-stopping for general construction)
+                const hasElevatedWind = wind !== null && wind >= 30;  // Elevated wind (monitoring threshold, excludes from ideal days)
                 const hasDangerousHeat = temp_max !== null && temp_max >= 43.33;  // ≥110°F
 
                 if (hasHeavyRain) monthlyStats[monthIndex].heavyRainDays++;
@@ -4502,7 +4503,7 @@ class XyloclimePro {
                 if (hasHeavySnow) monthlyStats[monthIndex].heavySnowDays++;
 
                 // Check if day is workable
-                const isWorkStopping = hasHeavyRain || hasWorkStoppingCold || hasHeavySnow || hasHighWind || hasDangerousHeat;
+                const isWorkStopping = hasHeavyRain || hasWorkStoppingCold || hasHeavySnow || hasWorkStoppingWind || hasDangerousHeat;
                 if (!isWorkStopping) {
                     monthlyStats[monthIndex].workableDays++;
                 }
@@ -4512,7 +4513,7 @@ class XyloclimePro {
                 const hasLightFreezing = temp_min !== null && temp_min > -5 && temp_min <= 0;
                 const hasExtremeHeat = temp_max !== null && temp_max >= 37.78;  // ≥100°F
                 const isIdeal = !hasHeavyRain && !hasLightRain && !hasWorkStoppingCold && !hasLightFreezing &&
-                               !hasHeavySnow && !hasHighWind && !hasExtremeHeat && !hasDangerousHeat;
+                               !hasHeavySnow && !hasElevatedWind && !hasExtremeHeat && !hasDangerousHeat;
                 if (isIdeal) {
                     monthlyStats[monthIndex].idealDays++;
                 }
