@@ -4999,8 +4999,7 @@ class XyloclimePro {
         // CRITICAL: Check workable vs ideal days math
         const workableNonIdeal = workableDays - idealDays;
         const highWindDays = parseInt(analysis.highWindDays) || 0;
-        const heavyRainDays = parseInt(analysis.heavyRainDays) || 0;
-        const freezingDays = parseInt(analysis.freezingDays) || 0;
+        // heavyRainDays and freezingDays already declared above (lines 4737, 4735)
 
         // If there are many weather events but few workable-non-ideal days, something is wrong
         if (workableNonIdeal < 20 && (highWindDays > 50 || heavyRainDays > 20 || freezingDays > 100)) {
