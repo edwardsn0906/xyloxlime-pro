@@ -3913,7 +3913,7 @@ class XyloclimePro {
 
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-15mm): Workable with rain gear/drainage
-                // - Heavy rain (> 15mm / >0.6 in): Work stoppage (realistic industry threshold)
+                // - Heavy rain (>= 15mm / >=0.6 in): Work stoppage (realistic industry threshold)
                 // - Measurable snow (> 1mm water equiv = ~1cm snow depth = ~0.4 in depth): Filters out trace amounts
                 // - Heavy snow (> 10mm water equiv = ~10cm snow depth = ~4 in depth): Work stoppage
                 // Note: Snowfall API data is in mm water equivalent; 10:1 snow-to-water ratio means 1mm water ≈ 1cm snow depth
@@ -4161,7 +4161,7 @@ class XyloclimePro {
 
             // Event days - Precipitation
             rainyDays,                // All rainy days (>1mm)
-            heavyRainDays,            // Heavy rain (>15mm / >0.6 in) - work stoppage
+            heavyRainDays,            // Heavy rain (>=15mm / >=0.6 in) - work stoppage
             snowyDays,                // Any snowfall (>0mm) - FIXED
             heavySnowDays,            // Heavy snow (>10mm) - work stoppage
 
@@ -6833,7 +6833,7 @@ class XyloclimePro {
         <td style="padding: 0.75rem; text-align: right;">${rainyPercent}%</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <td style="padding: 0.75rem;">Heavy Rain Days (>15mm)</td>
+        <td style="padding: 0.75rem;">Heavy Rain Days (≥15mm)</td>
         <td style="padding: 0.75rem; text-align: right;">${analysis.heavyRainDays}</td>
         <td style="padding: 0.75rem; text-align: right;">${heavyRainOfRainyPercent}% of rainy days</td>
         </tr>
@@ -8058,7 +8058,7 @@ class XyloclimePro {
                 [`Workable Days`, `${analysis.workableDays || analysis.optimalDays} days (${workablePercent}%)`],
                 [`Ideal Days`, `${analysis.idealDays || analysis.optimalDays} days (${idealPercent}%)`],
                 [`Expected Rainy Days`, `${analysis.rainyDays} days (any precipitation)`],
-                [`Heavy Rain Days`, `${analysis.heavyRainDays || 0} days (>15mm = work stoppage)`],
+                [`Heavy Rain Days`, `${analysis.heavyRainDays || 0} days (≥15mm = work stoppage)`],
                 [`Expected Snow Days`, `${analysis.snowyDays} days`],
                 [`Freezing Days (${this.formatThresholdTemp(0, '≤')})`, `${analysis.freezingDays} days`],
                 [`Total Precipitation`, `${this.formatPrecip(parseFloat(analysis.totalPrecip))}`]
