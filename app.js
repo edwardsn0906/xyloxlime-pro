@@ -976,7 +976,7 @@ class XyloclimePro {
             advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
                 <strong style="color: #e74c3c;">Worst Months:</strong>
                 ${worstMonths.map(m => `<strong>${m.name}</strong> (${m.workablePercent}% workable)`).join(', ')}.
-                ${worstMonths[0].workablePercent < 30 ? 'Minimal work possible - plan for extended delays or shutdowns.' : 'Expect significant weather delays.'}
+                ${worstMonths[0]?.workablePercent < 30 ? 'Minimal work possible - plan for extended delays or shutdowns.' : 'Expect significant weather delays.'}
             </p>`;
 
         } else {
