@@ -3129,13 +3129,19 @@ class XyloclimePro {
 
         switch (snowDataSource.source) {
             case 'NOAA':
-                return `<br><small style="color: var(--electric-cyan); font-size: 0.85rem;"><i class="fas fa-broadcast-tower"></i> ${snowDataSource.station} (${snowDataSource.distance.toFixed(1)}km) • ${snowDataSource.accuracy} accuracy</small>`;
+                return `<br><small style="color: var(--electric-cyan); font-size: 0.85rem;"><i class="fas fa-broadcast-tower"></i> ${snowDataSource.station} (${snowDataSource.distance.toFixed(1)}km) • ${snowDataSource.accuracy} accuracy • Direct station measurements</small>`;
             case 'Visual Crossing':
                 return `<br><small style="color: #48bb78; font-size: 0.85rem;"><i class="fas fa-database"></i> ${snowDataSource.location} • ${snowDataSource.accuracy} accuracy • Station-based</small>`;
             case 'ECMWF IFS':
                 return `<br><small style="color: #ed8936; font-size: 0.85rem;"><i class="fas fa-chart-area"></i> ${snowDataSource.resolution} resolution • ${snowDataSource.accuracy} accuracy • Model-based</small>`;
             case 'ERA5':
-                return `<br><small style="color: #a0aec0; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> ${snowDataSource.resolution} resolution • ${snowDataSource.accuracy} accuracy • ${snowDataSource.warning || 'Fallback data'}</small>`;
+                const warningIcon = snowDataSource.isNorthAmerica === false
+                    ? '<i class="fas fa-globe-americas"></i>'
+                    : '<i class="fas fa-exclamation-triangle"></i>';
+                const warningStyle = snowDataSource.isNorthAmerica === false
+                    ? 'background: rgba(237, 137, 54, 0.15); padding: 0.5rem; border-left: 3px solid #ed8936; margin-top: 0.5rem; display: block;'
+                    : '';
+                return `<br><small style="color: #a0aec0; font-size: 0.85rem; ${warningStyle}">${warningIcon} ${snowDataSource.resolution} resolution • ${snowDataSource.accuracy} accuracy • ${snowDataSource.warning || 'Fallback data'}</small>`;
             default:
                 return '';
         }
@@ -3273,6 +3279,20 @@ class XyloclimePro {
     // ============================================================================
     // NOAA CDO API INTEGRATION - Enhanced Snow Data Accuracy
     // ============================================================================
+
+    /**
+     * Check if coordinates are in North America (NOAA coverage area)
+     * NOAA stations have excellent coverage in North America but limited elsewhere
+     * @returns {boolean} True if location is in North America
+     */
+    isNorthAmerica(lat, lng) {
+        // North America bounding box (generous to include Mexico, Central America, Caribbean)
+        // Latitude: 7°N to 85°N (Panama to northern Canada/Alaska/Greenland)
+        // Longitude: -170°W to -50°W (Alaska to eastern Canada/Greenland)
+        const inLatRange = lat >= 7 && lat <= 85;
+        const inLngRange = lng >= -170 && lng <= -50;
+        return inLatRange && inLngRange;
+    }
 
     /**
      * Find nearest NOAA weather station for a given location
@@ -3542,13 +3562,23 @@ class XyloclimePro {
         let snowDataSource = null;
 
         // ============================================================
-        // TIER 1: Try NOAA stations (GLOBAL: 7,740 stations worldwide, 4,654 in US) - 100% accuracy
+        // TIER 1: Try NOAA stations (North America only) - 100% accuracy
         // ============================================================
-        console.log('[DATA SOURCE] Searching for NOAA station...');
-        try {
-            // Use larger search radius (300km) for better coverage in rural areas
-            const searchRadius = 300;
-            const noaaStation = await this.findNearestNOAAStation(lat, lng, searchRadius);
+        // NOAA has excellent coverage in North America but limited elsewhere
+        // Skip NOAA search for locations outside North America to save API calls
+        const isNorthAmerica = this.isNorthAmerica(lat, lng);
+
+        if (isNorthAmerica) {
+            console.log('[DATA SOURCE] Location in North America - searching for NOAA station...');
+        } else {
+            console.log('[DATA SOURCE] Location outside North America - skipping NOAA search (limited coverage)');
+        }
+
+        if (isNorthAmerica) {
+            try {
+                // Use larger search radius (300km) for better coverage in rural areas
+                const searchRadius = 300;
+                const noaaStation = await this.findNearestNOAAStation(lat, lng, searchRadius);
 
             if (noaaStation) {
                 console.log(`[NOAA] Found station: ${noaaStation.name} (${noaaStation.distance}km away, ${noaaStation.country})`);
@@ -3595,9 +3625,10 @@ class XyloclimePro {
             } else {
                 console.log(`[DATA SOURCE] No NOAA station within ${searchRadius}km, trying next tier...`);
             }
-        } catch (error) {
-            console.warn('[DATA SOURCE] NOAA station lookup error:', error.message);
-        }
+            } catch (error) {
+                console.warn('[DATA SOURCE] NOAA station lookup error:', error.message);
+            }
+        } // End of isNorthAmerica check
 
         // ============================================================
         // TIER 2: Try Visual Crossing (Global) - 80-100% accuracy
@@ -3614,7 +3645,8 @@ class XyloclimePro {
                         location: vcResult.location,
                         stationCount: vcResult.stationCount,
                         accuracy: '80-100%',
-                        type: 'station'
+                        type: 'station',
+                        isNorthAmerica: isNorthAmerica
                     };
                     console.log('[DATA SOURCE] ✓ TIER 2: Using Visual Crossing data (80-100% accuracy)');
                     console.log(`[Visual Crossing] Location: ${vcResult.location}, Stations: ${vcResult.stationCount}`);
@@ -3645,7 +3677,8 @@ class XyloclimePro {
                         resolution: ecmwfResult.resolution,
                         accuracy: '~50%',
                         type: 'model',
-                        note: '12.5x more accurate than ERA5'
+                        note: '12.5x more accurate than ERA5',
+                        isNorthAmerica: isNorthAmerica
                     };
                     console.log('[DATA SOURCE] ✓ TIER 3: Using ECMWF IFS model data (~50% accuracy)');
                     console.log(`[ECMWF IFS] Resolution: ${ecmwfResult.resolution}`);
@@ -3693,15 +3726,24 @@ class XyloclimePro {
             console.log(`[DATA SOURCE] ✓ TIER 1 COMPLETE: Using NOAA for ${metrics.join(', ')} | ERA5 fallback for missing data`);
         } else {
             // Fallback to ERA5 for all data (lowest accuracy)
+            const regionWarning = isNorthAmerica
+                ? 'All data from reanalysis model - station data unavailable in this area'
+                : 'Global reanalysis data (NOAA stations limited outside North America)';
+
             era5Data.snowDataSource = {
                 source: 'ERA5',
                 resolution: '30km',
                 accuracy: '~4%',
                 type: 'model',
-                warning: 'All data from reanalysis model - station data unavailable'
+                warning: regionWarning,
+                isNorthAmerica: isNorthAmerica  // Pass region info for UI display
             };
             console.log('[DATA SOURCE] ⚠ TIER 4: Using ERA5 for all data (reanalysis model - fallback)');
-            console.log('[DATA SOURCE] Location may be in area with limited station coverage');
+            if (isNorthAmerica) {
+                console.log('[DATA SOURCE] Location in North America but no nearby stations found');
+            } else {
+                console.log('[DATA SOURCE] Location outside North America - using global reanalysis data');
+            }
         }
 
         // ERA5 is still excellent for these metrics
