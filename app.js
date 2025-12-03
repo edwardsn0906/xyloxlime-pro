@@ -3932,8 +3932,8 @@ class XyloclimePro {
                         const meetsTemp = temp_min !== null && t !== null &&
                                         temp_min >= templateMin &&  // Template safety minimum
                                         t <= (templateMax + 5);      // Slightly more lenient than template max
-                        const meetsRain = precip !== null && precip < 15;  // General heavy rain threshold (lenient)
-                        const meetsWind = wind !== null && wind < 60;      // General high wind threshold (lenient)
+                        const meetsRain = precip !== null && precip < 15;  // General heavy rain threshold: 15mm (0.6 in)
+                        const meetsWind = wind !== null && wind < 60;      // General work-stopping wind: 60 km/h (37 mph)
 
                         return meetsTemp && meetsRain && meetsWind;
                     } else {
@@ -3941,9 +3941,9 @@ class XyloclimePro {
                         const defaultThresholds = {
                             criticalMinTemp: -5,   // °C (23°F) - work possible with precautions
                             maxTemp: 43.33,        // °C (110°F) - heat safety limit
-                            maxRain: 15,           // mm - heavy rain stops work
-                            maxWind: 60,           // km/h - very high wind stops work
-                            maxSnow: 10            // mm - heavy snow stops work
+                            maxRain: 15,           // mm (0.6 in) - heavy rain stops work
+                            maxWind: 60,           // km/h (37 mph) - work-stopping wind for general construction
+                            maxSnow: 10            // mm water equiv - heavy snow stops work
                         };
 
                         const snow = daily.snowfall_sum[i];
@@ -5474,14 +5474,19 @@ class XyloclimePro {
             const highWindDays = parseInt(analysis.highWindDays) || 0;
 
             if (riskFactors.wind === 'CRITICAL') {
-                recommendations.push(`${templateName}: WIND CRITICAL - ${highWindDays} high wind days (≥30 km/h) will stop work`);
+                // For wind-critical templates (roofing, painting), 30 km/h affects workable days
+                if (template?.workabilityThresholds?.maxWind && template.workabilityThresholds.maxWind <= 30) {
+                    recommendations.push(`${templateName}: WIND CRITICAL - ${highWindDays} elevated wind days (≥30 km/h) will restrict or stop work`);
+                } else {
+                    recommendations.push(`${templateName}: WIND CRITICAL - Monitor wind conditions. Days ≥60 km/h will stop work`);
+                }
                 if (template?.name === 'Roofing Installation') {
-                    recommendations.push('Safety hazard: No elevated work above 30 km/h (19 mph). Wind sensitivity very high');
+                    recommendations.push('Safety hazard: Elevated work restricted above 30 km/h (19 mph). Very high wind sensitivity');
                 }
             } else if (template?.name === 'Commercial Concrete Work') {
-                recommendations.push(`${highWindDays} high wind days expected. May affect crane operations for rebar/forms`);
+                recommendations.push(`${highWindDays} elevated wind days expected (≥30 km/h). May restrict crane operations for rebar/forms`);
             } else if (highWindDays > 20) {
-                recommendations.push(`Consider ${highWindDays} high wind days (≥30 km/h): affects elevated work and crane operations`);
+                recommendations.push(`Consider ${highWindDays} elevated wind days (≥30 km/h) for safety planning. Work stops at ≥60 km/h`);
             }
         }
 
