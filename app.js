@@ -6932,14 +6932,14 @@ class XyloclimePro {
         else {
             // Generic weather impacts for other project types
             if (analysis.allFreezingDays > 10) {
-                summary += `<li><strong>Cold weather precautions</strong> – ${analysis.allFreezingDays} freezing days expected. Many materials become brittle or lose adhesion in cold temperatures. Plan for heated storage and proper installation timing.</li>`;
+                summary += `<li><strong>Cold weather precautions</strong> – ${analysis.allFreezingDays} freezing days expected. Many materials become brittle or lose adhesion in cold temperatures.</li>`;
             }
 
             if (analysis.heavyRainDays > 5) {
-                summary += `<li><strong>Heavy rain impacts</strong> – ${analysis.heavyRainDays} days with heavy rain (${this.formatThresholdPrecip(10)}). Weather protection and drainage systems critical.</li>`;
+                summary += `<li><strong>Heavy rain impacts</strong> – ${analysis.heavyRainDays} days with heavy rain. Weather protection and drainage systems critical.</li>`;
             }
 
-            summary += `<li><strong>Plan work during optimal windows</strong> – ${analysis.idealDays} ideal days identified. Schedule critical activities during these periods for best results.</li>`;
+            summary += `<li><strong>Plan work during optimal windows</strong> – ${analysis.idealDays} ideal days identified for critical activities.</li>`;
         }
 
         // Calculate weather contingency with proper math
@@ -7018,83 +7018,34 @@ class XyloclimePro {
         if (analysis.rainyDays > 0) {
             const rainyDaysMin = analysis.rainyDaysMin || Math.round(analysis.rainyDays * 0.85);
             const rainyDaysMax = analysis.rainyDaysMax || Math.round(analysis.rainyDays * 1.15);
-            summary += `<p><strong>Precipitation Analysis:</strong> Approximately <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax} days, ${rainyPercent}% of duration), with ${analysis.heavyRainDays} heavy rain days (>15mm). ${heavyRainOfRainyPercent}% of rainy days qualify as heavy rain`;
+            summary += `<p><strong>Precipitation Analysis:</strong> <strong>${analysis.rainyDays} rainy days</strong> expected (range: ${rainyDaysMin}-${rainyDaysMax}), with ${analysis.heavyRainDays} heavy rain days. ${heavyRainOfRainyPercent}% of rainy days are heavy`;
             if (heavyRainOfRainyPercent > 40) {
-                summary += ` – <em>higher than typical 15-30% proportion</em>`;
+                summary += ` (higher than typical 15-30%)`;
             }
-            summary += `. Light rain days (<15mm) are included in workable counts as work can continue with rain gear and drainage.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: Precipitation values represent historical averages. Actual conditions may vary ±15-20% from these projections year-to-year.</em></p>`;
+            summary += `.</p>`;
         }
 
-        // Snow & freezing analysis
+        // Snow analysis
         if (analysis.snowyDays > 0) {
-            const usingNOAA = analysis.snowDataSource && analysis.snowDataSource.source === 'NOAA';
-            const allSnowIsHeavy = analysis.snowyDays === analysis.heavySnowDays;
-
-            let snowVariabilityNote = usingNOAA
-                ? `⚠️ <strong>Natural variability:</strong> Snowfall varies ±30-50% year-to-year (typical for all climates). Actual conditions may differ from historical averages. <strong>Data source:</strong> NOAA direct station measurements (high reliability). Build robust contingency buffers into schedules and material delivery plans.`
-                : `⚠️ <strong>Data source:</strong> ${analysis.snowDataSource?.source || 'ERA5'} reanalysis data. Note that reanalysis models typically capture only ~${analysis.snowDataSource?.accuracy || '4%'} of station-measured snowfall and often underestimate in mountain regions and lake-effect zones. <strong>Natural variability:</strong> Snowfall also varies ±30-50% year-to-year regardless of data source. Build robust contingency buffers into schedules and material delivery plans.`;
-
-            // Add note if all snow days are heavy (could indicate NOAA reporting threshold or mountain climate)
-            if (allSnowIsHeavy && usingNOAA && analysis.snowyDays > 3) {
-                snowVariabilityNote += ` Note: All measured snow days exceed 10mm water equiv (~10cm / ~4 in snow depth) - NOAA may have a reporting threshold for light snow, or location experiences predominantly heavy snowfall events (typical for mountain regions).`;
-            }
-
-            summary += `<p><strong>Snow Advisory:</strong> Approximately <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}). ${analysis.heavySnowDays} heavy snow days (>10mm water equiv = ~10cm / ~4 in snow depth) typically require work stoppage.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">${snowVariabilityNote}</em>
-            <br>Winter construction protocols recommended.</p>`;
+            summary += `<p><strong>Snow Advisory:</strong> <strong>${analysis.snowyDays} days</strong> with snowfall (total: ${snowDisplay}), including ${analysis.heavySnowDays} heavy snow days requiring work stoppage.</p>`;
         }
 
         if (analysis.allFreezingDays > 10) {
-            // Calculate if temperature distribution is unusual
-            const extremeColdPercent = (analysis.extremeColdDays / duration) * 100;
-            const coldWeatherPercent = ((analysis.coldWeatherMethodsDays || 0) / duration) * 100;
-            const avgMinC = parseFloat(analysis.avgTempMin);
-            const stdDevC = parseFloat(analysis.tempMinStdDev);
-            const threshold = -18; // 0°F threshold
-            const zScore = Math.abs((avgMinC - threshold) / stdDevC);
-            const isUnusualDistribution = extremeColdPercent > 15 && zScore > 1.5;
+            // Temperature distribution summary
+            summary += `<p><strong>❄️ Temperature Analysis:</strong> ${analysis.allFreezingDays} freezing days total`;
 
-            // Build three-tier cold weather breakdown
-            let coldBreakdown = '';
             if (analysis.extremeColdDays > 0) {
-                coldBreakdown += `${analysis.extremeColdDays} <strong>extreme cold stoppage days</strong> (${this.formatThresholdTemp(-18, '≤')}, true work stoppage)`;
+                summary += `, including ${analysis.extremeColdDays} days requiring work stoppage`;
             }
             if ((analysis.coldWeatherMethodsDays || 0) > 0) {
-                if (coldBreakdown) coldBreakdown += ' + ';
-                coldBreakdown += `${analysis.coldWeatherMethodsDays} <strong>cold-weather method days</strong> (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}, workable with accelerators/enclosures/hot water)`;
-            }
-            if (analysis.lightFreezingDays > 0) {
-                if (coldBreakdown) coldBreakdown += ' + ';
-                coldBreakdown += `${analysis.lightFreezingDays} <strong>light precaution days</strong> (${this.formatThresholdTemp(-5, '>')} to ${this.formatThresholdTemp(0, '≤')}, blankets/timing needed)`;
+                summary += ` and ${analysis.coldWeatherMethodsDays} days requiring cold-weather methods`;
             }
 
-            summary += `<p><strong>❄️ Freezing Days Breakdown:</strong> ${analysis.allFreezingDays} total days below freezing (${this.formatThresholdTemp(0, '≤')}), categorized as: ${coldBreakdown}.
-            <br><em style="color: var(--steel-silver); font-size: 0.85em; display: block; margin-top: 0.5rem;">Note: These categories are SUBSETS of the ${analysis.allFreezingDays} freezing days shown above, not additional days. The breakdown shows how those freezing days are distributed by severity.</em>
-
-            <br><br><strong>🌡️ Annual Temperature Distribution</strong> <em style="color: var(--steel-silver); font-size: 0.85em;">(All 365 days by minimum temperature - TEMPERATURE ONLY, excludes rain/wind)</em>:
-            <br>• <strong style="color: #27ae60;">${analysis.tempTiers.comfortableTemps} days</strong> - Comfortable working temps (${this.formatThresholdTemp(-5, '>')}) - standard precautions only
-            <br>• <strong style="color: #f39c12;">${analysis.tempTiers.coldMethodsNeeded} days</strong> - Cold-weather methods needed (${this.formatThresholdTemp(-18, '>')} to ${this.formatThresholdTemp(-5, '≤')}) - ${this.getColdWeatherMethodsDescription(analysis.templateName)}
-            <br>• <strong style="color: #e74c3c;">${analysis.tempTiers.extremeStoppage} days</strong> - Extreme cold stoppage (${this.formatThresholdTemp(-18, '≤')}) - ${this.getExtremeStoppageDescription(analysis.templateName)}
-            <br><em style="color: var(--steel-silver); font-size: 0.85em; display: block; margin-top: 0.5rem;">Verification: ${analysis.tempTiers.comfortableTemps} + ${analysis.tempTiers.coldMethodsNeeded} + ${analysis.tempTiers.extremeStoppage} = ${analysis.tempTiers.comfortableTemps + analysis.tempTiers.coldMethodsNeeded + analysis.tempTiers.extremeStoppage} days (should equal ~365)</em>
-            <br><br><strong>🏗️ Overall Workability vs Temperature-Only Tiers:</strong>
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">The "Annual Temperature Distribution" above shows temperature breakdown ONLY (all 365 days). This is DIFFERENT from "Workable Days" (${analysis.workableDays} days), which factors in temperature AND rain AND wind. ${analysis.templateName ? `The <strong>${analysis.templateName} template uses custom thresholds</strong> for workable day calculations, which differ from the general temperature tiers shown above. ` : ''}Your actual workable days (${analysis.workableDays}) are lower because they exclude days with heavy rain, high wind, or other conditions—not just extreme cold.</em>
-
-            <br><br><em style="color: var(--steel-silver); font-size: 0.9em;"><strong>Understanding Temperature Averages:</strong> The average low temperature (${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}) represents the mean across all 365 days—it does NOT mean temperatures cluster near this value. In continental climates with distinct seasons, winter months (Dec-Mar) can have nearly all days below freezing, while summer months (May-Sep) have warm lows that pull the annual average upward. This is why ${analysis.allFreezingDays} freezing days (${(analysis.allFreezingDays / 365 * 100).toFixed(1)}% of the year) is statistically valid even with this average—most freezing occurs during 3-4 harsh winter months.`;
-
-            if (isUnusualDistribution) {
-                summary += ` Temperature range: ${this.formatTemp(parseFloat(analysis.absMinTemp), 'C')} to ${this.formatTemp(parseFloat(analysis.absMaxTempMin), 'C')} (std dev: ${this.formatTemp(stdDevC, 'C', false)}°). This location exhibits extreme temperature variability.`;
-            }
-
-            summary += `</em>
-            <br>${this.getColdWeatherActionPlan(analysis.templateName)}</p>`;
+            summary += `. ${this.getColdWeatherActionPlan(analysis.templateName)}</p>`;
         } else if (analysis.extremeColdDays > 0) {
-            summary += `<p><strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days with temperatures ${this.formatThresholdTemp(-18, '≤')} typically require work stoppage even with protection.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">Note: This represents ${analysis.extremeColdDays} specific days projected to reach extreme cold, even though the average low is ${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')}.</em>
-            <br>${this.getExtremeColdActionPlan(analysis.templateName)}</p>`;
+            summary += `<p><strong>Extreme Cold Alert:</strong> ${analysis.extremeColdDays} days require work stoppage. ${this.getExtremeColdActionPlan(analysis.templateName)}</p>`;
         } else if ((analysis.coldWeatherMethodsDays || 0) > 0) {
-            summary += `<p><strong>Cold-Weather Methods Required:</strong> ${analysis.coldWeatherMethodsDays} days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} ${this.getColdWeatherMethodsDescription(analysis.templateName)}. No extreme cold stoppage expected.
-            <br><em style="color: var(--steel-silver); font-size: 0.9em;">${this.getYearRoundWorkDescription(analysis.templateName)}</em></p>`;
+            summary += `<p><strong>Cold-Weather Methods:</strong> ${analysis.coldWeatherMethodsDays} days require cold-weather methods. No extreme cold stoppage expected.</p>`;
         }
 
         summary += `</div>`;
