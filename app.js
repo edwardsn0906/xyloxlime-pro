@@ -981,7 +981,9 @@ class XyloclimePro {
 
         } else {
             // SHORT PROJECT (≤4 months)
-            const avgWorkability = Math.round(projectMonths.reduce((sum, m) => sum + m.workablePercent, 0) / projectMonths.length);
+            const avgWorkability = projectMonths.length > 0
+                ? Math.round(projectMonths.reduce((sum, m) => sum + m.workablePercent, 0) / projectMonths.length)
+                : 0;
             const startMonthName = monthNames[startMonth];
 
             if (avgWorkability < 40) {
@@ -3875,7 +3877,7 @@ class XyloclimePro {
 
             // Data quality check
             const expectedDays = actualProjectDays;
-            const dataQuality = Math.min(1.0, daysInYear / expectedDays);  // Cap at 100% (API may return extra days)
+            const dataQuality = expectedDays > 0 ? Math.min(1.0, daysInYear / expectedDays) : 0;  // Cap at 100% (API may return extra days)
 
             if (dataQuality < 0.95) {
                 dataQualityWarnings.push(`Year ${yearData.year}: Only ${daysInYear}/${expectedDays} days (${(dataQuality*100).toFixed(0)}% complete)`);
@@ -4098,8 +4100,8 @@ class XyloclimePro {
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
 
         // Validate temperature distribution reasonableness (using new -18°C / 0°F threshold)
-        const extremeColdPercent = (extremeColdDays / actualProjectDays) * 100;
-        const coldWeatherPercent = (coldWeatherMethodsDays / actualProjectDays) * 100;
+        const extremeColdPercent = actualProjectDays > 0 ? (extremeColdDays / actualProjectDays) * 100 : 0;
+        const coldWeatherPercent = actualProjectDays > 0 ? (coldWeatherMethodsDays / actualProjectDays) * 100 : 0;
         const expectedZScore = (avgTempMin - (-18)) / tempMinStdDev; // How many std devs is threshold from mean
         console.log(`[TEMP VALIDATION] Extreme cold (≤0°F): ${extremeColdDays} days (${extremeColdPercent.toFixed(1)}%), Cold-weather methods (0-23°F): ${coldWeatherMethodsDays} days (${coldWeatherPercent.toFixed(1)}%), Z-score: ${expectedZScore.toFixed(2)}, Std Dev: ${tempMinStdDev.toFixed(1)}°C`);
 
@@ -4328,7 +4330,7 @@ class XyloclimePro {
             }
         });
 
-        return Math.round(windows / historicalData.length);
+        return historicalData.length > 0 ? Math.round(windows / historicalData.length) : 0;
     }
 
     calculatePlantingDays(historicalData) {
