@@ -424,18 +424,20 @@
                                     <i class="fas fa-map-marker-alt"></i> Location Search
                                     <span class="label-hint">(Start typing for suggestions, or click map)</span>
                                 </label>
-                                <div class="location-search-container">
-                                    <input type="text" id="locationSearch" placeholder="City, State or ZIP code (e.g., 'Miami, FL' or '33101')" maxlength="200" autocomplete="off" spellcheck="false">
-                                    <button type="button" id="searchLocationBtn" class="btn-search-location" title="Search Location">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                    <button type="button" id="useMyLocationBtn" class="btn-use-location" title="Use My Current Location">
-                                        <i class="fas fa-crosshairs"></i>
-                                    </button>
-                                </div>
-                                <div id="locationSuggestions" class="location-suggestions hidden"></div>
-                                <div id="locationSearchStatus" class="search-status hidden">
-                                    <i class="fas fa-spinner fa-spin"></i> Searching...
+                                <div class="location-search-wrapper">
+                                    <div class="location-search-container">
+                                        <input type="text" id="locationSearch" placeholder="City, State or ZIP code (e.g., 'Miami, FL' or '33101')" maxlength="200" autocomplete="off" spellcheck="false">
+                                        <button type="button" id="searchLocationBtn" class="btn-search-location" title="Search Location">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                        <button type="button" id="useMyLocationBtn" class="btn-use-location" title="Use My Current Location">
+                                            <i class="fas fa-crosshairs"></i>
+                                        </button>
+                                    </div>
+                                    <div id="locationSuggestions" class="location-suggestions hidden"></div>
+                                    <div id="locationSearchStatus" class="search-status hidden">
+                                        <i class="fas fa-spinner fa-spin"></i> Searching...
+                                    </div>
                                 </div>
                             </div>
                         </div>

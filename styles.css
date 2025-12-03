@@ -1332,6 +1332,12 @@ body {
     letter-spacing: normal;
 }
 
+/* Location Search Wrapper - contains input, buttons, suggestions, and status */
+.location-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 /* Location Search Container */
 .location-search-container {
     display: flex;
