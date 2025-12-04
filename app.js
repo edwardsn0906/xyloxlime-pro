@@ -4218,6 +4218,12 @@ class XyloclimePro {
     calculateTemplateKPIs(template, historicalData, yearlyStats) {
         const kpis = [];
 
+        // Guard against empty yearlyStats to prevent division by zero
+        if (!yearlyStats || yearlyStats.length === 0) {
+            console.warn('[KPI] No yearly stats available, returning empty KPIs');
+            return kpis;
+        }
+
         // Calculate each KPI defined by the template
         template.kpis?.forEach(kpiDef => {
             let value = 0;
