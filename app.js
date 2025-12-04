@@ -2705,9 +2705,16 @@ class XyloclimePro {
         };
 
         // Save to localStorage
-        const templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
-        templates.push(template);
-        localStorage.setItem('xyloclime_workable_templates', JSON.stringify(templates));
+        try {
+            const templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+            templates.push(template);
+            localStorage.setItem('xyloclime_workable_templates', JSON.stringify(templates));
+        } catch (error) {
+            console.error('[ADVANCED CALC] Failed to parse templates from localStorage:', error);
+            // Reset to empty array if corrupted
+            const templates = [template];
+            localStorage.setItem('xyloclime_workable_templates', JSON.stringify(templates));
+        }
 
         console.log('[ADVANCED CALC] Template saved:', templateName);
 
@@ -2718,7 +2725,15 @@ class XyloclimePro {
     }
 
     loadSavedTemplates() {
-        const templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+        let templates = [];
+        try {
+            templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+        } catch (error) {
+            console.error('[ADVANCED CALC] Failed to parse templates from localStorage:', error);
+            // Reset localStorage if corrupted
+            localStorage.setItem('xyloclime_workable_templates', '[]');
+        }
+
         const templatesList = document.getElementById('templatesList');
 
         if (templates.length === 0) {
@@ -2742,7 +2757,15 @@ class XyloclimePro {
     }
 
     loadTemplate(index) {
-        const templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+        let templates = [];
+        try {
+            templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+        } catch (error) {
+            console.error('[ADVANCED CALC] Failed to parse templates from localStorage:', error);
+            window.toastManager.error('Failed to load template - localStorage corrupted', 'Load Error');
+            return;
+        }
+
         const template = templates[index];
 
         if (!template) return;
@@ -2760,7 +2783,15 @@ class XyloclimePro {
     }
 
     deleteTemplate(index) {
-        const templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+        let templates = [];
+        try {
+            templates = JSON.parse(localStorage.getItem('xyloclime_workable_templates') || '[]');
+        } catch (error) {
+            console.error('[ADVANCED CALC] Failed to parse templates from localStorage:', error);
+            window.toastManager.error('Failed to delete template - localStorage corrupted', 'Delete Error');
+            return;
+        }
+
         const templateName = templates[index]?.name;
 
         if (!confirm(`Delete template "${templateName}"?`)) return;
