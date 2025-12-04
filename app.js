@@ -371,6 +371,8 @@ class XyloclimePro {
         // Unit system preference (default: Imperial for US)
         this.unitSystem = localStorage.getItem('xyloclime_unitSystem') || 'imperial';
         this.tempUnit = this.unitSystem === 'imperial' ? 'F' : 'C';
+        // Track the unit of Advanced Calculator threshold inputs to prevent double-conversion
+        this.advancedCalcThresholdUnit = this.tempUnit;
 
         // Projects will be loaded from Firestore after login
         this.projects = [];
@@ -2500,12 +2502,41 @@ class XyloclimePro {
         const minTempInput = document.getElementById('minTempThreshold');
         const maxTempInput = document.getElementById('maxTempThreshold');
 
-        if (this.tempUnit === 'C') {
-            minTempInput.value = minTempInput.value == 32 ? 0 : minTempInput.value;
-            maxTempInput.value = maxTempInput.value == 95 ? 35 : maxTempInput.value;
-        } else {
-            minTempInput.value = minTempInput.value == 0 ? 32 : minTempInput.value;
-            maxTempInput.value = maxTempInput.value == 35 ? 95 : maxTempInput.value;
+        // Convert temperature thresholds ONLY if the unit has changed
+        // This prevents double-conversion bugs when modal is opened multiple times
+        if (this.advancedCalcThresholdUnit !== this.tempUnit) {
+            console.log(`[ADVANCED CALC] Converting thresholds from ${this.advancedCalcThresholdUnit} to ${this.tempUnit}`);
+
+            if (this.tempUnit === 'C' && this.advancedCalcThresholdUnit === 'F') {
+                // Converting from Fahrenheit to Celsius
+                const currentMinF = parseFloat(minTempInput.value);
+                const currentMaxF = parseFloat(maxTempInput.value);
+
+                if (!isNaN(currentMinF)) {
+                    // Default F→C: 32→0, Custom: convert using formula
+                    minTempInput.value = currentMinF === 32 ? 0 : Math.round((currentMinF - 32) * 5 / 9);
+                }
+                if (!isNaN(currentMaxF)) {
+                    // Default F→C: 95→35, Custom: convert using formula
+                    maxTempInput.value = currentMaxF === 95 ? 35 : Math.round((currentMaxF - 32) * 5 / 9);
+                }
+            } else if (this.tempUnit === 'F' && this.advancedCalcThresholdUnit === 'C') {
+                // Converting from Celsius to Fahrenheit
+                const currentMinC = parseFloat(minTempInput.value);
+                const currentMaxC = parseFloat(maxTempInput.value);
+
+                if (!isNaN(currentMinC)) {
+                    // Default C→F: 0→32, Custom: convert using formula
+                    minTempInput.value = currentMinC === 0 ? 32 : Math.round(currentMinC * 9 / 5 + 32);
+                }
+                if (!isNaN(currentMaxC)) {
+                    // Default C→F: 35→95, Custom: convert using formula
+                    maxTempInput.value = currentMaxC === 35 ? 95 : Math.round(currentMaxC * 9 / 5 + 32);
+                }
+            }
+
+            // Update the tracked unit after conversion
+            this.advancedCalcThresholdUnit = this.tempUnit;
         }
 
         // Hide results initially
