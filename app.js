@@ -4346,7 +4346,7 @@ class XyloclimePro {
             }
         });
 
-        return Math.round(plantingDays / historicalData.length);
+        return historicalData.length > 0 ? Math.round(plantingDays / historicalData.length) : 0;
     }
 
     calculateCompactionDays(historicalData) {
@@ -4363,7 +4363,7 @@ class XyloclimePro {
             }
         });
 
-        return Math.round(compactionDays / historicalData.length);
+        return historicalData.length > 0 ? Math.round(compactionDays / historicalData.length) : 0;
     }
 
     calculatePaintApplicationDays(historicalData, template) {
@@ -4394,7 +4394,7 @@ class XyloclimePro {
             }
         });
 
-        return Math.round(applicationDays / historicalData.length);
+        return historicalData.length > 0 ? Math.round(applicationDays / historicalData.length) : 0;
     }
 
     calculatePaintCureRiskDays(historicalData) {
@@ -4425,7 +4425,7 @@ class XyloclimePro {
             }
         });
 
-        return Math.round(cureRiskDays / historicalData.length);
+        return historicalData.length > 0 ? Math.round(cureRiskDays / historicalData.length) : 0;
     }
 
     average(arr) {
