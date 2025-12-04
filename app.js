@@ -3396,7 +3396,8 @@ class XyloclimePro {
                 // Log statistics for validation
                 const snowDays = snowfall_sum.filter(s => s > 0).length;
                 const heavySnowDays = snowfall_sum.filter(s => s > 10).length;
-                const maxSnow = Math.max(...snowfall_sum.filter(s => s > 0));
+                const snowValues = snowfall_sum.filter(s => s > 0);
+                const maxSnow = snowValues.length > 0 ? Math.max(...snowValues) : 0;
                 const tempCount = temperature_2m_max.filter(t => t !== null).length;
                 const precipCount = precipitation_sum.filter(p => p > 0).length;
                 const windCount = windspeed_10m_max.filter(w => w !== null).length;
@@ -3933,7 +3934,10 @@ class XyloclimePro {
                 // - High wind (≥ 30 km/h): Restricts crane operations, elevated work, material handling
                 highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Elevated wind (monitoring threshold, not work-stopping)
                 avgWindSpeed: this.average(daily.windspeed_10m_max),
-                maxWindSpeed: Math.max(...daily.windspeed_10m_max.filter(w => w !== null)),
+                maxWindSpeed: (() => {
+                    const windValues = daily.windspeed_10m_max.filter(w => w !== null);
+                    return windValues.length > 0 ? Math.max(...windValues) : 0;
+                })(),
 
                 // WORK STOPPAGE OVERLAP ANALYSIS
                 // Count days with multiple work-stopping conditions (for accurate contingency calculations)
@@ -4057,8 +4061,8 @@ class XyloclimePro {
 
         // Calculate temperature distribution statistics for validation
         const tempMinStdDev = this.standardDeviation(allTempsMin);
-        const absMinTemp = Math.min(...allTempsMin);
-        const absMaxTempMin = Math.max(...allTempsMin);
+        const absMinTemp = allTempsMin.length > 0 ? Math.min(...allTempsMin) : 0;
+        const absMaxTempMin = allTempsMin.length > 0 ? Math.max(...allTempsMin) : 0;
 
         // TEMPERATURE DISTRIBUTION DEBUGGING
         const tempBins = { below_minus20: 0, minus20_to_minus10: 0, minus10_to_0: 0, zero_to_10: 0, above_10: 0 };
