@@ -2564,7 +2564,7 @@ class XyloclimePro {
                 let isWorkable = true;
                 const reasons = [];
 
-                if (precip > criteria.maxRain) {
+                if (precip >= criteria.maxRain) {
                     isWorkable = false;
                     reasons.push(`Rain: ${this.formatPrecip(precip)}`);
                 }
@@ -2574,18 +2574,18 @@ class XyloclimePro {
                     reasons.push(`Snow: ${this.formatSnow(snow)}`);  // snow (mm water equiv) = cm depth numerically
                 }
 
-                if (wind > criteria.maxWind) {
+                if (wind >= criteria.maxWind) {
                     isWorkable = false;
                     reasons.push(`Wind: ${this.formatWind(wind)}`);
                 }
 
-                if (temp_max != null && temp_max > criteria.maxTemp) {
+                if (temp_max != null && temp_max >= criteria.maxTemp) {
                     isWorkable = false;
                     const displayTemp = this.convertTemp(temp_max, 'C');
                     reasons.push(`Too hot: ${displayTemp.toFixed(0)}°${this.tempUnit}`);
                 }
 
-                if (temp_min != null && temp_min < criteria.minTemp) {
+                if (temp_min != null && temp_min <= criteria.minTemp) {
                     isWorkable = false;
                     const displayTemp = this.convertTemp(temp_min, 'C');
                     reasons.push(`Too cold: ${displayTemp.toFixed(0)}°${this.tempUnit}`);
@@ -4062,12 +4062,12 @@ class XyloclimePro {
                         // - Daily low must be above criticalMinTemp (for curing/overnight)
                         // - Daily high must be above idealMinTemp (for application/daytime work)
                         const meetsTemp = temp_min !== null && t !== null &&
-                                        temp_min >= idealThresholds.criticalMinTemp &&
-                                        t >= (idealThresholds.idealMinTemp || idealThresholds.criticalMinTemp) &&
-                                        t <= idealThresholds.maxTemp;
-                        const meetsRain = precip !== null && precip <= (idealThresholds.maxRain || 0);
-                        const meetsWind = wind !== null && wind <= (idealThresholds.maxWind || 20);
-                        const meetsSnow = snow === null || snow <= (idealThresholds.maxSnow || 0);  // Ideal: no snow (or use template maxSnow)
+                                        temp_min > idealThresholds.criticalMinTemp &&
+                                        t > (idealThresholds.idealMinTemp || idealThresholds.criticalMinTemp) &&
+                                        t < idealThresholds.maxTemp;
+                        const meetsRain = precip !== null && precip < (idealThresholds.maxRain || 0);
+                        const meetsWind = wind !== null && wind < (idealThresholds.maxWind || 20);
+                        const meetsSnow = snow === null || snow <= (idealThresholds.maxSnow || 0);  // Ideal: no snow (or use template maxSnow) - snow uses <= because > is used for heavy snow checks
 
                         return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {
@@ -4355,9 +4355,9 @@ class XyloclimePro {
                 const precip = daily.precipitation_sum[i];
                 const wind = daily.windspeed_10m_max?.[i];
 
-                const meetsTemp = temp_min >= template.weatherCriteria.minTemp && temp_max <= template.weatherCriteria.maxTemp;
-                const meetsRain = precip <= template.weatherCriteria.maxRain;
-                const meetsWind = !wind || wind <= template.weatherCriteria.maxWind;
+                const meetsTemp = temp_min > template.weatherCriteria.minTemp && temp_max < template.weatherCriteria.maxTemp;
+                const meetsRain = precip < template.weatherCriteria.maxRain;
+                const meetsWind = !wind || wind < template.weatherCriteria.maxWind;
 
                 if (meetsTemp && meetsRain && meetsWind) {
                     currentStreak++;
@@ -4425,9 +4425,9 @@ class XyloclimePro {
                 const wind = daily.windspeed_10m_max?.[i] || 0;
 
                 // Check if day meets painting requirements
-                const tempOK = temp_min >= minTemp && temp_max <= maxTemp;
-                const dryOK = precip <= maxRain;
-                const windOK = wind <= maxWind;
+                const tempOK = temp_min > minTemp && temp_max < maxTemp;
+                const dryOK = precip < maxRain;
+                const windOK = wind < maxWind;
 
                 if (tempOK && dryOK && windOK) {
                     applicationDays++;
@@ -6799,7 +6799,7 @@ class XyloclimePro {
         const project = this.currentProject;
         const start = new Date(project.startDate);
         const end = new Date(project.endDate);
-        const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        const duration = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1);
         const months = Math.round(duration / 30);
 
         // Calculate key percentages

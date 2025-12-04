@@ -93,7 +93,8 @@ class BidSupportCalculator {
 
         // Weather risk analysis
         const riskScore = this.currentProject.riskScore || 0;
-        const workablePercent = (this.currentAnalysis.workableDays / this.currentAnalysis.totalDays) * 100;
+        const totalDays = Math.max(1, this.currentAnalysis.totalDays || 1);
+        const workablePercent = (this.currentAnalysis.workableDays / totalDays) * 100;
         const nonWorkableDays = this.currentAnalysis.nonWorkableDays;
 
         // Calculate weather delay estimates
@@ -106,14 +107,15 @@ class BidSupportCalculator {
 
         // Calculate contingency costs
         const delayOverheadCost = weatherDelayRange.likely * dailyOverhead;
-        const delayLaborCost = (baseLabor * (estimatedDelayDays / this.currentAnalysis.totalDays)) * laborMultiplier;
+        const delayLaborCost = (baseLabor * (estimatedDelayDays / totalDays)) * laborMultiplier;
         const delayPenaltyCost = delayPenalty * weatherDelayRange.likely;
         const remobilizationCost = this.estimateRemobilizationCost(this.currentAnalysis, baseEquipment);
 
         const totalWeatherContingency = delayOverheadCost + delayLaborCost + delayPenaltyCost + remobilizationCost;
 
         // Calculate contingency percentage
-        const contingencyPercent = (totalWeatherContingency / baseBid) * 100;
+        const safeBid = Math.max(1, baseBid || 1);
+        const contingencyPercent = (totalWeatherContingency / safeBid) * 100;
 
         // Recommended markup range
         const recommendedMarkup = this.getRecommendedMarkup(riskScore, workablePercent);
