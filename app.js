@@ -1024,7 +1024,7 @@ class XyloclimePro {
         const extremeColdDays = parseInt(analysis.extremeColdDays) || 0;
         const highWindDays = parseInt(analysis.highWindDays) || 0;
         const snowyDays = parseInt(analysis.snowyDays) || 0;
-        const totalDays = analysis.actualProjectDays || 365;
+        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null) ? analysis.actualProjectDays : 365;
 
         // Calculate temperature-based hazards
         const shingleBrittlenessDays = analysis.daysBelow40F || Math.round(freezingDays * 0.8); // Estimate if not tracked
@@ -4771,7 +4771,7 @@ class XyloclimePro {
         }
 
         const analysis = project.analysis;
-        const totalDays = analysis.actualProjectDays || 365;
+        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null) ? analysis.actualProjectDays : 365;
 
         console.log('[QA] Starting report validation...');
 
@@ -5307,7 +5307,7 @@ class XyloclimePro {
         // Calculate risk scores for each category (0-100 scale)
 
         // CRITICAL FIX: Use ACTUAL project duration, not hardcoded 365 days
-        const totalDays = analysis.actualProjectDays || 365;
+        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null && analysis.actualProjectDays > 0) ? analysis.actualProjectDays : 365;
         console.log(`[RISK] Calculating risk for ${totalDays}-day project`);
 
         // 1. Precipitation Risk (30% weight)
@@ -5381,9 +5381,9 @@ class XyloclimePro {
         if (windRisk === null) {
             // Redistribute wind weight proportionally to other factors
             const totalWithoutWind = weights.precipitation + weights.temperature + weights.workability;
-            const precipWeight = weights.precipitation / totalWithoutWind;
-            const tempWeight = weights.temperature / totalWithoutWind;
-            const seasonWeight = weights.workability / totalWithoutWind;
+            const precipWeight = totalWithoutWind > 0 ? weights.precipitation / totalWithoutWind : 0.33;
+            const tempWeight = totalWithoutWind > 0 ? weights.temperature / totalWithoutWind : 0.33;
+            const seasonWeight = totalWithoutWind > 0 ? weights.workability / totalWithoutWind : 0.34;
 
             totalScore = Math.round(
                 (precipRisk * precipWeight) +
