@@ -92,7 +92,8 @@ class BidSupportCalculator {
         const baseBid = baseLabor + baseMaterials + baseEquipment;
 
         // Weather risk analysis
-        const riskScore = this.currentProject.riskScore || 0;
+        const riskScoreObj = this.currentProject.riskScore || { totalScore: 0 };
+        const riskScore = riskScoreObj.totalScore || 0;  // Extract numeric score from object
         const totalDays = Math.max(1, this.currentAnalysis.totalDays || 1);
         const workablePercent = (this.currentAnalysis.workableDays / totalDays) * 100;
         const nonWorkableDays = this.currentAnalysis.nonWorkableDays;
