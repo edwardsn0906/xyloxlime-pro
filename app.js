@@ -4518,6 +4518,23 @@ class XyloclimePro {
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
+        // Guard against empty historicalData to prevent division by zero
+        if (!historicalData || historicalData.length === 0) {
+            console.warn('[MONTHLY] No historical data available, returning empty breakdown');
+            return monthNames.map((name, i) => ({
+                month: name,
+                monthIndex: i,
+                avgDaysInMonth: 0,
+                heavyRainDays: 0,
+                workStoppingColdDays: 0,
+                heavySnowDays: 0,
+                workableDays: 0,
+                idealDays: 0,
+                workablePercent: 0,
+                riskScore: 0
+            }));
+        }
+
         // Initialize monthly stats
         const monthlyStats = Array.from({ length: 12 }, (_, i) => ({
             month: monthNames[i],
