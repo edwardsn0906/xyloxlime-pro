@@ -679,7 +679,7 @@ class SmartRecommendations {
     }
 
     analyzeWorkableDays(analysis, project, recommendations, recommendedContingency) {
-        const totalDays = Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24));
+        const totalDays = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
         const workableDays = analysis.workableDays || analysis.optimalDays || totalDays * 0.7;
         const workablePercent = (workableDays / totalDays) * 100;
 

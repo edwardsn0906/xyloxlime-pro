@@ -1018,8 +1018,8 @@ class XyloclimePro {
     }
 
     generateRoofingTechnicalHazards(analysis, project) {
-        const avgTempMin = parseFloat(analysis.avgTempMin);
-        const avgTempMax = parseFloat(analysis.avgTempMax);
+        const avgTempMin = parseFloat(analysis.avgTempMin) || 0;
+        const avgTempMax = parseFloat(analysis.avgTempMax) || 0;
         const freezingDays = parseInt(analysis.allFreezingDays) || 0;
         const extremeColdDays = parseInt(analysis.extremeColdDays) || 0;
         const highWindDays = parseInt(analysis.highWindDays) || 0;
@@ -4856,8 +4856,8 @@ class XyloclimePro {
         }
 
         // Check 4: Temperature range sanity
-        const avgTempMin = parseFloat(analysis.avgTempMin);
-        const avgTempMax = parseFloat(analysis.avgTempMax);
+        const avgTempMin = parseFloat(analysis.avgTempMin) || 0;
+        const avgTempMax = parseFloat(analysis.avgTempMax) || 0;
 
         if (avgTempMin > avgTempMax) {
             findings.internalConsistency.push({
@@ -6257,12 +6257,12 @@ class XyloclimePro {
         document.getElementById('projectInfoUpdated').textContent = `Updated: ${timestamp}`;
 
         // Update enhanced summary cards
-        const avgTemp = ((parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2);
+        const avgTemp = ((parseFloat(analysis.avgTempMax) || 0) + (parseFloat(analysis.avgTempMin) || 0)) / 2;
         const el = (id) => document.getElementById(id);
 
         if (el('avgTemp')) el('avgTemp').textContent = this.formatTemp(avgTemp, 'C');
-        if (el('avgTempMax')) el('avgTempMax').textContent = this.formatTemp(parseFloat(analysis.avgTempMax), 'C');
-        if (el('avgTempMin')) el('avgTempMin').textContent = this.formatTemp(parseFloat(analysis.avgTempMin), 'C');
+        if (el('avgTempMax')) el('avgTempMax').textContent = this.formatTemp(parseFloat(analysis.avgTempMax) || 0, 'C');
+        if (el('avgTempMin')) el('avgTempMin').textContent = this.formatTemp(parseFloat(analysis.avgTempMin) || 0, 'C');
         if (el('rainyDays')) el('rainyDays').textContent = analysis.rainyDays;
         if (el('totalPrecip')) el('totalPrecip').textContent = this.formatPrecip(analysis.totalPrecip);
         if (el('heavyRainDays')) el('heavyRainDays').textContent = analysis.heavyRainDays;
@@ -6948,12 +6948,12 @@ class XyloclimePro {
         if (isPainting) {
             // Temperature and substrate conditions
             if (analysis.allFreezingDays > 0) {
-                const avgLowF = this.convertTemp(parseFloat(analysis.avgTempMin), 'C');
+                const avgLowF = this.convertTemp(parseFloat(analysis.avgTempMin) || 0, 'C');
                 summary += `<li><strong>Substrate moisture and temperature control</strong> – ${analysis.allFreezingDays} freezing days expected. Paint will not cure properly below ${this.formatThresholdTemp(10, '<')}. Surface must be above dew point to prevent moisture condensation under paint film. Allow frozen surfaces to thaw and dry completely before application.</li>`;
             }
 
             // High rainfall areas (potential moisture concerns)
-            const avgTempC = (parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2;
+            const avgTempC = ((parseFloat(analysis.avgTempMax) || 0) + (parseFloat(analysis.avgTempMin) || 0)) / 2;
             if (analysis.rainyDays > 40) {
                 summary += `<li><strong>High-moisture environment</strong> – ${analysis.rainyDays} rainy days indicate frequent moisture. Verify substrate is completely dry before painting. Consider moisture meters for critical applications. Note: Humidity and dew point data not currently included in analysis.</li>`;
             }
@@ -8007,9 +8007,10 @@ class XyloclimePro {
             doc.setFontSize(10);
             doc.setTextColor(255, 255, 255);
             doc.setFont(undefined, 'normal');
-            const avgTemp = ((parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2);
-            const workablePercent = Math.round(((analysis.workableDays || analysis.optimalDays) / ((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24))) * 100);
-            const idealPercent = Math.round(((analysis.idealDays || 0) / ((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24))) * 100);
+            const avgTemp = ((parseFloat(analysis.avgTempMax) || 0) + (parseFloat(analysis.avgTempMin) || 0)) / 2;
+            const projectDays = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+            const workablePercent = Math.round(((analysis.workableDays || analysis.optimalDays) / projectDays) * 100);
+            const idealPercent = Math.round(((analysis.idealDays || 0) / projectDays) * 100);
 
             // Unit system indicator
             const unitLabel = this.unitSystem === 'imperial' ? 'Imperial Units (°F, in, mph)' : 'Metric Units (°C, mm, km/h)';
@@ -8058,7 +8059,7 @@ class XyloclimePro {
             doc.setFontSize(10);
             doc.setTextColor(60, 60, 60);
             doc.setFont(undefined, 'normal');
-            const projectDays = Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24));
+            const projectDaysTableCalc = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
             // Use already declared workablePercent and idealPercent from line 3855-3856
             let outlookText = '';
             if (workablePercent > 75) {
@@ -8083,7 +8084,7 @@ class XyloclimePro {
             const extremes = this.findHistoricalExtremes();
 
             const metrics = [
-                [`Temperature Range`, `${this.formatTemp(parseFloat(analysis.avgTempMin), 'C')} to ${this.formatTemp(parseFloat(analysis.avgTempMax), 'C')}`],
+                [`Temperature Range`, `${this.formatTemp(parseFloat(analysis.avgTempMin) || 0, 'C')} to ${this.formatTemp(parseFloat(analysis.avgTempMax) || 0, 'C')}`],
                 [`Workable Days`, `${analysis.workableDays || analysis.optimalDays} days (${workablePercent}%)`],
                 [`Ideal Days`, `${analysis.idealDays || analysis.optimalDays} days (${idealPercent}%)`],
                 [`Expected Rainy Days`, `${analysis.rainyDays} days (any precipitation)`],
@@ -8591,8 +8592,8 @@ class XyloclimePro {
                 [''],
                 ['Weather Analysis Summary'],
                 ['Metric', 'Value'],
-                ['Average High Temperature', this.formatTemp(parseFloat(analysis.avgTempMax), 'C')],
-                ['Average Low Temperature', this.formatTemp(parseFloat(analysis.avgTempMin), 'C')],
+                ['Average High Temperature', this.formatTemp(parseFloat(analysis.avgTempMax) || 0, 'C')],
+                ['Average Low Temperature', this.formatTemp(parseFloat(analysis.avgTempMin) || 0, 'C')],
                 ['Expected Rainy Days', analysis.rainyDays],
                 ['Heavy Rain Days', analysis.heavyRainDays || 0],
                 ['Expected Snow Days', analysis.snowyDays],
@@ -8604,9 +8605,18 @@ class XyloclimePro {
                 ['Years of Historical Data', analysis.yearsAnalyzed],
                 [''],
                 ['Assessment'],
-                ['Project Duration (days):', Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24))],
-                ['Workable Days %:', `${Math.round(((analysis.workableDays || analysis.optimalDays) / Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24))) * 100)}%`],
-                ['Ideal Days %:', `${Math.round(((analysis.idealDays || 0) / Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24))) * 100)}%`],
+                ['Project Duration (days):', (() => {
+                    const days = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+                    return days;
+                })()],
+                ['Workable Days %:', (() => {
+                    const days = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+                    return `${Math.round(((analysis.workableDays || analysis.optimalDays) / days) * 100)}%`;
+                })()],
+                ['Ideal Days %:', (() => {
+                    const days = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+                    return `${Math.round(((analysis.idealDays || 0) / days) * 100)}%`;
+                })()],
                 [''],
                 ['DISCLAIMER:'],
                 ['This analysis is for planning purposes only.'],
@@ -8629,9 +8639,9 @@ class XyloclimePro {
                 ['DETAILED WEATHER METRICS'],
                 [''],
                 ['Category', 'Description', 'Value', 'Unit'],
-                ['Temperature', 'Average High', this.formatTemp(parseFloat(analysis.avgTempMax), 'C', false), `°${this.tempUnit}`],
-                ['Temperature', 'Average Low', this.formatTemp(parseFloat(analysis.avgTempMin), 'C', false), `°${this.tempUnit}`],
-                ['Temperature', 'Mean Temperature', this.formatTemp(((parseFloat(analysis.avgTempMax) + parseFloat(analysis.avgTempMin)) / 2), 'C', false), `°${this.tempUnit}`],
+                ['Temperature', 'Average High', this.formatTemp(parseFloat(analysis.avgTempMax) || 0, 'C', false), `°${this.tempUnit}`],
+                ['Temperature', 'Average Low', this.formatTemp(parseFloat(analysis.avgTempMin) || 0, 'C', false), `°${this.tempUnit}`],
+                ['Temperature', 'Mean Temperature', this.formatTemp(((parseFloat(analysis.avgTempMax) || 0) + (parseFloat(analysis.avgTempMin) || 0)) / 2, 'C', false), `°${this.tempUnit}`],
                 ['Precipitation', 'Rainy Days', analysis.rainyDays, 'days'],
                 ['Precipitation', 'Heavy Rain Days', analysis.heavyRainDays || 0, 'days'],
                 ['Precipitation', 'Snow Days', analysis.snowyDays, 'days'],
