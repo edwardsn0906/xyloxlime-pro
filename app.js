@@ -7784,7 +7784,8 @@ class XyloclimePro {
         yPos += 7;
         doc.setFont(undefined, 'bold');
         doc.text('Risk Assessment:', 25, yPos);
-        const riskScore = project.riskScore || this.calculateRiskScore(analysis);
+        const riskScoreObj = project.riskScore || this.calculateRiskScore(analysis);
+        const riskScore = riskScoreObj.totalScore || 0;  // Extract numeric score from object
         const riskLevel = riskScore <= 30 ? 'LOW' : riskScore <= 60 ? 'MEDIUM' : 'HIGH';
         const riskColor = riskScore <= 30 ? [16, 185, 129] : riskScore <= 60 ? [251, 191, 36] : [239, 68, 68];
         doc.setTextColor(...riskColor);
