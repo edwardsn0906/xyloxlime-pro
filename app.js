@@ -5543,7 +5543,8 @@ class XyloclimePro {
         const { totalScore, precipRisk, tempRisk, windRisk, analysis, template } = riskData;
 
         // Calculate transparent contingency recommendation
-        const totalProjectDays = analysis.actualProjectDays || 365;
+        // Ensure at least 1 day to prevent division by zero
+        const totalProjectDays = Math.max(1, analysis.actualProjectDays || 365);
         const heavyRain = analysis.heavyRainDays || 0;
         const workStoppingCold = analysis.extremeColdDays || 0;
         const heavySnow = analysis.heavySnowDays || 0;
@@ -6235,18 +6236,26 @@ class XyloclimePro {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.setAttribute('href', url);
-            link.setAttribute('download', `XyloclimePro_${project.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+
+            // Sanitize filename: ensure at least one character remains after filtering
+            const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'project';
+            link.setAttribute('download', `XyloclimePro_${sanitizedName}_${new Date().toISOString().split('T')[0]}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
+            // Revoke URL to free memory
+            URL.revokeObjectURL(url);
+
             // Show success message
             this.showToast('CSV exported successfully!', 'success');
 
+            // Calculate actual row count from rows array (excluding header rows)
+            const dataRowCount = rows.length - (historicalData ? historicalData.length + 10 : 10); // Subtract header/info rows
             this.sessionManager.logAction('csv_exported', {
                 projectId: project.id,
-                rowCount: data.daily?.time?.length || 0
+                rowCount: Math.max(0, dataRowCount)
             });
 
         } catch (error) {
@@ -6793,7 +6802,8 @@ class XyloclimePro {
         }
 
         // Calculate suitability scores (0-100, higher = better)
-        const projectDays = analysis.actualProjectDays || 365;
+        // Ensure projectDays is at least 1 to prevent division by zero
+        const projectDays = Math.max(1, analysis.actualProjectDays || 365);
 
         // Temperature: Based on optimal vs extreme days
         const tempScore = Math.max(0, 100 - ((analysis.freezingDays + analysis.extremeHeatDays) / projectDays * 200));
@@ -7118,7 +7128,8 @@ class XyloclimePro {
 
         // Calculate weather contingency with proper math
         // NOTE: Each category counts calendar days independently, then overlaps are ESTIMATED (not calculated from actual same-day events)
-        const totalProjectDays = analysis.actualProjectDays || 365;
+        // Ensure at least 1 day to prevent division by zero
+        const totalProjectDays = Math.max(1, analysis.actualProjectDays || 365);
         const heavyRain = analysis.heavyRainDays || 0;
         const workStoppingCold = analysis.extremeColdDays || 0;
         const heavySnow = analysis.heavySnowDays || 0;
@@ -7800,7 +7811,7 @@ class XyloclimePro {
         doc.setFont(undefined, 'bold');
         doc.text('Project Duration:', 25, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(`${analysis.totalDays} days (${project.startDate} to ${project.endDate})`, 75, yPos);
+        doc.text(`${analysis.actualProjectDays || 365} days (${project.startDate} to ${project.endDate})`, 75, yPos);
 
         yPos += 7;
         doc.setFont(undefined, 'bold');
@@ -7831,7 +7842,9 @@ class XyloclimePro {
         doc.setTextColor(60, 60, 60);
         doc.setFont(undefined, 'normal');
 
-        const workablePercent = ((analysis.workableDays / analysis.totalDays) * 100).toFixed(1);
+        // Use actualProjectDays with fallback protection against division by zero
+        const totalDays = Math.max(1, analysis.actualProjectDays || 365);
+        const workablePercent = ((analysis.workableDays / totalDays) * 100).toFixed(1);
         const findings = [
             `${analysis.workableDays} workable days identified (${workablePercent}% of total project duration)`,
             `${analysis.nonWorkableDays} non-workable days expected due to adverse weather conditions`,
@@ -7860,7 +7873,8 @@ class XyloclimePro {
         doc.setFont(undefined, 'normal');
 
         // Calculate specific contingency for risk assessment
-        const totalDays = analysis.actualProjectDays || 365;
+        // Ensure at least 1 day to prevent division by zero
+        const totalDays = Math.max(1, analysis.actualProjectDays || 365);
         const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
         const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
         const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
@@ -7917,7 +7931,8 @@ class XyloclimePro {
         // Fallback to generic recommendations if smart recs not available
         if (recommendations.length === 0) {
             // Calculate contingency with math
-            const totalDays = analysis.actualProjectDays || 365;
+            // Ensure at least 1 day to prevent division by zero
+            const totalDays = Math.max(1, analysis.actualProjectDays || 365);
             const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
             const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25); // Account for overlaps
             const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
@@ -7982,7 +7997,8 @@ class XyloclimePro {
         doc.text(`Xyloclime Pro | ${new Date().toLocaleDateString()} | Page 3 of 3`, 105, 290, { align: 'center' });
 
         // Save PDF
-        const filename = `XyloclimePro_${project.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'project';
+        const filename = `XyloclimePro_${sanitizedName}_${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(filename);
 
         window.toastManager.success(`Professional PDF report generated and downloaded: ${filename}`, 'PDF Export Complete', 6000);
@@ -8211,7 +8227,8 @@ class XyloclimePro {
 
             // Calculate contingency for consistent recommendation
             const projectAnalysis = this.currentProject.analysis || {};
-            const totalDays = projectAnalysis.actualProjectDays || 365;
+            // Ensure at least 1 day to prevent division by zero
+            const totalDays = Math.max(1, projectAnalysis.actualProjectDays || 365);
             const stoppageDays = (projectAnalysis.heavyRainDays || 0) + (projectAnalysis.extremeColdDays || 0) + (projectAnalysis.heavySnowDays || 0);
             const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
             const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
@@ -8617,7 +8634,8 @@ class XyloclimePro {
             });
 
             // Save PDF
-            const filename = `XyloclimePro_Advanced_${project.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'project';
+            const filename = `XyloclimePro_Advanced_${sanitizedName}_${new Date().toISOString().split('T')[0]}.pdf`;
             doc.save(filename);
 
             document.body.removeChild(loadingMsg);
@@ -8758,7 +8776,8 @@ class XyloclimePro {
 
             // ===== SHEET 3: RECOMMENDATIONS =====
             // Calculate contingency for consistent recommendation
-            const totalDays = analysis.actualProjectDays || 365;
+            // Ensure at least 1 day to prevent division by zero
+            const totalDays = Math.max(1, analysis.actualProjectDays || 365);
             const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
             const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
             const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
