@@ -9201,6 +9201,10 @@ class XyloclimePro {
         try {
             console.log('[PROJECT] Loading project:', project.name);
 
+            // Clear template selection to prevent cross-contamination
+            // Projects use stored analysis data, not recalculated with templates
+            this.selectedTemplate = null;
+
             // Restore project state
             this.currentProject = project;
             this.weatherData = project.historicalData;
