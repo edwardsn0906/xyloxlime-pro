@@ -6259,8 +6259,8 @@ class XyloclimePro {
             });
 
         } catch (error) {
-            console.error('CSV export failed:', error);
-            alert('Error exporting CSV. Please try again.');
+            console.error('[CSV Export] Export failed:', error);
+            window.toastManager.error('Failed to export CSV file. Please try again.', 'Export Error');
         }
     }
 
@@ -7758,8 +7758,9 @@ class XyloclimePro {
         // Show loading toast
         window.toastManager.info('Generating comprehensive PDF report with executive summary, risk assessment, and recommendations...', 'Creating PDF Report', 5000);
 
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
         const project = this.currentProject;
         const analysis = project.analysis;
@@ -8001,12 +8002,16 @@ class XyloclimePro {
         doc.setFontSize(9);
         doc.text(`Xyloclime Pro | ${new Date().toLocaleDateString()} | Page 3 of 3`, 105, 290, { align: 'center' });
 
-        // Save PDF
-        const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'project';
-        const filename = `XyloclimePro_${sanitizedName}_${new Date().toISOString().split('T')[0]}.pdf`;
-        doc.save(filename);
+            // Save PDF
+            const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'project';
+            const filename = `XyloclimePro_${sanitizedName}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
 
-        window.toastManager.success(`Professional PDF report generated and downloaded: ${filename}`, 'PDF Export Complete', 6000);
+            window.toastManager.success(`Professional PDF report generated and downloaded: ${filename}`, 'PDF Export Complete', 6000);
+        } catch (error) {
+            console.error('[PDF Export] Professional PDF export failed:', error);
+            window.toastManager.error('Failed to generate PDF report. Please try again.', 'Export Error');
+        }
     }
 
     // ========================================================================
@@ -8658,9 +8663,11 @@ class XyloclimePro {
             setTimeout(() => document.body.removeChild(successMsg), 3000);
 
         } catch (error) {
-            document.body.removeChild(loadingMsg);
-            console.error('PDF generation error:', error);
-            alert('Error generating PDF. Please try again.');
+            if (document.body.contains(loadingMsg)) {
+                document.body.removeChild(loadingMsg);
+            }
+            console.error('[PDF Export] Advanced PDF export failed:', error);
+            window.toastManager.error('Failed to generate advanced PDF report. Please try again.', 'Export Error');
         }
     }
 
