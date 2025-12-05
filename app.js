@@ -3281,12 +3281,13 @@ class XyloclimePro {
                 isPrediction: true
             };
 
-            this.saveProject(this.currentProject);
-            this.weatherData = historicalData;
-
-            // Calculate and display risk score
+            // Calculate risk score BEFORE saving to ensure it's included
             const riskScore = this.calculateRiskScore(analysis);
             this.currentProject.riskScore = riskScore;
+
+            // Save project with complete data
+            await this.saveProject(this.currentProject);
+            this.weatherData = historicalData;
             this.updateRiskDisplay(riskScore);
 
             // Display data quality warnings and extreme events
@@ -9253,7 +9254,7 @@ class XyloclimePro {
                 this.updateRiskDisplay(riskScore);
                 // Save the calculated risk score
                 project.riskScore = riskScore;
-                this.saveProject(project);
+                await this.saveProject(project);
             }
 
             // Display data quality info if available
