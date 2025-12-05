@@ -2961,9 +2961,9 @@ class XyloclimePro {
 
                 // Highlight best/worst for numeric metrics
                 if (metric.key === 'workableDays') {
-                    const allValues = projects.map(p => p.analysis?.workableDays || p.analysis?.optimalDays || 0);
+                    const allValues = projects.map(p => p.analysis?.workableDays ?? p.analysis?.optimalDays ?? 0);
                     const maxValue = Math.max(...allValues);
-                    if ((project.analysis?.workableDays || project.analysis?.optimalDays || 0) === maxValue && maxValue > 0) {
+                    if ((project.analysis?.workableDays ?? project.analysis?.optimalDays ?? 0) === maxValue && maxValue > 0) {
                         cell.style.background = 'rgba(0, 255, 0, 0.2)';
                         cell.style.fontWeight = 'bold';
                     }
