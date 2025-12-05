@@ -1026,7 +1026,7 @@ class XyloclimePro {
         const extremeColdDays = parseInt(analysis.extremeColdDays) || 0;
         const highWindDays = parseInt(analysis.highWindDays) || 0;
         const snowyDays = parseInt(analysis.snowyDays) || 0;
-        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null) ? analysis.actualProjectDays : 365;
+        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null && analysis.actualProjectDays > 0) ? analysis.actualProjectDays : 365;
 
         // Calculate temperature-based hazards
         const shingleBrittlenessDays = analysis.daysBelow40F || Math.round(freezingDays * 0.8); // Estimate if not tracked
@@ -4834,7 +4834,7 @@ class XyloclimePro {
         }
 
         const analysis = project.analysis;
-        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null) ? analysis.actualProjectDays : 365;
+        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null && analysis.actualProjectDays > 0) ? analysis.actualProjectDays : 365;
 
         console.log('[QA] Starting report validation...');
 
@@ -5462,6 +5462,9 @@ class XyloclimePro {
                 (seasonRisk * weights.workability)
             );
         }
+
+        // Clamp totalScore to 0-100 range to handle misconfigured template weights
+        totalScore = Math.max(0, Math.min(100, totalScore));
 
         console.log(`[RISK] Total Score: ${totalScore}/100`, {
             precip: Math.round(precipRisk),
