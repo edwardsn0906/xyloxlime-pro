@@ -3760,7 +3760,30 @@ class XyloclimePro {
         // ============================================================
         // TIER 4: Fetch ERA5 for temp/rain/wind (and snow fallback)
         // ============================================================
-        const era5Data = await this.fetchWeatherData(lat, lng, startDate, endDate);
+        let era5Data;
+        try {
+            era5Data = await this.fetchWeatherData(lat, lng, startDate, endDate);
+        } catch (error) {
+            console.error('[DATA SOURCE] ERA5 fetch failed:', error.message);
+
+            // If we have NOAA/Visual Crossing data, we can still provide partial analysis
+            if (snowDataResult && snowDataResult.daily) {
+                console.log('[DATA SOURCE] Using NOAA data only (ERA5 unavailable)');
+                // Return NOAA data as-is since we have it
+                return {
+                    daily: snowDataResult.daily,
+                    snowDataSource: snowDataSource,
+                    temperatureSource: snowDataSource.source,
+                    precipitationSource: snowDataSource.source,
+                    windSource: snowDataSource.source,
+                    era5Failed: true,
+                    era5Error: error.message
+                };
+            }
+
+            // No data from any source - throw error
+            throw new Error(`All weather data sources failed. ERA5 error: ${error.message}`);
+        }
 
         // ============================================================
         // BLEND DATA: Use NOAA for all available metrics, ERA5 as fallback
