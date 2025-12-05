@@ -7750,6 +7750,11 @@ class XyloclimePro {
             return;
         }
 
+        if (!this.currentProject.analysis) {
+            window.toastManager.warning('Please analyze the project first before exporting to PDF', 'Analysis Required');
+            return;
+        }
+
         // Show loading toast
         window.toastManager.info('Generating comprehensive PDF report with executive summary, risk assessment, and recommendations...', 'Creating PDF Report', 5000);
 
@@ -8666,6 +8671,11 @@ class XyloclimePro {
     async exportToExcel() {
         if (!this.currentProject) {
             window.toastManager.info('Create a project first by running a weather analysis', 'No Project Selected');
+            return;
+        }
+
+        if (!this.currentProject.analysis) {
+            window.toastManager.warning('Please analyze the project first before exporting to Excel', 'Analysis Required');
             return;
         }
 
