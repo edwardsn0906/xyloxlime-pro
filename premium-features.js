@@ -145,7 +145,7 @@ class ProjectTemplatesLibrary {
                     workability: 0.25     // Medium - soil conditions matter
                 },
                 workabilityThresholds: {
-                    criticalMinTemp: -10, // °C (14°F) - frost depth issues
+                    criticalMinTemp: -7,  // °C (20°F) - equipment hydraulics, diesel starting, frozen soil compaction limit
                     idealMinTemp: 5,      // °C (41°F) - ideal soil conditions
                     maxTemp: 45,          // °C (113°F) - equipment/operator heat limit
                     maxRain: 15,          // mm - heavy rain creates mud
@@ -159,13 +159,14 @@ class ProjectTemplatesLibrary {
                 ],
                 tips: [
                     'Heavy rain creates muddy, unsafe conditions',
+                    'Equipment limitations below 20°F: hydraulics sluggish, diesel gelling, frozen soil compaction issues',
                     'Soil conditions vary greatly with moisture',
                     'Equipment can get stuck in saturated soil',
                     'Plan drainage and dewatering ahead of rain',
-                    'Frost depth affects winter excavation'
+                    'PVC/HDPE pipe becomes brittle below 25°F'
                 ],
                 seasonalAdvice: {
-                    winter: 'Frost can make excavation difficult. Budget extra time and equipment.',
+                    winter: 'Work below 20°F (hydraulics, diesel, soil compaction) is challenging. Frost depth requires special equipment. Budget extra time.',
                     spring: 'Watch for saturated ground. May need dewatering equipment.',
                     summer: 'Excellent conditions. Dry soil is easier to work.',
                     fall: 'Good conditions before ground freezes. Complete drainage work.'

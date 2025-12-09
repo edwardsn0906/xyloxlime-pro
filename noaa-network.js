@@ -139,6 +139,85 @@ class NOAAStationNetwork {
     }
 
     /**
+     * Find best elevation-matched NOAA station (terrain-aware)
+     * CRITICAL for mountainous regions where elevation changes create microclimates
+     *
+     * @param {number} lat - Project latitude
+     * @param {number} lng - Project longitude
+     * @param {number} projectElevation - Project elevation in meters
+     * @param {number} maxDistanceKm - Maximum search radius in km (default: 100)
+     * @param {number} maxElevationDiff - Maximum acceptable elevation difference in meters (default: 300)
+     * @returns {object|null} Best matched station with terrain compatibility score
+     */
+    async findElevationMatchedStation(lat, lng, projectElevation, maxDistanceKm = 100, maxElevationDiff = 300) {
+        await this.loadStations();
+
+        if (this.stations.length === 0) {
+            console.warn('[NOAA Network] No stations loaded');
+            return null;
+        }
+
+        let bestStation = null;
+        let bestScore = Infinity;
+        const candidates = [];
+
+        for (const station of this.stations) {
+            const distance = this.calculateDistance(lat, lng, station.lat, station.lng);
+
+            // Skip stations outside max distance
+            if (distance > maxDistanceKm) continue;
+
+            const elevationDiff = Math.abs((station.elevation || 0) - projectElevation);
+
+            // Calculate composite score (lower is better)
+            // Distance weight: 1.0 (1 km = 1 point)
+            // Elevation weight: 0.5 (1 meter elevation = 0.5 points)
+            // In mountains, 100m elevation difference ≈ 50km distance in climate impact
+            const score = distance + (elevationDiff * 0.5);
+
+            candidates.push({
+                ...station,
+                distance: Math.round(distance * 10) / 10,
+                elevationDiff: Math.round(elevationDiff),
+                score: Math.round(score * 10) / 10,
+                terrainCompatibility: elevationDiff <= maxElevationDiff ? 'GOOD' :
+                                     elevationDiff <= maxElevationDiff * 1.5 ? 'ACCEPTABLE' :
+                                     'POOR'
+            });
+
+            if (score < bestScore) {
+                bestScore = score;
+                bestStation = candidates[candidates.length - 1];
+            }
+        }
+
+        if (bestStation) {
+            // Log top 3 candidates for transparency
+            const topCandidates = candidates
+                .sort((a, b) => a.score - b.score)
+                .slice(0, 3);
+
+            console.log('[NOAA Network] Elevation-matched station search results:');
+            console.log(`  Project elevation: ${projectElevation}m`);
+            topCandidates.forEach((s, i) => {
+                console.log(`  ${i + 1}. ${s.name}: ${s.distance}km away, ${s.elevationDiff}m elevation diff, score: ${s.score}, terrain: ${s.terrainCompatibility}`);
+            });
+
+            console.log(`[NOAA Network] ✓ Selected: ${bestStation.name} (terrain compatibility: ${bestStation.terrainCompatibility})`);
+
+            // Add warning if elevation difference is significant
+            if (bestStation.elevationDiff > maxElevationDiff) {
+                bestStation.elevationWarning = `Station elevation differs by ${bestStation.elevationDiff}m. In mountainous terrain, this may cause significant climate variation. Consider using ERA5 reanalysis data instead for more accurate local estimates.`;
+                console.warn(`[NOAA Network] ⚠️ ${bestStation.elevationWarning}`);
+            }
+        } else {
+            console.log(`[NOAA Network] No station found within ${maxDistanceKm}km`);
+        }
+
+        return bestStation;
+    }
+
+    /**
      * Get city by name
      * @param {string} cityName - City name (e.g., "New York, NY")
      * @returns {object|null} City object with station info

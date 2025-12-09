@@ -141,7 +141,7 @@ xyloclime/
 ### 2. Weather Analysis Engine
 
 **Historical Data Analysis:**
-- Fetches 5 years of historical weather data
+- Fetches 10 years of historical weather data
 - Analyzes same calendar period as your project
 - Statistical aggregation and averaging
 - Pattern identification

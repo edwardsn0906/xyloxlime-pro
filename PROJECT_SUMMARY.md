@@ -124,7 +124,7 @@ You now have a **complete commercial weather analysis platform** called **Xylocl
 ### 3. **Advanced Weather Analysis**
 
 📊 **Historical Data Analysis**
-- 5 years of past weather data
+- 10 years of past weather data
 - Statistical pattern recognition
 - Same calendar period matching
 - Multi-year aggregation

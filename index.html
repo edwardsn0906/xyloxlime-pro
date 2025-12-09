@@ -796,7 +796,7 @@
                                     <div class="threshold-label">WORKABLE DAYS:</div>
                                     <div class="threshold-desc">Construction feasible with normal precautions</div>
                                     <ul class="threshold-criteria">
-                                        <li>Temperature: <strong id="workableTempRange">-5°C to 37°C (23°F to 99°F)</strong></li>
+                                        <li>Temperature: <strong id="workableTempRange">-7°C to 43°C (20°F to 109°F)</strong></li>
                                         <li>Precipitation: <strong id="workableRainThreshold">&lt;15mm/day (&lt;0.6 inches)</strong></li>
                                         <li>Wind Speed: <strong id="workableWindThreshold">&lt;60 km/h (&lt;37 mph)</strong></li>
                                     </ul>
@@ -805,7 +805,7 @@
                                     <div class="threshold-label">IDEAL DAYS (subset of Workable):</div>
                                     <div class="threshold-desc">Perfect conditions, no precautions needed</div>
                                     <ul class="threshold-criteria">
-                                        <li>Temperature: <strong id="idealTempRange">0°C to 37.7°C (32°F to 100°F)</strong></li>
+                                        <li>Temperature: <strong id="idealTempRange">0°C to 38°C (32°F to 100°F)</strong></li>
                                         <li>Precipitation: <strong id="idealRainThreshold">&lt;5mm/day (&lt;0.2 inches)</strong></li>
                                         <li>Wind Speed: <strong id="idealWindThreshold">&lt;20 km/h (&lt;12 mph)</strong></li>
                                     </ul>
@@ -857,7 +857,7 @@
                                     <div class="threshold-label">COLD-WEATHER METHODS REQUIRED:</div>
                                     <div class="threshold-desc">Workable with proper cold-weather practices</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong id="coldMethodsThreshold">0°F to 23°F (-18°C to -5°C)</strong></li>
+                                        <li>Threshold: <strong id="coldMethodsThreshold">0°F to 25°F (-18°C to -4°C)</strong></li>
                                         <li>Impact: Requires accelerators, hot water mix <span id="hotWaterTemp">(120°F)</span>, heated enclosures, insulated curing blankets</li>
                                         <li>Note: Concrete work feasible with modern cold-weather methods</li>
                                     </ul>
@@ -875,7 +875,7 @@
                                     <div class="threshold-label">EXTREME HEAT DAYS:</div>
                                     <div class="threshold-desc">Heat safety concerns</div>
                                     <ul class="threshold-criteria">
-                                        <li>Threshold: <strong id="extremeHeatThresholdDefinition">Maximum ≥37.7°C (≥100°F)</strong></li>
+                                        <li>Threshold: <strong id="extremeHeatThresholdDefinition">Maximum ≥38°C (≥100°F)</strong></li>
                                         <li>Impact: Heat illness risk, reduced productivity</li>
                                     </ul>
                                 </div>
@@ -947,7 +947,7 @@
                     <div class="periods-analysis">
                         <h3><i class="fas fa-calendar-check"></i> Optimal Work Periods</h3>
                         <p class="section-note" style="margin: 0.5rem 0 1rem 0; color: var(--steel-silver); font-size: 0.9rem; font-style: italic;">
-                            <i class="fas fa-info-circle"></i> Based on analysis of the last ~5 years of historical weather patterns. These are our best estimates for optimal and challenging work windows, but actual conditions may vary.
+                            <i class="fas fa-info-circle"></i> Based on analysis of the last ~10 years of historical weather patterns. These are our best estimates for optimal and challenging work windows, but actual conditions may vary.
                         </p>
                         <div class="periods-grid">
                             <div class="period-card best">
@@ -1176,7 +1176,7 @@
                                     <h4><i class="fas fa-database"></i> Data Source</h4>
                                     <p><strong>Provider:</strong> Open-Meteo Historical Weather API</p>
                                     <p><strong>Data Type:</strong> ERA5 Climate Reanalysis</p>
-                                    <p><strong>Coverage:</strong> 5 years of historical data (2019-2024)</p>
+                                    <p><strong>Coverage:</strong> 10 years of historical data (2014-2024)</p>
                                     <p><strong>Resolution:</strong> Daily aggregates</p>
                                     <p class="note"><i class="fas fa-exclamation-circle"></i> Data ends 5 days before present (not real-time)</p>
                                 </div>

@@ -407,9 +407,11 @@ class XyloclimePro {
         return temp;
     }
 
-    formatTemp(temp, fromUnit = 'C', includeUnit = true) {
+    formatTemp(temp, fromUnit = 'C', includeUnit = true, decimals = 0) {
         const converted = this.convertTemp(temp, fromUnit);
-        const formatted = converted.toFixed(1);
+        // For construction thresholds, use whole numbers (0°F, 20°F, 32°F)
+        // NOT arbitrary decimals like "-0.4°F" or "23.0°F"
+        const formatted = converted.toFixed(decimals);
         return includeUnit ? `${formatted}°${this.tempUnit}` : formatted;
     }
 
@@ -599,13 +601,13 @@ class XyloclimePro {
         // Extreme Heat tile
         const extremeHeatThreshold = document.getElementById('extremeHeatThreshold');
         if (extremeHeatThreshold) {
-            extremeHeatThreshold.textContent = `Days over ${this.formatTemp(37.78, 'C')}`;
+            extremeHeatThreshold.textContent = `Days over ${this.formatTemp(38, 'C')}`;  // 100°F, not 37.78°C
         }
 
         // Workable Days thresholds
         const workableTempRange = document.getElementById('workableTempRange');
         if (workableTempRange) {
-            workableTempRange.textContent = `${this.formatTemp(-5, 'C')} to ${this.formatTemp(37, 'C')}`;
+            workableTempRange.textContent = `${this.formatTemp(-7, 'C')} to ${this.formatTemp(43, 'C')}`;  // 20°F to 109°F (rounds to 110°F)
         }
         const workableRainThreshold = document.getElementById('workableRainThreshold');
         if (workableRainThreshold) {
@@ -619,7 +621,7 @@ class XyloclimePro {
         // Ideal Days thresholds
         const idealTempRange = document.getElementById('idealTempRange');
         if (idealTempRange) {
-            idealTempRange.textContent = `${this.formatTemp(0, 'C')} to ${this.formatTemp(37.78, 'C')}`;
+            idealTempRange.textContent = `${this.formatTemp(0, 'C')} to ${this.formatTemp(38, 'C')}`;  // 32°F to 100°F
         }
         const idealRainThreshold = document.getElementById('idealRainThreshold');
         if (idealRainThreshold) {
@@ -636,10 +638,10 @@ class XyloclimePro {
             freezingThreshold.textContent = `Minimum ${this.formatThresholdTemp(0, '≤')}`;
         }
 
-        // Cold-weather methods threshold
+        // Cold-weather methods threshold (0°F to 25°F / -18°C to -4°C)
         const coldMethodsThreshold = document.getElementById('coldMethodsThreshold');
         if (coldMethodsThreshold) {
-            coldMethodsThreshold.textContent = `${this.formatTemp(-18, 'C')} to ${this.formatTemp(-5, 'C')}`;
+            coldMethodsThreshold.textContent = `${this.formatTemp(-18, 'C')} to ${this.formatTemp(-4, 'C')}`;  // 0°F to 25°F
         }
         const hotWaterTemp = document.getElementById('hotWaterTemp');
         if (hotWaterTemp) {
@@ -876,6 +878,8 @@ class XyloclimePro {
             html += this.generateConcreteTechnicalHazards(analysis, project);
         } else if (template.name === 'Exterior Painting') {
             html += this.generatePaintingTechnicalHazards(analysis, project);
+        } else if (template.name === 'Excavation & Earthwork') {
+            html += this.generateExcavationTechnicalHazards(analysis, project);
         }
 
         return html;
@@ -1151,6 +1155,90 @@ class XyloclimePro {
     generatePaintingTechnicalHazards(analysis, project) {
         // Placeholder for painting-specific hazards
         return '';
+    }
+
+    generateExcavationTechnicalHazards(analysis, project) {
+        const avgTempMin = parseFloat(analysis.avgTempMin) || 0;
+        const freezingDays = parseInt(analysis.allFreezingDays) || 0;
+        const coldWeatherDays = parseInt(analysis.coldWeatherMethodsDays) || 0;
+        const extremeColdDays = parseInt(analysis.extremeColdDays) || 0;
+        const totalDays = (analysis.actualProjectDays !== undefined && analysis.actualProjectDays !== null && analysis.actualProjectDays > 0) ? analysis.actualProjectDays : 365;
+
+        // Calculate equipment limitation days (below 20°F/-7°C)
+        const equipmentLimitDays = coldWeatherDays + extremeColdDays;
+
+        if (equipmentLimitDays === 0) {
+            return ''; // No cold-weather equipment issues
+        }
+
+        let html = `
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(230, 126, 34, 0.05); border: 2px solid #e67e22; border-radius: 8px;">
+                <h3 style="color: #e67e22; margin: 0 0 1rem 0;">
+                    <i class="fas fa-exclamation-triangle"></i> Excavation Equipment Technical Limitations
+                </h3>
+                <p style="margin: 0 0 1rem 0; color: var(--steel-silver); font-style: italic;">
+                    Excavation equipment has specific cold-weather limitations that affect workability beyond general construction thresholds.
+                </p>
+        `;
+
+        // 1. HYDRAULIC FLUID PERFORMANCE
+        if (equipmentLimitDays > 0) {
+            const equipmentPercent = ((equipmentLimitDays / totalDays) * 100).toFixed(0);
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Hydraulic System Performance (${this.formatThresholdTemp(-7, '<')})</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${equipmentLimitDays} days (${equipmentPercent}%)</strong> expected below ${this.formatTemp(-7, 'C')} where hydraulic fluid becomes sluggish, reducing equipment performance and increasing wear.
+                        ${extremeColdDays > 0 ? `<strong>${extremeColdDays} days</strong> will be extremely cold (${this.formatThresholdTemp(-18, '≤')}) - hydraulic systems may fail to operate properly.` : ''}
+                        <br><strong>Mitigation:</strong> Use low-temperature hydraulic fluid. Pre-warm equipment before operation. Allow extended warm-up periods. Consider heated equipment storage.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 2. DIESEL ENGINE STARTING
+        if (equipmentLimitDays > 0) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Diesel Starting & Fuel Gelling</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${equipmentLimitDays} days</strong> may experience diesel starting difficulties and fuel gelling. Standard diesel fuel can gel at ${this.formatTemp(-7, 'C')}.
+                        <br><strong>Mitigation:</strong> Use winterized diesel fuel (#1 diesel or winter blend). Add fuel conditioner/anti-gel additives. Use block heaters overnight. Keep fuel tanks full to prevent condensation.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 3. SOIL COMPACTION QUALITY
+        if (freezingDays > 0) {
+            const soilFreezingPercent = ((freezingDays / totalDays) * 100).toFixed(0);
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ Frozen Soil & Compaction Quality (${this.formatThresholdTemp(0, '<')})</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${freezingDays} days (${soilFreezingPercent}%)</strong> with frozen or near-freezing soil temperatures. Frozen soil cannot be properly compacted to specification.
+                        <br><strong>Technical Issue:</strong> Ice crystals in soil expand and contract during freeze-thaw cycles, creating voids and reducing load-bearing capacity. Compaction tests will show acceptable results initially but fail after thawing.
+                        <br><strong>Mitigation:</strong> Excavate only (no backfilling). Delay compaction work until spring thaw. Remove frozen soil before placing structural fills. Consider thermal blankets for critical areas.
+                    </p>
+                </div>
+            `;
+        }
+
+        // 4. PIPE INSTALLATION LIMITATIONS
+        if (equipmentLimitDays > 0) {
+            html += `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <strong style="color: #e67e22;">⚠️ PVC/HDPE Pipe Brittleness (${this.formatThresholdTemp(-4, '<')})</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--steel-silver); line-height: 1.6;">
+                        <strong>${equipmentLimitDays} days</strong> with temperatures where PVC and HDPE pipe become brittle and prone to cracking during handling and installation.
+                        <br><strong>Mitigation:</strong> Store pipe in heated area before installation. Handle carefully in cold weather. Consider ductile iron pipe for winter installations. Delay plastic pipe work until warmer weather.
+                    </p>
+                </div>
+            `;
+        }
+
+        html += `</div>`;
+        return html;
     }
 
     displaySmartRecommendations(analysis, project) {
@@ -3193,7 +3281,25 @@ class XyloclimePro {
 
         switch (snowDataSource.source) {
             case 'NOAA':
-                return `<br><small style="color: var(--electric-cyan); font-size: 0.85rem;"><i class="fas fa-broadcast-tower"></i> ${snowDataSource.station} (${snowDataSource.distance.toFixed(1)}km) • ${snowDataSource.accuracy} accuracy • Direct station measurements</small>`;
+                // Build elevation info display
+                let elevationInfo = '';
+                let elevationWarningHTML = '';
+
+                if (snowDataSource.elevationDiff !== undefined) {
+                    const elevIcon = snowDataSource.terrainCompatibility === 'GOOD' ? '✓' :
+                                    snowDataSource.terrainCompatibility === 'ACCEPTABLE' ? '⚠' : '⚠️';
+                    elevationInfo = ` • Elevation offset: ${elevIcon} ${snowDataSource.elevationDiff}m`;
+
+                    // Show warning for poor terrain compatibility
+                    if (snowDataSource.terrainCompatibility === 'POOR' && snowDataSource.elevationWarning) {
+                        elevationWarningHTML = `<div style="background: rgba(245, 158, 11, 0.15); border-left: 3px solid #f59e0b; padding: 0.5rem; margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.4;">
+                            <strong style="color: #f59e0b;"><i class="fas fa-mountain"></i> Terrain Warning:</strong><br>
+                            ${snowDataSource.elevationWarning}
+                        </div>`;
+                    }
+                }
+
+                return `<br><small style="color: var(--electric-cyan); font-size: 0.85rem;"><i class="fas fa-broadcast-tower"></i> ${snowDataSource.station} (${snowDataSource.distance.toFixed(1)}km${elevationInfo}) • ${snowDataSource.accuracy} accuracy • Direct station measurements</small>${elevationWarningHTML}`;
             case 'Visual Crossing':
                 return `<br><small style="color: #48bb78; font-size: 0.85rem;"><i class="fas fa-database"></i> ${snowDataSource.location} • ${snowDataSource.accuracy} accuracy • Station-based</small>`;
             case 'ECMWF IFS':
@@ -3344,6 +3450,39 @@ class XyloclimePro {
     // ============================================================================
     // NOAA CDO API INTEGRATION - Enhanced Snow Data Accuracy
     // ============================================================================
+
+    /**
+     * Fetch elevation for a location using Open-Meteo Elevation API
+     * CRITICAL for terrain-aware NOAA station selection in mountainous regions
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     * @returns {Promise<number|null>} Elevation in meters, or null if unavailable
+     */
+    async fetchElevation(lat, lng) {
+        try {
+            const url = `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                console.warn('[ELEVATION] API request failed:', response.status);
+                return null;
+            }
+
+            const data = await response.json();
+
+            if (data && data.elevation && data.elevation.length > 0) {
+                const elevation = Math.round(data.elevation[0]); // Round to nearest meter
+                console.log(`[ELEVATION] Project location: ${elevation}m elevation`);
+                return elevation;
+            }
+
+            console.warn('[ELEVATION] No elevation data returned');
+            return null;
+        } catch (error) {
+            console.error('[ELEVATION] Error fetching elevation:', error);
+            return null;
+        }
+    }
 
     /**
      * Check if coordinates are in North America (NOAA coverage area)
@@ -3643,12 +3782,30 @@ class XyloclimePro {
 
         if (isNorthAmerica) {
             try {
-                // Use larger search radius (300km) for better coverage in rural areas
+                // *** TERRAIN-AWARE STATION SELECTION ***
+                // Fetch project elevation for mountainous terrain compatibility
+                const projectElevation = await this.fetchElevation(lat, lng);
                 const searchRadius = 300;
-                const noaaStation = await this.findNearestNOAAStation(lat, lng, searchRadius);
+                let noaaStation = null;
+
+                // Use elevation-aware selection if elevation data available
+                if (projectElevation !== null) {
+                    console.log('[DATA SOURCE] Using terrain-aware station selection (elevation-matched)');
+                    // For mountainous regions: max 300m elevation difference preferred
+                    noaaStation = await noaaNetwork.findElevationMatchedStation(lat, lng, projectElevation, searchRadius, 300);
+                }
+
+                // Fallback to distance-only selection if elevation unavailable or no match
+                if (!noaaStation) {
+                    console.log('[DATA SOURCE] Falling back to distance-only station selection');
+                    noaaStation = await this.findNearestNOAAStation(lat, lng, searchRadius);
+                }
 
             if (noaaStation) {
-                console.log(`[NOAA] Found station: ${noaaStation.name} (${noaaStation.distance}km away, ${noaaStation.country})`);
+                const elevInfo = noaaStation.elevationDiff !== undefined
+                    ? `, elevation diff: ${noaaStation.elevationDiff}m (${noaaStation.terrainCompatibility})`
+                    : '';
+                console.log(`[NOAA] Found station: ${noaaStation.name} (${noaaStation.distance}km away${elevInfo}, ${noaaStation.country})`);
 
                 // Try to fetch data from the nearest station
                 let noaaResult = await this.fetchNOAAData(noaaStation.id, startDate, endDate);
@@ -3682,10 +3839,18 @@ class XyloclimePro {
                         distance: noaaStation.distance,
                         country: noaaStation.country || noaaStation.state,
                         accuracy: '100%',
-                        type: 'station'
+                        type: 'station',
+                        // Terrain compatibility metadata
+                        elevation: noaaStation.elevation,
+                        elevationDiff: noaaStation.elevationDiff,
+                        terrainCompatibility: noaaStation.terrainCompatibility,
+                        elevationWarning: noaaStation.elevationWarning
                     };
                     console.log('[DATA SOURCE] ✓ TIER 1: Using NOAA station data (100% accuracy)');
-                    console.log(`[NOAA] Final station: ${noaaStation.name}, Distance: ${noaaStation.distance}km`);
+                    const elevLog = noaaStation.elevationDiff !== undefined
+                        ? `, elevation offset: ${noaaStation.elevationDiff}m (${noaaStation.terrainCompatibility})`
+                        : '';
+                    console.log(`[NOAA] Final station: ${noaaStation.name}, Distance: ${noaaStation.distance}km${elevLog}`);
                 } else {
                     console.log('[DATA SOURCE] NOAA data fetch failed for all nearby stations, continuing to next tier...');
                 }
@@ -3886,7 +4051,7 @@ class XyloclimePro {
     }
 
     async fetchHistoricalDataForPrediction(lat, lng, projectStartDate, projectEndDate) {
-        const yearsToFetch = 5;
+        const yearsToFetch = 10;  // Fetch 10 years of historical data for robust statistical analysis
         const today = new Date();
         const historicalEndYear = today.getFullYear() - 1;
 
@@ -3986,19 +4151,19 @@ class XyloclimePro {
                 totalSnowfall: this.sum(daily.snowfall_sum.filter(s => s !== null && s > 1)),  // Only sum measurable snow (>1mm threshold) - matches snowyDays logic
 
                 // Count event days for THIS YEAR
-                // TEMPERATURE CATEGORIES (construction-specific thresholds):
-                // REALISTIC thresholds based on modern cold-weather concrete practices:
-                // - Light freezing (0 to -5°C / 32-23°F): Workable with blankets, timing adjustments
-                // - Cold-weather methods (≤-5°C to -18°C / ≤23°F to 0°F): Workable with accelerators, hot water, enclosures, blankets
+                // TEMPERATURE CATEGORIES (construction industry-standard thresholds):
+                // Based on ACI 306 and OSHA cold-weather guidelines:
+                // - Light freezing (0°C to -4°C / 32°F to 25°F): Workable with blankets, timing adjustments
+                // - Cold-weather methods (-4°C to -18°C / 25°F to 0°F): Workable with accelerators, hot water, enclosures, blankets
                 // - EXTREME COLD STOPPAGE (≤-18°C / ≤0°F): True work stoppage - even protected pours are risky
-                // - Hot days (≥ 100°F / 37.78°C): Tracked for information - reduces ideal days but still workable with precautions
-                // - Dangerous heat (≥ 110°F / 43.33°C): True work stoppage - safety risk
-                allFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t <= 0).length,  // All days at/below freezing
-                lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -5 && t <= 0).length,  // Light precautions (blankets, timing)
-                coldWeatherMethodsDays: daily.temperature_2m_min.filter(t => t !== null && t <= -5 && t > -18).length,  // Workable with proper methods (accelerators, hot water, enclosures)
-                extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -18).length,  // TRUE work stoppage (≤0°F)
-                comfortableTemps: daily.temperature_2m_min.filter(t => t !== null && t > -5).length,  // Days >-5°C / >23°F (comfortable working temps)
-                extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 37.78).length,  // Days ≥100°F (informational - not work-stopping)
+                // - Hot days (≥ 38°C / ≥100°F): Tracked for information - reduces ideal days but still workable with precautions
+                // - Dangerous heat (≥ 43°C / ≥110°F): True work stoppage - safety risk
+                allFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t <= 0).length,  // All days at/below 32°F/0°C
+                lightFreezingDays: daily.temperature_2m_min.filter(t => t !== null && t > -4 && t <= 0).length,  // Light precautions (32°F to 25°F / 0°C to -4°C)
+                coldWeatherMethodsDays: daily.temperature_2m_min.filter(t => t !== null && t <= -4 && t > -18).length,  // Workable with proper methods (25°F to 0°F / -4°C to -18°C)
+                extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -18).length,  // TRUE work stoppage (≤0°F / ≤-18°C)
+                comfortableTemps: daily.temperature_2m_min.filter(t => t !== null && t > -4).length,  // Days >25°F/>-4°C (comfortable working temps)
+                extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 38).length,  // Days ≥100°F/≥38°C (informational - not work-stopping)
 
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-15mm): Workable with rain gear/drainage
@@ -4017,8 +4182,10 @@ class XyloclimePro {
                 // - Elevated work safety limits at 30-50 km/h
                 // - Material handling becomes challenging at 30+ km/h
                 // - Light wind (< 30 km/h): Safe for all construction activities
-                // - High wind (≥ 30 km/h): Restricts crane operations, elevated work, material handling
+                // - Elevated wind (≥ 30 km/h): Restricts crane operations, elevated work, material handling (monitoring)
+                // - Work-stopping wind (≥ 60 km/h): General construction work stoppage (safety hazard)
                 highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Elevated wind (monitoring threshold, not work-stopping)
+                workStoppingWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 60).length,  // TRUE work stoppage (≥60 km/h = ≥37 mph)
                 avgWindSpeed: this.average(daily.windspeed_10m_max),
                 maxWindSpeed: (() => {
                     const windValues = daily.windspeed_10m_max.filter(w => w !== null);
@@ -4075,9 +4242,10 @@ class XyloclimePro {
                         return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {
                         // Default lenient thresholds for general construction
+                        // Use industry-standard temperature values (not arbitrary conversions)
                         const defaultThresholds = {
-                            criticalMinTemp: -5,   // °C (23°F) - work possible with precautions
-                            maxTemp: 43.33,        // °C (110°F) - heat safety limit
+                            criticalMinTemp: -7,   // °C (≈20°F) - industry standard for cold-weather work
+                            maxTemp: 43,           // °C (≈109°F) - heat safety limit (rounds to 110°F)
                             maxRain: 15,           // mm (0.6 in) - heavy rain stops work
                             maxWind: 60,           // km/h (37 mph) - work-stopping wind for general construction
                             maxSnow: 10            // mm water equiv - heavy snow stops work
@@ -4111,18 +4279,36 @@ class XyloclimePro {
 
                     // Use template-specific ideal thresholds if available
                     if (template?.workabilityThresholds) {
-                        const idealThresholds = template.workabilityThresholds;
+                        const workableThresholds = template.workabilityThresholds;
 
-                        // For ideal days, use smart temperature logic:
-                        // - Daily low must be above criticalMinTemp (for curing/overnight)
-                        // - Daily high must be above idealMinTemp (for application/daytime work)
+                        // *** CRITICAL FIX: Ideal days need MUCH STRICTER thresholds than workable days ***
+                        // Ideal = perfect conditions, no precautions needed
+                        // Workable = feasible with proper precautions
+                        //
+                        // For realistic ideal/workable ratios in variable climates (WV, etc.):
+                        // - Temperature: Use idealMinTemp for BOTH min and approach to max (not criticalMinTemp!)
+                        // - Rain: ~1/3 of workable threshold (5mm vs 15mm)
+                        // - Wind: ~40% of workable threshold (20 km/h vs 50 km/h)
+                        // - Snow: Virtually none allowed (0.5cm vs 5cm)
+
+                        const idealMinTemp = workableThresholds.idealMinTemp || workableThresholds.criticalMinTemp;
+                        const idealMaxRain = Math.min(5, workableThresholds.maxRain * 0.33);  // 1/3 of workable, max 5mm
+                        const idealMaxWind = Math.min(20, workableThresholds.maxWind * 0.4);  // 40% of workable, max 20 km/h
+                        const idealMaxSnow = 0.5;  // Virtually no snow for ideal days (trace amounts only)
+
+                        // Ideal temperature range: narrow comfortable band
+                        // - Low must be above idealMinTemp (not criticalMinTemp!)
+                        // - High must be above idealMinTemp
+                        // - High must be well below maxTemp (leave margin for comfort)
+                        const idealMaxTemp = Math.min(32, workableThresholds.maxTemp - 8);  // 8°C buffer from max, cap at 32°C (90°F)
+
                         const meetsTemp = temp_min !== null && t !== null &&
-                                        temp_min > idealThresholds.criticalMinTemp &&
-                                        t > (idealThresholds.idealMinTemp || idealThresholds.criticalMinTemp) &&
-                                        t < idealThresholds.maxTemp;
-                        const meetsRain = precip !== null && precip < (idealThresholds.maxRain || 0);
-                        const meetsWind = wind !== null && wind < (idealThresholds.maxWind || 20);
-                        const meetsSnow = snow === null || snow <= (idealThresholds.maxSnow || 0);  // Ideal: no snow (or use template maxSnow) - snow uses <= because > is used for heavy snow checks
+                                        temp_min > idealMinTemp &&
+                                        t > idealMinTemp &&
+                                        t < idealMaxTemp;
+                        const meetsRain = precip !== null && precip < idealMaxRain;
+                        const meetsWind = wind !== null && wind < idealMaxWind;
+                        const meetsSnow = snow === null || snow <= idealMaxSnow;
 
                         return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {
@@ -4185,6 +4371,7 @@ class XyloclimePro {
         const snowyDays = Math.round(this.average(yearlyStats.map(y => y.snowyDays)));
         const heavySnowDays = Math.round(this.average(yearlyStats.map(y => y.heavySnowDays)));
         const highWindDays = Math.round(this.average(yearlyStats.map(y => y.highWindDays)));
+        const workStoppingWindDays = Math.round(this.average(yearlyStats.map(y => y.workStoppingWindDays)));  // NEW: Work-stopping wind (≥60 km/h)
         const multiStoppageDays = Math.round(this.average(yearlyStats.map(y => y.multiStoppageDays)));
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
@@ -4259,6 +4446,7 @@ class XyloclimePro {
 
             // Event days - Wind
             highWindDays,             // Elevated wind (≥30 km/h) - monitoring threshold, restrictions apply but work continues
+            workStoppingWindDays,     // Work-stopping wind (≥60 km/h / ≥37 mph) - true work stoppage (safety hazard)
             avgWindSpeed: this.average(yearlyStats.map(y => y.avgWindSpeed)).toFixed(1),
             maxWindSpeed: Math.max(...yearlyStats.map(y => y.maxWindSpeed)).toFixed(1),
 
@@ -4297,6 +4485,9 @@ class XyloclimePro {
 
             // NEW - Snow data source for proper warning display
             snowDataSource: snowDataSource,
+
+            // Wind data source (ERA5 in current implementation - significantly underestimates gusts/max winds)
+            windSource: 'ERA5',  // NOAA stations may provide wind data in future, but currently only ERA5
 
             // TEMPLATE-SPECIFIC KPIs
             // Calculate KPIs based on selected template if available
@@ -4725,11 +4916,28 @@ class XyloclimePro {
         this.reconcileMonthlyTotals(breakdown, 'workStoppingColdDays', sumWorkStoppingCold, targetWorkStoppingCold, monthlyStats, yearsCount);
         this.reconcileMonthlyTotals(breakdown, 'heavySnowDays', sumHeavySnow, targetHeavySnow, monthlyStats, yearsCount);
 
+        // CRITICAL VALIDATION: Verify monthly sums match yearly totals
+        const finalSumHeavyRain = breakdown.reduce((s,m)=>s+m.heavyRainDays,0);
+        const finalSumWorkStoppingCold = breakdown.reduce((s,m)=>s+m.workStoppingColdDays,0);
+        const finalSumHeavySnow = breakdown.reduce((s,m)=>s+m.heavySnowDays,0);
+
         console.log('[MONTHLY] Monthly breakdown calculated and reconciled:', {
-            heavyRain: `${breakdown.reduce((s,m)=>s+m.heavyRainDays,0)} (target: ${targetHeavyRain})`,
-            workStoppingCold: `${breakdown.reduce((s,m)=>s+m.workStoppingColdDays,0)} (target: ${targetWorkStoppingCold})`,
-            heavySnow: `${breakdown.reduce((s,m)=>s+m.heavySnowDays,0)} (target: ${targetHeavySnow})`
+            heavyRain: `${finalSumHeavyRain} (target: ${targetHeavyRain})`,
+            workStoppingCold: `${finalSumWorkStoppingCold} (target: ${targetWorkStoppingCold})`,
+            heavySnow: `${finalSumHeavySnow} (target: ${targetHeavySnow})`
         });
+
+        // ERROR DETECTION: Warn if reconciliation failed
+        if (finalSumHeavyRain !== targetHeavyRain) {
+            console.error(`[MONTHLY] ❌ RECONCILIATION FAILED: Heavy rain sum (${finalSumHeavyRain}) doesn't match target (${targetHeavyRain})`);
+        }
+        if (finalSumWorkStoppingCold !== targetWorkStoppingCold) {
+            console.error(`[MONTHLY] ❌ RECONCILIATION FAILED: Work-stopping cold sum (${finalSumWorkStoppingCold}) doesn't match target (${targetWorkStoppingCold})`);
+        }
+        if (finalSumHeavySnow !== targetHeavySnow) {
+            console.error(`[MONTHLY] ❌ RECONCILIATION FAILED: Heavy snow sum (${finalSumHeavySnow}) doesn't match target (${targetHeavySnow})`);
+        }
+
         return breakdown;
     }
 
@@ -4975,13 +5183,13 @@ class XyloclimePro {
                 status: '⚠',
                 note: `Low data coverage (${yearsAnalyzed} years)`,
                 severity: 'WARNING',
-                context: 'Recommend 8-10 years for statistical confidence'
+                context: 'Recommend 10 years for optimal statistical confidence'
             });
             warnings++;
         } else if (yearsAnalyzed >= 8) {
             findings.internalConsistency.push({
                 status: '✓',
-                note: `Good data coverage (${yearsAnalyzed} years)`
+                note: `Excellent data coverage (${yearsAnalyzed} years)`
             });
         } else {
             findings.internalConsistency.push({
@@ -5397,12 +5605,21 @@ class XyloclimePro {
         console.log(`[RISK] Calculating risk for ${totalDays}-day project`);
 
         // 1. Precipitation Risk (30% weight)
-        // More rainy/snowy days = higher risk
-        const wetDays = parseInt(analysis.rainyDays) + parseInt(analysis.snowyDays);
-        const wetDaysRatio = wetDays / totalDays;
-        const precipRisk = Math.min(100, wetDaysRatio * 300);
+        // *** CRITICAL FIX: Use WORK-STOPPING precipitation, not all wet days ***
+        // OLD BUG: Counted ALL rainy days (>1mm drizzle) + ALL snowy days → inflated risk to 100%
+        // NEW: Count only HEAVY rain (≥15mm) + HEAVY snow (work-stopping) → realistic risk
+        //
+        // Example WV project:
+        //   OLD: 119 rainy + 23 snowy = 142 "wet days" = 39% × 300 = 117% → 100% CRITICAL (wrong!)
+        //   NEW: 22 heavy rain + 4 heavy snow = 26 work-stopping days = 7% × 400 = 28% MODERATE (correct!)
+        const workStoppingWetDays = parseInt(analysis.heavyRainDays || 0) + parseInt(analysis.heavySnowDays || 0);
+        const workStoppingWetRatio = workStoppingWetDays / totalDays;
+        // Scale: 25% work-stopping wet days = 100% risk (critical)
+        // 10% work-stopping = 40% risk (moderate)
+        // 5% work-stopping = 20% risk (low)
+        const precipRisk = Math.min(100, workStoppingWetRatio * 400);
 
-        console.log(`[RISK] Precipitation: ${wetDays}/${totalDays} days (${(wetDaysRatio*100).toFixed(1)}%) = ${precipRisk.toFixed(1)} risk`);
+        console.log(`[RISK] Precipitation: ${workStoppingWetDays}/${totalDays} work-stopping wet days (${analysis.heavyRainDays} heavy rain + ${analysis.heavySnowDays} heavy snow, ${(workStoppingWetRatio*100).toFixed(1)}%) = ${precipRisk.toFixed(1)} risk`);
 
         // 2. Temperature Risk (25% weight)
         // REALISTIC work-stopping temperature extremes based on modern cold-weather practices
@@ -5416,20 +5633,21 @@ class XyloclimePro {
         console.log(`[RISK] Temperature: ${workStoppingTempDays}/${totalDays} work-stopping days (${analysis.extremeColdDays} extreme cold ≤0°F + ${Math.round(parseInt(analysis.extremeHeatDays) * 0.5)} heat days, ${(tempExtremeRatio*100).toFixed(1)}%) = ${tempRisk.toFixed(1)} risk`);
 
         // 3. Wind Risk (20% weight)
-        // Check if we have actual wind data
+        // *** CRITICAL FIX: Use WORK-STOPPING wind (≥60 km/h), not monitoring threshold (≥30 km/h) ***
+        // OLD BUG: Used highWindDays (≥30 km/h, not work-stopping) → inflated risk
+        // NEW: Use workStoppingWindDays (≥60 km/h, safety hazard) → realistic risk
         const hasWindData = analysis.avgWindSpeed !== undefined && analysis.avgWindSpeed !== null && !isNaN(analysis.avgWindSpeed);
         let windRisk = 0;
 
         if (hasWindData) {
-            // Use actual wind data if available
-            const highWindDays = parseInt(analysis.highWindDays) || 0;
-            const windDaysRatio = highWindDays / totalDays;
-            // FIX: Changed multiplier from 500 to 200 for more reasonable scaling
-            // 50% of days with high wind = 100% risk (extreme)
-            // 25% of days = 50% risk (moderate)
-            // 20% of days = 40% risk (reasonable for windy climates)
-            windRisk = Math.min(100, windDaysRatio * 200);
-            console.log(`[RISK] Wind: ${highWindDays}/${totalDays} high wind days (${(windDaysRatio*100).toFixed(1)}%) = ${windRisk.toFixed(1)} risk`);
+            // Use work-stopping wind days (≥60 km/h = ≥37 mph)
+            const workStoppingWindDays = parseInt(analysis.workStoppingWindDays) || 0;
+            const windStoppingRatio = workStoppingWindDays / totalDays;
+            // Scale: 25% work-stopping wind days = 100% risk (critical)
+            // 10% work-stopping = 40% risk (moderate)
+            // 5% work-stopping = 20% risk (low)
+            windRisk = Math.min(100, windStoppingRatio * 400);
+            console.log(`[RISK] Wind: ${workStoppingWindDays}/${totalDays} work-stopping wind days (≥60 km/h, ${(windStoppingRatio*100).toFixed(1)}%) = ${windRisk.toFixed(1)} risk`);
         } else {
             // No wind data available - set to null for special handling
             windRisk = null;
@@ -5653,6 +5871,22 @@ class XyloclimePro {
                 recommendations.push(`${highWindDays} elevated wind days expected (≥30 km/h). May restrict crane operations for rebar/forms`);
             } else if (highWindDays > 20) {
                 recommendations.push(`Consider ${highWindDays} elevated wind days (≥30 km/h) for safety planning. Work stops at ≥60 km/h`);
+            }
+        }
+
+        // *** CRITICAL WARNING: ERA5 Wind Data Underestimation ***
+        // ERA5 reanalysis significantly underestimates wind gusts and maximum speeds
+        // due to hourly averaging and 30km spatial resolution
+        if (analysis.windSource === 'ERA5') {
+            const maxWind = parseFloat(analysis.maxWindSpeed) || 0;
+            const avgWind = parseFloat(analysis.avgWindSpeed) || 0;
+
+            // Add warning if winds seem unrealistically mild (max < 60 km/h is very rare in most climates)
+            if (maxWind < 60 && maxWind > 0) {
+                recommendations.push(`⚠️ WIND DATA CAUTION: ERA5 reanalysis reports max wind of only ${maxWind} km/h (${(maxWind * 0.621371).toFixed(0)} mph). This is likely underestimated due to hourly averaging and 30km grid resolution. Actual gusts can be 50-100% higher, especially in mountainous terrain, during thunderstorms, or winter storms. Plan conservatively for crane operations and elevated work.`);
+            } else if (avgWind > 0) {
+                // Even if max wind seems reasonable, still warn about ERA5 limitations
+                recommendations.push(`⚠️ Wind data from ERA5 reanalysis (hourly averaged, 30km resolution). Actual gusts may be significantly higher than reported maximums, especially in complex terrain. Use conservative safety margins for wind-sensitive operations.`);
             }
         }
 
@@ -5969,10 +6203,23 @@ class XyloclimePro {
             // Build clear multi-source attribution
             let dataSourceNote = '';
             if (usingNOAA) {
-                dataSourceNote = `*Data Sources: Snowfall from <strong>NOAA station</strong> (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away - direct measurements, high reliability). Temperature, precipitation, and wind from <strong>ERA5 reanalysis</strong> (30km resolution). Historical averages calculated from ${analysis.yearsAnalyzed} years of data.`;
+                // Add elevation warning if terrain compatibility is poor
+                let elevationNote = '';
+                if (analysis.snowDataSource.elevationDiff !== undefined) {
+                    const terrainStatus = analysis.snowDataSource.terrainCompatibility === 'GOOD' ? 'good terrain match' :
+                                        analysis.snowDataSource.terrainCompatibility === 'ACCEPTABLE' ? 'acceptable terrain match' :
+                                        'significant elevation difference';
+                    elevationNote = `, elevation offset: ${analysis.snowDataSource.elevationDiff}m (${terrainStatus})`;
+
+                    // Add strong warning for poor terrain match
+                    if (analysis.snowDataSource.terrainCompatibility === 'POOR') {
+                        elevationNote += `. <strong style="color: #f59e0b;">⚠️ Mountainous terrain warning:</strong> Station elevation differs significantly. Snowfall and temperature estimates may not accurately reflect conditions at your project location. Consider using ERA5 reanalysis data for better local accuracy.`;
+                    }
+                }
+                dataSourceNote = `*Data Sources: Snowfall from <strong>NOAA station</strong> (${analysis.snowDataSource.station}, ${analysis.snowDataSource.distance.toFixed(1)}km away${elevationNote} - direct measurements, high reliability). Temperature, precipitation, and wind from <strong>ERA5 reanalysis</strong> (30km resolution). <strong style="color: #f59e0b;">⚠️ Wind caveat:</strong> ERA5 uses hourly averaged data on a 30km grid, which significantly underestimates wind gusts and maximum speeds. Actual gusts can be 50-100% higher than reported, especially in mountainous terrain or during storms. Plan conservatively for wind-sensitive operations. Historical averages calculated from ${analysis.yearsAnalyzed} years of data.`;
             } else {
                 const snowCapture = analysis.snowDataSource?.accuracy || '~4%';
-                dataSourceNote = `*Data Sources: All metrics from <strong>ERA5 reanalysis</strong> (30km resolution). <strong>Note on snowfall:</strong> Reanalysis models typically capture only ${snowCapture} of station-measured snowfall and often underestimate in mountain/lake-effect regions. Temperature and precipitation metrics are more reliable. Consider using wider contingency buffers for snow-dependent operations.`;
+                dataSourceNote = `*Data Sources: All metrics from <strong>ERA5 reanalysis</strong> (30km resolution). <strong>⚠️ Important limitations:</strong> <strong>Snowfall</strong> - Reanalysis models typically capture only ${snowCapture} of station-measured snowfall and often underestimate in mountain/lake-effect regions. <strong style="color: #f59e0b;">Wind</strong> - Hourly averaged data on 30km grid significantly underestimates gusts and maximum speeds; actual gusts can be 50-100% higher, especially in complex terrain or during storms. Temperature and precipitation metrics are more reliable. Consider wider contingency buffers for snow and wind-dependent operations.`;
             }
 
             const confidenceHTML = `
@@ -6045,11 +6292,39 @@ class XyloclimePro {
             `;
         });
 
+        // VALIDATION: Check if monthly sums match yearly totals
+        const monthlyHeavyRainSum = monthlyData.reduce((sum, m) => sum + m.heavyRainDays, 0);
+        const monthlyWorkStoppingColdSum = monthlyData.reduce((sum, m) => sum + m.workStoppingColdDays, 0);
+        const monthlyHeavySnowSum = monthlyData.reduce((sum, m) => sum + m.heavySnowDays, 0);
+
+        const yearlyHeavyRain = analysis.heavyRainDays || 0;
+        const yearlyWorkStoppingCold = analysis.extremeColdDays || 0;
+        const yearlyHeavySnow = analysis.heavySnowDays || 0;
+
+        let validationWarning = '';
+        if (monthlyHeavyRainSum !== yearlyHeavyRain ||
+            monthlyWorkStoppingColdSum !== yearlyWorkStoppingCold ||
+            monthlyHeavySnowSum !== yearlyHeavySnow) {
+            validationWarning = `
+                <div style="background: rgba(245, 158, 11, 0.15); border-left: 3px solid #f59e0b; padding: 0.75rem; margin-top: 0.5rem; font-size: 0.9rem;">
+                    <strong style="color: #f59e0b;"><i class="fas fa-exclamation-triangle"></i> Data Integrity Warning:</strong><br>
+                    Monthly sums don't match yearly totals. Yearly values are authoritative:
+                    <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+                        <li>Heavy Rain: Monthly sum = ${monthlyHeavyRainSum}, Yearly total = ${yearlyHeavyRain}</li>
+                        <li>Work-Stopping Cold: Monthly sum = ${monthlyWorkStoppingColdSum}, Yearly total = ${yearlyWorkStoppingCold}</li>
+                        <li>Heavy Snow: Monthly sum = ${monthlyHeavySnowSum}, Yearly total = ${yearlyHeavySnow}</li>
+                    </ul>
+                    Use the yearly totals for contingency calculations, not the monthly sums.
+                </div>
+            `;
+        }
+
         tableHTML += `
                     </tbody>
                 </table>
+                ${validationWarning}
                 <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--steel-silver); font-style: italic;">
-                    Note: Work-Stopping Cold = days ${this.formatThresholdTemp(-18, '≤')} requiring work stoppage. Days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-5, '≤')} are workable with cold-weather methods.
+                    Note: Work-Stopping Cold = days ${this.formatThresholdTemp(-18, '≤')} requiring work stoppage. Days between ${this.formatThresholdTemp(-18, '>')} and ${this.formatThresholdTemp(-4, '≤')} are workable with cold-weather methods.
                 </p>
                 <p style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; font-size: 0.9rem; color: var(--steel-silver);">
                     <strong>Monthly Risk vs. Composite Risk:</strong> Monthly risk levels shown above count only work-stopping events (heavy rain + extreme cold + heavy snow). The overall <strong>Composite Risk Score</strong> uses a weighted formula including all weather factors: precipitation (30%), temperature (25%), wind (20%), and workability (25%). This is why months can show "Low" risk while the project has "Moderate" composite risk.
@@ -6368,13 +6643,34 @@ class XyloclimePro {
         if (el('totalSnow')) el('totalSnow').textContent = this.formatSnow(analysis.totalSnowfall);
 
         // Wind data (now available from API)
+        // *** CRITICAL WARNING: ERA5 significantly underestimates wind speeds ***
         if (el('avgWind')) {
             const avgWind = analysis.avgWindSpeed;
-            el('avgWind').textContent = (avgWind !== undefined && avgWind !== null && avgWind !== 'N/A') ? `${avgWind} km/h` : 'N/A';
+            const windSource = analysis.windSource || 'ERA5'; // Default to ERA5 if not specified
+            const isERA5 = windSource === 'ERA5';
+
+            if (isERA5) {
+                // ERA5 wind data - add prominent warning
+                el('avgWind').innerHTML = (avgWind !== undefined && avgWind !== null && avgWind !== 'N/A')
+                    ? `${avgWind} km/h <span style="color: #f59e0b; font-size: 0.8rem; font-weight: normal;">⚠ ERA5 (underestimates)</span>`
+                    : 'N/A';
+            } else {
+                el('avgWind').textContent = (avgWind !== undefined && avgWind !== null && avgWind !== 'N/A') ? `${avgWind} km/h` : 'N/A';
+            }
         }
         if (el('maxWind')) {
             const maxWind = analysis.maxWindSpeed;
-            el('maxWind').textContent = (maxWind !== undefined && maxWind !== null && maxWind !== 'N/A') ? `${maxWind} km/h` : 'N/A';
+            const windSource = analysis.windSource || 'ERA5';
+            const isERA5 = windSource === 'ERA5';
+
+            if (isERA5) {
+                // ERA5 wind data - add prominent warning
+                el('maxWind').innerHTML = (maxWind !== undefined && maxWind !== null && maxWind !== 'N/A')
+                    ? `${maxWind} km/h <span style="color: #f59e0b; font-size: 0.8rem; font-weight: normal;">⚠ ERA5 (underestimates)</span>`
+                    : 'N/A';
+            } else {
+                el('maxWind').textContent = (maxWind !== undefined && maxWind !== null && maxWind !== 'N/A') ? `${maxWind} km/h` : 'N/A';
+            }
         }
 
         // Extreme heat days
@@ -7823,7 +8119,7 @@ class XyloclimePro {
         doc.setFont(undefined, 'bold');
         doc.text('Analysis Period:', 25, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(`${analysis.yearsAnalyzed || 5} years of historical data (2019-2024)`, 75, yPos);
+        doc.text(`${analysis.yearsAnalyzed || 10} years of historical data (same calendar period)`, 75, yPos);
 
         yPos += 7;
         doc.setFont(undefined, 'bold');
