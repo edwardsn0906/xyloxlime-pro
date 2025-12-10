@@ -9548,7 +9548,7 @@ class XyloclimePro {
         }
     }
 
-    loadProject(projectId) {
+    async loadProject(projectId) {
         const project = this.projects.find(p => p.id === projectId);
         if (!project) {
             window.toastManager.warning('Project not found. It may have been deleted.', 'Project Not Found');
