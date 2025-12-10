@@ -187,14 +187,14 @@ class ProjectTemplatesLibrary {
                 riskFactors: {
                     rain: 'CRITICAL',
                     temperature: 'HIGH',
-                    wind: 'HIGH',
-                    seasonal: 'CRITICAL'
+                    wind: 'MEDIUM',
+                    seasonal: 'CRITICAL'  // Workability is critical - need narrow windows
                 },
                 riskWeights: {
-                    precipitation: 0.40,  // Critical - ruins uncured paint
-                    temperature: 0.30,    // High - narrow temp range for curing
-                    wind: 0.20,           // Medium - affects spray quality
-                    workability: 0.10     // Low - short windows acceptable
+                    precipitation: 0.30,  // Critical - ruins uncured paint
+                    temperature: 0.25,    // High - narrow temp range for curing
+                    wind: 0.15,           // Medium - affects spray quality
+                    workability: 0.30     // CRITICAL - Need consistent workable windows (48hr dry periods, narrow temp range)
                 },
                 workabilityThresholds: {
                     criticalMinTemp: 10,  // °C (50°F) - minimum cure temp

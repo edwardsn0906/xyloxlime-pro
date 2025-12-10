@@ -5744,6 +5744,30 @@ class XyloclimePro {
             );
         }
 
+        // CRITICAL FIX: Apply workability floor for critically low workable days
+        // When workability is extremely low, the weighted score doesn't reflect true project risk
+        // This ensures projects with <30% workable days get appropriate risk ratings
+        if (favorableRatio < 0.30) {
+            // <30% workable days = critically constrained project
+            // Apply minimum risk floor based on severity
+            let workabilityFloor;
+            if (favorableRatio < 0.15) {
+                // <15% workable = EXTREME constraint
+                workabilityFloor = 65; // HIGH to EXTREME RISK
+                console.log(`[RISK] CRITICAL: Only ${(favorableRatio*100).toFixed(1)}% workable days - applying floor of ${workabilityFloor}`);
+            } else if (favorableRatio < 0.25) {
+                // 15-25% workable = HIGH constraint
+                workabilityFloor = 45; // MODERATE to HIGH RISK
+                console.log(`[RISK] WARNING: Only ${(favorableRatio*100).toFixed(1)}% workable days - applying floor of ${workabilityFloor}`);
+            } else {
+                // 25-30% workable = MODERATE constraint
+                workabilityFloor = 30; // MODERATE RISK minimum
+                console.log(`[RISK] CAUTION: Only ${(favorableRatio*100).toFixed(1)}% workable days - applying floor of ${workabilityFloor}`);
+            }
+
+            totalScore = Math.max(totalScore, workabilityFloor);
+        }
+
         // Clamp totalScore to 0-100 range to handle misconfigured template weights
         totalScore = Math.max(0, Math.min(100, totalScore));
 
