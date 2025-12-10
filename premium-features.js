@@ -502,6 +502,7 @@ class SmartRecommendations {
         this.analyzeRainRisk(analysis, recommendations, recommendedContingency);
         this.analyzeTemperatureRisk(analysis, recommendations, template);  // Pass template for painting-specific temp constraints
         this.analyzeWindRisk(analysis, recommendations, template);  // Pass template for wind-specific thresholds
+        this.analyzeHumidityRisk(analysis, recommendations, template);  // Pass template for humidity-specific thresholds (painting)
         this.analyzeSeasonalRisk(analysis, project, recommendations);
         this.analyzeWorkableDays(analysis, project, recommendations, recommendedContingency);
         this.generateSchedulingInsights(analysis, project, recommendations);
@@ -673,6 +674,81 @@ class SmartRecommendations {
                 action: 'Schedule wind-sensitive tasks during calm periods. Have backup plans.',
                 priority: 'medium'
             });
+        }
+    }
+
+    analyzeHumidityRisk(analysis, recommendations, template) {
+        const humidityData = analysis.humidityData;
+
+        // Only provide humidity recommendations if data is available
+        if (!humidityData || !humidityData.hasData) {
+            return;
+        }
+
+        const totalDays = analysis.actualProjectDays || 365;
+        const lowHumidityDays = humidityData.lowHumidityDays || 0;
+        const highHumidityDays = humidityData.highHumidityDays || 0;
+        const poorDewPointDays = humidityData.poorDewPointSpreadDays || 0;
+        const totalHumidityIssues = lowHumidityDays + highHumidityDays + poorDewPointDays;
+
+        // Humidity is critical for painting - provide detailed recommendations
+        if (template?.name === 'Exterior Painting' && totalHumidityIssues > 0) {
+            const humidityPercent = Math.round((totalHumidityIssues / totalDays) * 100);
+
+            if (humidityPercent > 40) {
+                recommendations.critical.push({
+                    icon: 'fa-tint',
+                    title: 'Significant Humidity Constraints',
+                    message: `${totalHumidityIssues} days (${humidityPercent}%) with poor humidity conditions. ${lowHumidityDays} too dry (<40% RH), ${highHumidityDays} too humid (>85% RH), ${poorDewPointDays} condensation risk (dew point spread <5°F).`,
+                    action: `REQUIRED: Use portable hygrometers on-site. Paint ONLY when RH 40-85% AND surface temp 5°F+ above dew point. In dry conditions use retarders/conditioners. In humid conditions use fast-cure formulas and increase ventilation. Morning dew typically dries by 9-10am.`,
+                    priority: 'high'
+                });
+            } else if (humidityPercent > 25) {
+                recommendations.important.push({
+                    icon: 'fa-tint',
+                    title: 'Moderate Humidity Challenges',
+                    message: `${totalHumidityIssues} days (${humidityPercent}%) with challenging humidity. Paint quality requires 40-85% RH and adequate dew point spread.`,
+                    action: `Monitor humidity on-site with portable meters. Paint during optimal humidity windows (typically mid-morning to mid-afternoon). Adjust paint formulas as needed.`,
+                    priority: 'medium'
+                });
+            } else if (humidityPercent > 10) {
+                recommendations.helpful.push({
+                    icon: 'fa-tint',
+                    title: 'Humidity Awareness',
+                    message: `${totalHumidityIssues} days with non-ideal humidity. Monitor for optimal painting conditions.`,
+                    action: `Check RH and dew point before painting. Ideal range: 40-85% RH with surface temp 5°F above dew point.`,
+                    priority: 'low'
+                });
+            }
+
+            // Specific recommendations based on predominant humidity issue
+            if (lowHumidityDays > highHumidityDays && lowHumidityDays > totalDays * 0.20) {
+                recommendations.insights.push({
+                    icon: 'fa-wind',
+                    title: 'Dry Climate Painting Strategy',
+                    message: `${lowHumidityDays} days with low humidity (<40% RH). Dry air causes fast evaporation, poor flow, and overspray issues.`,
+                    action: `Use paint retarders/conditioners to slow drying. Apply during cooler morning hours. Use HVLP spray equipment to reduce overspray. Keep material and surfaces out of direct sun.`,
+                    priority: 'low'
+                });
+            } else if (highHumidityDays > lowHumidityDays && highHumidityDays > totalDays * 0.20) {
+                recommendations.insights.push({
+                    icon: 'fa-cloud-rain',
+                    title: 'Humid Climate Painting Strategy',
+                    message: `${highHumidityDays} days with high humidity (>85% RH). Excess moisture slows cure and causes runs/sags.`,
+                    action: `Use fast-cure paint formulas. Increase ventilation/airflow. Apply thinner coats to prevent runs. Wait for humidity to drop before starting (typically after 10am). Avoid painting late afternoon when humidity rises.`,
+                    priority: 'low'
+                });
+            }
+
+            if (poorDewPointDays > totalDays * 0.25) {
+                recommendations.important.push({
+                    icon: 'fa-exclamation-triangle',
+                    title: 'Condensation Risk High',
+                    message: `${poorDewPointDays} days with dew point spread <5°F. Surface condensation causes adhesion failure and blistering.`,
+                    action: `Monitor surface temp with infrared thermometer - must be 5°F minimum above dew point. Delay painting if condensation present. Morning dew must fully evaporate before work begins.`,
+                    priority: 'medium'
+                });
+            }
         }
     }
 

@@ -1241,17 +1241,49 @@ class XyloclimePro {
             `;
         }
 
-        // Humidity and dew point (note: data not currently available)
-        html += `
-            <div class="hazard-card info">
-                <div class="hazard-icon"><i class="fas fa-info-circle"></i></div>
-                <div class="hazard-content">
-                    <h4>Humidity & Dew Point</h4>
-                    <p class="hazard-detail"><strong>Note:</strong> Humidity and dew point data not currently included in this analysis. These factors significantly impact paint application and cure.</p>
-                    <p class="hazard-recommendation"><strong>Best Practice:</strong> Surface temperature must be minimum 5°F above dew point during application and cure. Use portable humidity meters on-site. Morning dew can delay start times (typically dry by 9-10am).</p>
+        // Humidity and dew point constraints
+        const humidityData = analysis.humidityData;
+
+        if (humidityData && humidityData.hasData) {
+            const lowHumidityDays = humidityData.lowHumidityDays || 0;
+            const highHumidityDays = humidityData.highHumidityDays || 0;
+            const poorDewPointDays = humidityData.poorDewPointSpreadDays || 0;
+            const totalHumidityIssues = lowHumidityDays + highHumidityDays + poorDewPointDays;
+
+            if (totalHumidityIssues > 0) {
+                const humidityPercent = Math.round((totalHumidityIssues / totalDays) * 100);
+                const severity = humidityPercent > 40 ? 'critical' : humidityPercent > 25 ? 'high' : 'moderate';
+
+                html += `
+                    <div class="hazard-card ${severity}">
+                        <div class="hazard-icon"><i class="fas fa-tint"></i></div>
+                        <div class="hazard-content">
+                            <h4>Humidity & Dew Point Constraints</h4>
+                            <p class="hazard-stat">${totalHumidityIssues} days (${humidityPercent}%) with poor humidity conditions for painting</p>
+                            <ul class="hazard-detail" style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                ${lowHumidityDays > 0 ? `<li><strong>${lowHumidityDays} days</strong> with RH &lt;40% (too dry) - causes fast drying, poor flow/leveling, brush marks, overspray</li>` : ''}
+                                ${highHumidityDays > 0 ? `<li><strong>${highHumidityDays} days</strong> with RH &gt;85% (too humid) - causes slow cure, runs/sags, moisture contamination</li>` : ''}
+                                ${poorDewPointDays > 0 ? `<li><strong>${poorDewPointDays} days</strong> with dew point spread &lt;5°F (condensation risk) - causes poor adhesion, blistering, milky finish</li>` : ''}
+                            </ul>
+                            <p class="hazard-detail">Average relative humidity: ${humidityData.avgRelativeHumidity ? Math.round(humidityData.avgRelativeHumidity) + '%' : 'N/A'}</p>
+                            <p class="hazard-recommendation"><strong>Mitigation:</strong> Paint only when RH is 40-85%. Surface temp must be 5°F+ above dew point. Use portable hygrometers on-site. Morning dew typically dries by 9-10am. In high humidity, use fast-cure formulas and increase ventilation. In low humidity, use retarders/conditioners for proper flow.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            // Fallback when humidity data not available
+            html += `
+                <div class="hazard-card info">
+                    <div class="hazard-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="hazard-content">
+                        <h4>Humidity & Dew Point</h4>
+                        <p class="hazard-detail"><strong>Note:</strong> Humidity and dew point data not currently included in this analysis. These factors significantly impact paint application and cure.</p>
+                        <p class="hazard-recommendation"><strong>Best Practice:</strong> Surface temperature must be minimum 5°F above dew point during application and cure. Use portable humidity meters on-site. Morning dew can delay start times (typically dry by 9-10am).</p>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
 
         html += `
                 </div>
@@ -4154,7 +4186,7 @@ class XyloclimePro {
     }
 
     async fetchWeatherData(lat, lng, startDate, endDate) {
-        let url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,windspeed_10m_max&timezone=auto`;
+        let url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,windspeed_10m_max,relativehumidity_2m_max,relativehumidity_2m_min&timezone=auto`;
 
         if (this.apiKey) {
             url += `&apikey=${this.apiKey}`;
@@ -4315,6 +4347,56 @@ class XyloclimePro {
                 belowPaintCureTemp: template?.workabilityThresholds?.criticalMinTemp
                     ? daily.temperature_2m_min.filter(t => t !== null && t < template.workabilityThresholds.criticalMinTemp).length
                     : 0,  // Days below template-specific minimum temp (e.g., ≤10°C for painting)
+
+                // HUMIDITY & DEW POINT CONSTRAINTS (Critical for Painting)
+                // Painting requires 40-85% RH and surface temp - dew point > 5°F (3°C) to prevent:
+                // - Too low RH (<40%): Poor flow/leveling, fast drying, brush marks
+                // - Too high RH (>85%): Slow cure, runs/sags, moisture contamination
+                // - Insufficient dew point spread (<5°F): Surface condensation, poor adhesion, blistering
+                humidityData: (() => {
+                    const hasHumidityData = daily.relativehumidity_2m_max && daily.relativehumidity_2m_min;
+                    if (!hasHumidityData) return null;
+
+                    // Calculate daily average humidity and dew point spread
+                    const dailyHumidityStats = daily.temperature_2m_min.map((tempMin, i) => {
+                        const tempMax = daily.temperature_2m_max[i];
+                        const rhMin = daily.relativehumidity_2m_min[i];
+                        const rhMax = daily.relativehumidity_2m_max[i];
+
+                        if (tempMin === null || tempMax === null || rhMin === null || rhMax === null) {
+                            return { avgRH: null, dewPointSpread: null };
+                        }
+
+                        // Use average temp and average RH for the day
+                        const avgTemp = (tempMin + tempMax) / 2;
+                        const avgRH = (rhMin + rhMax) / 2;
+
+                        // Calculate dew point
+                        const dewPoint = this.calculateDewPoint(avgTemp, avgRH);
+
+                        // Dew point spread = surface temp - dew point (should be > 5°F / 3°C)
+                        const dewPointSpread = dewPoint !== null ? avgTemp - dewPoint : null;
+
+                        return { avgRH, dewPointSpread };
+                    });
+
+                    return {
+                        // Days with humidity too low for painting (< 40%)
+                        lowHumidityDays: dailyHumidityStats.filter(d => d.avgRH !== null && d.avgRH < 40).length,
+
+                        // Days with humidity too high for painting (> 85%)
+                        highHumidityDays: dailyHumidityStats.filter(d => d.avgRH !== null && d.avgRH > 85).length,
+
+                        // Days with insufficient dew point spread (< 3°C / 5°F) - condensation risk
+                        poorDewPointSpreadDays: dailyHumidityStats.filter(d => d.dewPointSpread !== null && d.dewPointSpread < 3).length,
+
+                        // Average relative humidity over the period
+                        avgRelativeHumidity: this.average(dailyHumidityStats.map(d => d.avgRH)),
+
+                        // Data availability flag
+                        hasData: true
+                    };
+                })(),
 
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-15mm): Workable with rain gear/drainage
@@ -4897,6 +4979,21 @@ class XyloclimePro {
         const squareDiffs = filtered.map(value => Math.pow(value - mean, 2));
         const avgSquareDiff = this.average(squareDiffs);
         return Math.sqrt(avgSquareDiff);
+    }
+
+    // Calculate dew point from temperature (°C) and relative humidity (%)
+    // Uses Magnus formula for accurate dew point estimation
+    calculateDewPoint(tempC, relativeHumidity) {
+        if (tempC === null || relativeHumidity === null || relativeHumidity <= 0) {
+            return null;
+        }
+
+        const a = 17.27;
+        const b = 237.7;
+        const alpha = ((a * tempC) / (b + tempC)) + Math.log(relativeHumidity / 100);
+        const dewPoint = (b * alpha) / (a - alpha);
+
+        return dewPoint;
     }
 
     detectExtremeEvents(yearlyStats) {
