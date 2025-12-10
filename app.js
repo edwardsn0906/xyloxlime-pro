@@ -971,12 +971,26 @@ class XyloclimePro {
                 </p>`;
             }
 
-            // Best months guidance
-            advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
+            // Best months guidance with template-specific clarification
+            let bestMonthsText = `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
                 <strong style="color: var(--electric-cyan);">Best Months:</strong>
                 ${bestMonths.map(m => `<strong>${m.name}</strong> (${m.workablePercent}% workable)`).join(', ')}.
-                Schedule critical ${template.name.toLowerCase()} work during these windows.
-            </p>`;
+                Schedule critical ${template.name.toLowerCase()} work during these windows.`;
+
+            // Add clarification for templates with strict quality requirements
+            if (template.name === 'Exterior Painting' && (analysis.idealDays === 0 || analysis.idealDays < 10)) {
+                bestMonthsText += `<br><em style="color: var(--steel-silver); font-size: 0.9em;">
+                    <i class="fas fa-info-circle"></i> Note: "Workable" means feasible with proper precautions (cold-weather paint, wind monitoring, cure time management).
+                    Ideal paint curing conditions (59-84°F, <5mm rain, <20 km/h wind) are rare in this region/season - plan accordingly.
+                </em>`;
+            } else if (template.name === 'Roofing Installation' && (analysis.idealDays === 0 || analysis.idealDays < 20)) {
+                bestMonthsText += `<br><em style="color: var(--steel-silver); font-size: 0.9em;">
+                    <i class="fas fa-info-circle"></i> Note: "Workable" includes cold-weather methods and safety precautions.
+                    Perfect roofing conditions are limited in this season.
+                </em>`;
+            }
+            bestMonthsText += `</p>`;
+            advice += bestMonthsText;
 
             // Worst months warning
             advice += `<p style="margin: 0 0 0.75rem 0; line-height: 1.6;">
@@ -1012,12 +1026,21 @@ class XyloclimePro {
             }
 
             // Month-by-month breakdown for short projects
-            advice += `<p style="margin: 0; line-height: 1.6;">
+            let monthByMonthText = `<p style="margin: 0; line-height: 1.6;">
                 <strong>Month-by-Month:</strong><br>
                 ${projectMonths.map(m =>
                     `${m.name}: <strong>${m.workablePercent}%</strong> workable (${m.workableDays}/${m.totalDays} days)`
-                ).join('<br>')}
-            </p>`;
+                ).join('<br>')}`;
+
+            // Add template-specific clarification for quality-critical work
+            if (template.name === 'Exterior Painting' && (analysis.idealDays === 0 || analysis.idealDays < 10)) {
+                monthByMonthText += `<br><br><em style="color: var(--steel-silver); font-size: 0.9em;">
+                    <i class="fas fa-info-circle"></i> "Workable" for painting requires cold-weather formulas, wind monitoring, and careful cure time management.
+                    Ideal curing conditions (59-84°F, <5mm rain, <20 km/h wind) are very limited.
+                </em>`;
+            }
+            monthByMonthText += `</p>`;
+            advice += monthByMonthText;
         }
 
         return advice;
@@ -6834,6 +6857,15 @@ class XyloclimePro {
         if (el('workableDays')) el('workableDays').textContent = analysis.workableDays;
         if (el('idealDays')) el('idealDays').textContent = analysis.idealDays;
         if (el('yearsAnalyzed')) el('yearsAnalyzed').textContent = analysis.yearsAnalyzed;
+
+        // Add clarification for painting projects with low ideal days
+        const workableTile = document.querySelector('.workable-tile .tile-detail');
+        if (workableTile && this.selectedTemplate === 'exterior-painting' && analysis.idealDays < 10) {
+            const originalText = workableTile.innerHTML;
+            workableTile.innerHTML = originalText + `<br><small style="color: var(--steel-silver); font-style: italic; margin-top: 0.25rem; display: block;">
+                ("Workable" = feasible with precautions, not ideal cure conditions)
+            </small>`;
+        }
 
         // Generate executive summary and periods
         this.generateExecutiveSummary(analysis);
