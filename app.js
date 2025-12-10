@@ -8363,7 +8363,7 @@ class XyloclimePro {
         }
 
         // Show loading toast
-        window.toastManager.info('Generating comprehensive PDF report with executive summary, risk assessment, and recommendations...', 'Creating PDF Report', 5000);
+        window.toastManager.info('Generating comprehensive PDF report with executive summary, risk assessment, humidity analysis, best periods, monthly breakdown, and recommendations...', 'Creating PDF Report', 5000);
 
         try {
             const { jsPDF } = window.jspdf;
@@ -8397,7 +8397,10 @@ class XyloclimePro {
 
         doc.setFontSize(10);
         doc.setTextColor(255, 179, 32);
-        doc.text('⚠ NOTICE: For planning purposes only. Not for life-safety decisions.', 105, 270, { align: 'center' });
+        const disclaimerLines = doc.splitTextToSize('⚠ NOTICE: For planning purposes only. Not for life-safety decisions. Always verify with current forecasts.', 180);
+        disclaimerLines.forEach((line, index) => {
+            doc.text(line, 105, 265 + (index * 5), { align: 'center' });
+        });
 
         // Page 2 - Enhanced Executive Summary
         doc.addPage();
@@ -8458,13 +8461,26 @@ class XyloclimePro {
         // Use actualProjectDays with fallback protection against division by zero
         const totalDays = Math.max(1, analysis.actualProjectDays || 365);
         const workablePercent = ((analysis.workableDays / totalDays) * 100).toFixed(1);
+        const idealPercent = ((analysis.idealDays / totalDays) * 100).toFixed(1);
+
+        // Get template for template-specific findings
+        const template = project.templateId ? this.templates?.getTemplate(project.templateId) : null;
+
         const findings = [
             `${analysis.workableDays} workable days identified (${workablePercent}% of total project duration)`,
+            `${analysis.idealDays} ideal days (${idealPercent}%) with optimal conditions`,
             `${analysis.nonWorkableDays} non-workable days expected due to adverse weather conditions`,
             `Average temperature: ${this.formatTemp(analysis.averageTemp, 'C')} ${analysis.averageTemp < 5 ? '(Cold weather protocols recommended)' : ''}`,
             `Total precipitation forecast: ${this.formatPrecip(analysis.totalPrecipitation)} over project duration`,
             `${analysis.extremeEvents ? analysis.extremeEvents.length : 0} extreme weather events anticipated`,
-            analysis.totalSnowfall > 0 ? `Snow accumulation expected: ${this.formatPrecip(analysis.totalSnowfall)}` : null
+            analysis.totalSnowfall > 0 ? `Snow accumulation expected: ${this.formatPrecip(analysis.totalSnowfall)}` : null,
+            // Template-specific findings
+            template?.name === 'Exterior Painting' && analysis.belowPaintCureTemp ? `${analysis.belowPaintCureTemp} days below paint cure temperature (50°F/10°C)` : null,
+            template?.name === 'Exterior Painting' && analysis.templateWindViolations ? `${analysis.templateWindViolations} days exceed spray painting wind limit (25 km/h)` : null,
+            // Humidity data
+            analysis.humidityData?.hasData && analysis.humidityData.lowHumidityDays + analysis.humidityData.highHumidityDays + analysis.humidityData.poorDewPointSpreadDays > 0
+                ? `${analysis.humidityData.lowHumidityDays + analysis.humidityData.highHumidityDays + analysis.humidityData.poorDewPointSpreadDays} days with challenging humidity conditions`
+                : null
         ].filter(Boolean);
 
         findings.forEach(finding => {
@@ -8529,19 +8545,14 @@ class XyloclimePro {
         doc.setFont(undefined, 'normal');
 
         // Get smart recommendations if available
-        let recommendations = [];
+        let allRecsObj = { critical: [], important: [], helpful: [], insights: [] };
         if (window.SmartRecommendations) {
             const smartRecs = new window.SmartRecommendations();
-            const allRecs = smartRecs.generateRecommendations(analysis, project);
-            // Combine critical and important recommendations
-            recommendations = [
-                ...allRecs.critical.map(r => `[CRITICAL] ${r}`),
-                ...allRecs.important.slice(0, 3).map(r => `[IMPORTANT] ${r}`)
-            ];
+            allRecsObj = smartRecs.generateRecommendations(analysis, project);
         }
 
         // Fallback to generic recommendations if smart recs not available
-        if (recommendations.length === 0) {
+        if (allRecsObj.critical.length === 0 && allRecsObj.important.length === 0) {
             // Calculate contingency with math
             // Ensure at least 1 day to prevent division by zero
             const totalDays = Math.max(1, analysis.actualProjectDays || 365);
@@ -8551,62 +8562,166 @@ class XyloclimePro {
             const contingency = netStoppage > 0 ? `${Math.ceil(directPercent * 1.3)}-${Math.ceil(directPercent * 1.5)}%` : '10%';
             const contingencyDetail = netStoppage > 0 ? ` (${netStoppage} net stoppage days / ${totalDays} days = ${directPercent}% direct, ×1.3-1.5 for delays)` : '';
 
-            recommendations = [
-                `[CRITICAL] Maintain ${contingency} schedule contingency for weather delays${contingencyDetail}`,
-                '[IMPORTANT] Schedule weather-sensitive activities during optimal periods identified in monthly breakdown',
-                '[IMPORTANT] Implement daily weather monitoring with 10-day forecast reviews',
-                analysis.totalPrecipitation > 200 ? '[CRITICAL] Prepare comprehensive drainage and erosion control measures' : null,
-                analysis.extremeEvents && analysis.extremeEvents.length > 5 ? '[CRITICAL] Develop extreme weather response protocols and safety procedures' : null,
-                '[IMPORTANT] Coordinate with subcontractors on weather-contingent work sequences'
-            ].filter(Boolean);
+            allRecsObj.critical = [
+                { title: 'Schedule Contingency', message: `Maintain ${contingency} schedule contingency for weather delays${contingencyDetail}` }
+            ];
+            allRecsObj.important = [
+                { title: 'Weather Monitoring', message: 'Implement daily weather monitoring with 10-day forecast reviews' },
+                { title: 'Optimal Scheduling', message: 'Schedule weather-sensitive activities during optimal periods identified in monthly breakdown' }
+            ];
+            if (analysis.totalPrecipitation > 200) {
+                allRecsObj.critical.push({ title: 'Drainage Control', message: 'Prepare comprehensive drainage and erosion control measures' });
+            }
         }
 
-        recommendations.slice(0, 6).forEach(rec => {
-            const lines = doc.splitTextToSize(`• ${rec}`, 165);
-            doc.text(lines, 25, yPos);
-            yPos += 7 * lines.length + 2;
+        // Display recommendations by category
+        const recCategories = [
+            { name: 'CRITICAL', items: allRecsObj.critical.slice(0, 3), icon: '⚠' },
+            { name: 'IMPORTANT', items: allRecsObj.important.slice(0, 3), icon: '•' }
+        ];
+
+        recCategories.forEach(category => {
+            if (category.items.length > 0) {
+                category.items.forEach(rec => {
+                    const recText = rec.title ? `${category.icon} [${category.name}] ${rec.title}: ${rec.message}` : `${category.icon} [${category.name}] ${rec.message || rec}`;
+                    const lines = doc.splitTextToSize(recText, 165);
+                    doc.text(lines, 25, yPos);
+                    yPos += 6 * lines.length + 2;
+                });
+            }
         });
 
-        // Page 3 - Detailed Analysis
+        // Page 3 - Template-Specific Hazards & Best Periods
         doc.addPage();
         yPos = 20;
 
         doc.setTextColor(0, 212, 255);
         doc.setFontSize(18);
         doc.setFont(undefined, 'bold');
-        doc.text('Detailed Weather Analysis', 20, yPos);
+        doc.text('Detailed Analysis & Optimal Timing', 20, yPos);
 
-        yPos += 15;
-        doc.setFontSize(10);
-        doc.setTextColor(60, 60, 60);
-        doc.setFont(undefined, 'normal');
+        yPos += 12;
 
-        doc.text('[Charts would appear here in full version]', 20, yPos);
-        yPos += 10;
-        doc.text('This report includes 6 comprehensive weather charts:', 20, yPos);
-        yPos += 7;
-        doc.text('1. Temperature Trends Analysis', 25, yPos);
-        yPos += 7;
-        doc.text('2. Precipitation Patterns', 25, yPos);
-        yPos += 7;
-        doc.text('3. Wind Speed Analysis', 25, yPos);
-        yPos += 7;
-        doc.text('4. Weather Distribution Overview', 25, yPos);
-        yPos += 7;
-        doc.text('5. Comprehensive Multi-Metric View', 25, yPos);
-        yPos += 7;
-        doc.text('6. Project Suitability Radar', 25, yPos);
+        // Add humidity and dew point section for painting
+        if (template?.name === 'Exterior Painting' && analysis.humidityData?.hasData) {
+            doc.setTextColor(0, 212, 255);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Humidity & Dew Point Analysis', 20, yPos);
 
-        // Disclaimer
-        yPos = 270;
-        doc.setFontSize(8);
-        doc.setTextColor(255, 179, 32);
-        doc.text('DISCLAIMER: This analysis is based on historical weather patterns and should not be used as the sole basis for critical decisions.', 105, yPos, { align: 'center', maxWidth: 170 });
+            yPos += 8;
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.setFont(undefined, 'normal');
+
+            const humidityData = analysis.humidityData;
+            const totalHumidityIssues = (humidityData.lowHumidityDays || 0) + (humidityData.highHumidityDays || 0) + (humidityData.poorDewPointSpreadDays || 0);
+
+            if (totalHumidityIssues > 0) {
+                const humidityPercent = Math.round((totalHumidityIssues / totalDays) * 100);
+                const humidityLines = [
+                    `${totalHumidityIssues} days (${humidityPercent}%) have challenging humidity conditions:`,
+                    humidityData.lowHumidityDays > 0 ? `  • ${humidityData.lowHumidityDays} days too dry (<40% RH) - causes fast drying, poor flow, overspray` : null,
+                    humidityData.highHumidityDays > 0 ? `  • ${humidityData.highHumidityDays} days too humid (>85% RH) - causes slow cure, runs/sags` : null,
+                    humidityData.poorDewPointSpreadDays > 0 ? `  • ${humidityData.poorDewPointSpreadDays} days with condensation risk (dew point spread <5°F) - adhesion failure` : null,
+                    `Average relative humidity: ${humidityData.avgRelativeHumidity ? Math.round(humidityData.avgRelativeHumidity) + '%' : 'N/A'}`,
+                    ``,
+                    `Mitigation: Paint only when RH is 40-85% AND surface temp is 5°F+ above dew point.`
+                ].filter(Boolean);
+
+                humidityLines.forEach(line => {
+                    const splitLines = doc.splitTextToSize(line, 165);
+                    doc.text(splitLines, 25, yPos);
+                    yPos += 6 * splitLines.length;
+                });
+
+                yPos += 8;
+            }
+        }
+
+        // Best 2-Week Periods
+        if (analysis.bestPeriods && analysis.bestPeriods.length > 0) {
+            doc.setTextColor(0, 212, 255);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Optimal Work Periods', 20, yPos);
+
+            yPos += 8;
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.setFont(undefined, 'normal');
+
+            const topPeriods = analysis.bestPeriods.slice(0, 3);
+            topPeriods.forEach((period, index) => {
+                const periodLines = [
+                    `${index + 1}. ${period.start} to ${period.end} (Score: ${period.score}/100)`,
+                    `   ${period.idealDays} ideal days, ${period.workableDays} workable days`,
+                    period.rainyDays > 0 || period.lightRainDays > 0 ? `   Precipitation: ${period.rainyDays} heavy rain days, ${period.lightRainDays} light rain days` : null,
+                    `   Temperature: ${this.formatTemp(period.avgTempMin, 'C')} to ${this.formatTemp(period.avgTempMax, 'C')}`
+                ].filter(Boolean);
+
+                periodLines.forEach(line => {
+                    const splitLines = doc.splitTextToSize(line, 165);
+                    doc.text(splitLines, 25, yPos);
+                    yPos += 6 * splitLines.length;
+                });
+
+                yPos += 4;
+            });
+
+            yPos += 6;
+        }
+
+        // Monthly Breakdown Summary
+        if (analysis.monthlyBreakdown && analysis.monthlyBreakdown.length > 0) {
+            // Check if we need a new page
+            if (yPos > 220) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setTextColor(0, 212, 255);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Monthly Workability Summary', 20, yPos);
+
+            yPos += 8;
+            doc.setFontSize(9);
+            doc.setTextColor(60, 60, 60);
+            doc.setFont(undefined, 'normal');
+
+            // Table header
+            doc.setFont(undefined, 'bold');
+            doc.text('Month', 25, yPos);
+            doc.text('Workable', 70, yPos);
+            doc.text('Ideal', 105, yPos);
+            doc.text('Avg Temp', 135, yPos);
+            doc.text('Rain Days', 165, yPos);
+
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+
+            analysis.monthlyBreakdown.slice(0, 12).forEach(month => {
+                doc.text(month.month, 25, yPos);
+                doc.text(`${month.workablePercent}%`, 70, yPos);
+                doc.text(`${month.idealPercent}%`, 105, yPos);
+                doc.text(this.formatTemp(month.avgTemp, 'C'), 135, yPos);
+                doc.text(`${month.rainyDays}`, 165, yPos);
+                yPos += 5;
+            });
+        }
 
         // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(255, 179, 32);
+        const disclaimerText = doc.splitTextToSize('DISCLAIMER: This analysis is based on historical weather patterns and should not be used as the sole basis for critical decisions. Always verify with current short-term forecasts.', 170);
+        disclaimerText.forEach((line, index) => {
+            doc.text(line, 105, 270 + (index * 4), { align: 'center' });
+        });
+
         doc.setTextColor(139, 157, 184);
         doc.setFontSize(9);
-        doc.text(`Xyloclime Pro | ${new Date().toLocaleDateString()} | Page 3 of 3`, 105, 290, { align: 'center' });
+        doc.text(`Xyloclime Pro | ${new Date().toLocaleDateString()} | Page 3`, 105, 290, { align: 'center' });
 
             // Save PDF
             const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'project';
