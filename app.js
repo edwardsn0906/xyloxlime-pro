@@ -2364,15 +2364,55 @@ class XyloclimePro {
             });
         }
 
-        // Project selector dropdown
-        const projectSelector = document.getElementById('projectSelector');
-        if (projectSelector) {
-            projectSelector.addEventListener('change', (e) => {
-                const value = e.target.value;
-                if (value === 'new') {
+        // Custom Project selector dropdown
+        const projectSelectorBtn = document.getElementById('projectSelectorBtn');
+        const projectSelectorDropdown = document.getElementById('projectSelectorDropdown');
+
+        if (projectSelectorBtn && projectSelectorDropdown) {
+            // Toggle dropdown
+            projectSelectorBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                projectSelectorBtn.classList.toggle('open');
+                projectSelectorDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!projectSelectorBtn.contains(e.target) && !projectSelectorDropdown.contains(e.target)) {
+                    projectSelectorBtn.classList.remove('open');
+                    projectSelectorDropdown.classList.add('hidden');
+                }
+            });
+
+            // Handle dropdown item clicks (delegated)
+            projectSelectorDropdown.addEventListener('click', (e) => {
+                // Handle "New Project" click
+                const newProjectItem = e.target.closest('[data-value="new"]');
+                if (newProjectItem) {
                     this.showSetupPanel();
-                } else if (value) {
-                    this.loadProject(value);
+                    projectSelectorBtn.classList.remove('open');
+                    projectSelectorDropdown.classList.add('hidden');
+                    return;
+                }
+
+                // Handle delete button click
+                const deleteBtn = e.target.closest('.project-selector-delete');
+                if (deleteBtn) {
+                    e.stopPropagation();
+                    const projectId = deleteBtn.dataset.projectId;
+                    this.deleteProjectFromSelector(projectId);
+                    return;
+                }
+
+                // Handle project selection
+                const projectItem = e.target.closest('.project-selector-project');
+                if (projectItem && !deleteBtn) {
+                    const projectId = projectItem.dataset.projectId;
+                    if (projectId) {
+                        this.loadProject(projectId);
+                        projectSelectorBtn.classList.remove('open');
+                        projectSelectorDropdown.classList.add('hidden');
+                    }
                 }
             });
         }
@@ -9522,29 +9562,96 @@ class XyloclimePro {
     }
 
     updateProjectSelector() {
-        const selector = document.getElementById('projectSelector');
-        if (!selector) return;
+        const selectorList = document.getElementById('projectSelectorList');
+        const selectorText = document.getElementById('projectSelectorText');
 
-        // Keep current selection if exists
-        const currentValue = selector.value;
+        if (!selectorList) return;
 
-        // Clear existing options except the default ones
-        selector.innerHTML = `
-            <option value="">Select Project</option>
-            <option value="new">+ New Project</option>
-        `;
+        // Clear existing project items
+        selectorList.innerHTML = '';
 
-        // Add project options
+        // Add project items with delete buttons
         this.projects.forEach(project => {
-            const option = document.createElement('option');
-            option.value = project.id;
-            option.textContent = `${project.name} (${project.startDate})`;
-            selector.appendChild(option);
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-selector-project';
+            projectItem.dataset.projectId = project.id;
+
+            const projectInfo = document.createElement('div');
+            projectInfo.className = 'project-selector-project-info';
+
+            const projectName = document.createElement('div');
+            projectName.className = 'project-selector-project-name';
+            projectName.textContent = project.name;
+
+            const projectDate = document.createElement('div');
+            projectDate.className = 'project-selector-project-date';
+            projectDate.textContent = `${project.startDate} to ${project.endDate}`;
+
+            projectInfo.appendChild(projectName);
+            projectInfo.appendChild(projectDate);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'project-selector-delete';
+            deleteBtn.dataset.projectId = project.id;
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+            deleteBtn.title = 'Delete this project';
+
+            projectItem.appendChild(projectInfo);
+            projectItem.appendChild(deleteBtn);
+            selectorList.appendChild(projectItem);
         });
 
-        // Restore selection if still valid
-        if (currentValue && this.projects.find(p => p.id === currentValue)) {
-            selector.value = currentValue;
+        // Update selector text if current project is loaded
+        if (this.currentProject && selectorText) {
+            selectorText.textContent = this.currentProject.name;
+        } else if (selectorText) {
+            selectorText.textContent = 'Select Project';
+        }
+
+        // Show "No projects" message if empty
+        if (this.projects.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'project-selector-item';
+            emptyMsg.style.color = 'var(--steel-silver)';
+            emptyMsg.style.fontStyle = 'italic';
+            emptyMsg.innerHTML = '<i class="fas fa-info-circle"></i> <span>No saved projects</span>';
+            selectorList.appendChild(emptyMsg);
+        }
+    }
+
+    async deleteProjectFromSelector(projectId) {
+        const project = this.projects.find(p => p.id === projectId);
+        if (!project) return;
+
+        // Confirm deletion
+        const confirmed = confirm(`Are you sure you want to delete "${project.name}"?\n\nThis action cannot be undone.`);
+        if (!confirmed) return;
+
+        try {
+            console.log('[PROJECT] Deleting project from selector:', project.name);
+
+            // Delete from database
+            await this.databaseManager.deleteProject(projectId);
+
+            // Remove from local array
+            this.projects = this.projects.filter(p => p.id !== projectId);
+
+            // Update UI
+            this.updateProjectSelector();
+            this.loadSavedProjects(); // Update sidebar list
+
+            // If the deleted project was currently loaded, show setup panel
+            if (this.currentProject && this.currentProject.id === projectId) {
+                this.currentProject = null;
+                this.showSetupPanel();
+            }
+
+            window.toastManager.success(`Project "${project.name}" deleted successfully`, 'Project Deleted');
+            this.sessionManager.logAction('project_deleted', { projectId, projectName: project.name });
+
+        } catch (error) {
+            console.error('[PROJECT] Failed to delete project:', error);
+            window.toastManager.error('Failed to delete project. Please try again.', 'Delete Failed');
         }
     }
 
@@ -9631,9 +9738,9 @@ class XyloclimePro {
             document.getElementById('dashboardPanel').classList.remove('hidden');
 
             // Update project selector to show loaded project
-            const selector = document.getElementById('projectSelector');
-            if (selector) {
-                selector.value = projectId;
+            const selectorText = document.getElementById('projectSelectorText');
+            if (selectorText) {
+                selectorText.textContent = project.name;
             }
 
             console.log('[PROJECT] Project loaded successfully:', project.name);
@@ -9666,6 +9773,12 @@ class XyloclimePro {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
         document.getElementById('loadingSpinner').classList.add('hidden');
+
+        // Reset project selector text
+        const selectorText = document.getElementById('projectSelectorText');
+        if (selectorText) {
+            selectorText.textContent = 'Select Project';
+        }
     }
 
     setDefaultDates() {

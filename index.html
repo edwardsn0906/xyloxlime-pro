@@ -289,10 +289,22 @@
                 </div>
             </div>
             <div class="header-center">
-                <select id="projectSelector" class="project-selector">
-                    <option value="">Select Project</option>
-                    <option value="new">+ New Project</option>
-                </select>
+                <div class="project-selector-wrapper">
+                    <button class="project-selector-btn" id="projectSelectorBtn">
+                        <span id="projectSelectorText">Select Project</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="project-selector-dropdown hidden" id="projectSelectorDropdown">
+                        <div class="project-selector-item" data-value="new">
+                            <i class="fas fa-plus"></i>
+                            <span>New Project</span>
+                        </div>
+                        <div class="project-selector-divider"></div>
+                        <div class="project-selector-list" id="projectSelectorList">
+                            <!-- Projects will be populated here -->
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="header-right">
                 <div class="unit-system-toggle">
