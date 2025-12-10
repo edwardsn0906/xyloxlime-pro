@@ -500,7 +500,7 @@ class SmartRecommendations {
 
         // Analyze risk levels (pass contingency and template to methods as needed)
         this.analyzeRainRisk(analysis, recommendations, recommendedContingency);
-        this.analyzeTemperatureRisk(analysis, recommendations);
+        this.analyzeTemperatureRisk(analysis, recommendations, template);  // Pass template for painting-specific temp constraints
         this.analyzeWindRisk(analysis, recommendations, template);  // Pass template for wind-specific thresholds
         this.analyzeSeasonalRisk(analysis, project, recommendations);
         this.analyzeWorkableDays(analysis, project, recommendations, recommendedContingency);
@@ -561,12 +561,36 @@ class SmartRecommendations {
         }
     }
 
-    analyzeTemperatureRisk(analysis, recommendations) {
+    analyzeTemperatureRisk(analysis, recommendations, template) {
         const freezingDays = analysis.freezingDays || 0;
         const workStoppingCold = analysis.extremeColdDays || 0;
         const extremeHeatDays = analysis.extremeHeatDays || 0;
         const avgLow = analysis.avgTempMin;
         const totalDays = analysis.totalDays || analysis.actualProjectDays || 365;
+        const belowPaintCureTemp = analysis.belowPaintCureTemp || 0;
+
+        // PAINTING-SPECIFIC: Days below paint cure temp (50°F / 10°C)
+        if (template?.name === 'Exterior Painting' && belowPaintCureTemp > 0) {
+            const belowCureTempPercent = Math.round((belowPaintCureTemp / totalDays) * 100);
+
+            if (belowCureTempPercent > 40) {
+                recommendations.critical.push({
+                    icon: 'fa-paint-roller',
+                    title: 'Paint Cure Temperature Critical',
+                    message: `${belowPaintCureTemp} days (${belowCureTempPercent}%) below 50°F (10°C) minimum cure temperature. Standard paints will not cure properly. These days NOT counted as workable.`,
+                    action: `REQUIRED: Use cold-weather paint formulas (cure to 35-40°F). Work only during warmest hours (11am-3pm). Monitor surface temp with infrared thermometer. Budget for slower application rates and extended project duration.`,
+                    priority: 'high'
+                });
+            } else if (belowCureTempPercent > 20) {
+                recommendations.important.push({
+                    icon: 'fa-thermometer-half',
+                    title: 'Cold-Weather Paint Required',
+                    message: `${belowPaintCureTemp} days (${belowCureTempPercent}%) below 50°F cure minimum. Standard paints won't work - cold-weather formulas required.`,
+                    action: `Use paint formulas rated for 35-40°F cure temps. Work during warmest hours. Monitor surface temperature closely.`,
+                    priority: 'medium'
+                });
+            }
+        }
 
         // EXTREME cold stoppage (≤-18°C / ≤0°F) is true work stoppage
         if (workStoppingCold > totalDays * 0.05) {

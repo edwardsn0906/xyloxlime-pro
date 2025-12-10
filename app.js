@@ -1220,18 +1220,22 @@ class XyloclimePro {
             `;
         }
 
-        // Temperature constraints
-        const freezingDays = analysis.allFreezingDays || 0;
-        if (freezingDays > 0) {
-            const freezingPercent = Math.round((freezingDays / totalDays) * 100);
+        // Temperature constraints - use template-specific counter
+        const belowCureTemp = analysis.belowPaintCureTemp || 0;
+        const freezingDays = analysis.allFreezingDays || 0;  // ≤32°F for context
+
+        if (belowCureTemp > 0) {
+            const belowCureTempPercent = Math.round((belowCureTemp / totalDays) * 100);
+            const severity = belowCureTempPercent > 50 ? 'critical' : belowCureTempPercent > 30 ? 'high' : 'moderate';
+
             html += `
-                <div class="hazard-card ${freezingPercent > 40 ? 'high' : 'moderate'}">
+                <div class="hazard-card ${severity}">
                     <div class="hazard-icon"><i class="fas fa-thermometer-half"></i></div>
                     <div class="hazard-content">
                         <h4>Temperature Cure Constraints</h4>
-                        <p class="hazard-stat">${freezingDays} days (${freezingPercent}%) below 50°F (10°C) minimum cure temp</p>
-                        <p class="hazard-detail">Most paints won't cure properly below 50°F. Surface must be above dew point to prevent moisture condensation under paint film. Morning frost delays start times.</p>
-                        <p class="hazard-recommendation"><strong>Mitigation:</strong> Use cold-weather paint formulas (cure to 35°F). Work during warmest hours (11am-3pm). Monitor surface temperature, not just air temp. Allow frozen surfaces to thaw completely.</p>
+                        <p class="hazard-stat">${belowCureTemp} days (${belowCureTempPercent}%) below 50°F (10°C) minimum cure temp</p>
+                        <p class="hazard-detail">Paint won't cure properly below 50°F. These days are <strong>NOT counted as workable</strong> without cold-weather paint formulas. ${freezingDays} days have freezing temps (≤32°F) causing additional surface prep delays.</p>
+                        <p class="hazard-recommendation"><strong>Mitigation:</strong> Use cold-weather paint formulas (cure to 35-40°F). Work during warmest hours (11am-3pm). Monitor surface temperature with infrared thermometer, not just air temp. Allow frozen surfaces to thaw and dry completely before application.</p>
                     </div>
                 </div>
             `;
@@ -4304,6 +4308,13 @@ class XyloclimePro {
                 extremeColdDays: daily.temperature_2m_min.filter(t => t !== null && t <= -18).length,  // TRUE work stoppage (≤0°F / ≤-18°C)
                 comfortableTemps: daily.temperature_2m_min.filter(t => t !== null && t > -4).length,  // Days >25°F/>-4°C (comfortable working temps)
                 extremeHeatDays: daily.temperature_2m_max.filter(t => t !== null && t >= 38).length,  // Days ≥100°F/≥38°C (informational - not work-stopping)
+
+                // TEMPLATE-SPECIFIC TEMPERATURE CONSTRAINTS
+                // Painting: Days below minimum paint cure temperature (≤10°C / ≤50°F)
+                // Paint won't cure properly below this temp - NOT workable without special formulas
+                belowPaintCureTemp: template?.workabilityThresholds?.criticalMinTemp
+                    ? daily.temperature_2m_min.filter(t => t !== null && t < template.workabilityThresholds.criticalMinTemp).length
+                    : 0,  // Days below template-specific minimum temp (e.g., ≤10°C for painting)
 
                 // PRECIPITATION CATEGORIES:
                 // - Light rain (1-15mm): Workable with rain gear/drainage
