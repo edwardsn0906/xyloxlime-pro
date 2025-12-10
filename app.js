@@ -8175,8 +8175,7 @@ class XyloclimePro {
         doc.setFont(undefined, 'normal');
 
         // Calculate specific contingency for risk assessment
-        // Ensure at least 1 day to prevent division by zero
-        const totalDays = Math.max(1, analysis.actualProjectDays || 365);
+        // (totalDays already declared above at line 8148)
         const stoppageDays = (analysis.heavyRainDays || 0) + (analysis.extremeColdDays || 0) + (analysis.heavySnowDays || 0);
         const netStoppage = stoppageDays - Math.round(stoppageDays * 0.25);
         const directPercent = ((netStoppage / totalDays) * 100).toFixed(1);
