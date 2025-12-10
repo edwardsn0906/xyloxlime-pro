@@ -7837,6 +7837,8 @@ class XyloclimePro {
             let heatDays = 0;
             let optimalDaysCount = 0;
 
+            let lightRainDays = 0; // Track light rain separately for accurate reporting
+
             window.forEach(day => {
                 let dayIsWorkable = true; // Using WORKABLE criteria (lenient - matches main calculation)
                 let dayIsIdeal = true;    // Using IDEAL criteria (strict)
@@ -7852,7 +7854,13 @@ class XyloclimePro {
                     dayIsIdeal = false;
                 } else if (day.precip > 5) {
                     // Light rain (5-15mm) - workable but not ideal
+                    lightRainDays++;
                     score -= 2;  // Minor penalty
+                    dayIsIdeal = false;
+                } else if (day.precip > 1) {
+                    // Very light rain (1-5mm) - minimal impact but track it
+                    lightRainDays++;
+                    score -= 1;
                     dayIsIdeal = false;
                 }
 
@@ -7920,7 +7928,8 @@ class XyloclimePro {
                 startDate,
                 endDate,
                 score,
-                rainyDays: Math.min(rainyDays, windowSize),  // Cap at window size
+                rainyDays: Math.min(rainyDays, windowSize),  // Cap at window size (heavy rain only)
+                lightRainDays: Math.min(lightRainDays, windowSize),  // Light rain tracking
                 snowyDays: Math.min(snowyDays, windowSize),
                 highWindDays: Math.min(highWindDays, windowSize),
                 freezingDays: Math.min(freezingDays, windowSize),
@@ -7994,23 +8003,30 @@ class XyloclimePro {
                 bestPeriodEl.textContent = `${startDate} - ${endDate}`;
             }
 
-            // Generate reason based on actual conditions
+            // Generate reason based on actual conditions - BE HONEST about rain
             const reasons = [];
             if (bestPeriod.optimalDays >= 12) {
                 reasons.push(`${bestPeriod.optimalDays} optimal work days`);
             }
-            if (bestPeriod.rainyDays === 0) {
-                reasons.push('no rain expected');
-            } else if (bestPeriod.rainyDays <= 2) {
-                reasons.push(`minimal rain (${bestPeriod.rainyDays} days)`);
+
+            // CRITICAL FIX: Be honest about ALL rain, not just heavy rain
+            const totalWetDays = bestPeriod.rainyDays + bestPeriod.lightRainDays;
+            if (totalWetDays === 0) {
+                reasons.push('minimal precipitation expected');  // More conservative language
+            } else if (bestPeriod.rainyDays === 0 && bestPeriod.lightRainDays > 0) {
+                // Light rain only - be honest about it
+                reasons.push(`light rain possible (${bestPeriod.lightRainDays} days with <0.6in)`);
+            } else if (bestPeriod.rainyDays <= 2 && totalWetDays <= 4) {
+                reasons.push(`low precipitation (${totalWetDays} wet days)`);
             }
+
             if (bestPeriod.snowyDays === 0) {
-                reasons.push('no snow');
+                reasons.push('no heavy snow');
             }
             // Only mention wind if we have actual wind data
             const hasWindData = analysis.avgWindSpeed !== undefined && analysis.avgWindSpeed !== null && !isNaN(analysis.avgWindSpeed);
             if (hasWindData && bestPeriod.highWindDays === 0) {
-                reasons.push('calm winds');
+                reasons.push('favorable winds');
             }
             if (bestPeriod.freezingDays === 0 && bestPeriod.heatDays === 0) {
                 reasons.push('ideal temperatures');
@@ -8019,8 +8035,9 @@ class XyloclimePro {
             if (bestReasonEl) {
                 const reasonText = reasons.length > 0
                     ? reasons.join(', ').charAt(0).toUpperCase() + reasons.join(', ').slice(1)
-                    : 'Best overall weather conditions for this project period';
-                bestReasonEl.textContent = `${reasonText} (based on ${analysis.yearsAnalyzed} years of historical patterns).`;
+                    : 'Relatively favorable weather conditions for this project period';
+                // Add important disclaimer about historical averages
+                bestReasonEl.textContent = `${reasonText} (based on ${analysis.yearsAnalyzed} years of historical patterns). Note: These are historical averages - actual conditions may vary significantly.`;
             }
 
             console.log('[PERIODS] Best period:', startDate, '-', endDate, 'Score:', bestScore);
