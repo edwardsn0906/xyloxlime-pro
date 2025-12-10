@@ -1153,8 +1153,85 @@ class XyloclimePro {
     }
 
     generatePaintingTechnicalHazards(analysis, project) {
-        // Placeholder for painting-specific hazards
-        return '';
+        const totalDays = analysis.actualProjectDays || 365;
+        const windViolations = analysis.templateWindViolations || 0;
+        const windViolationPercent = Math.round((windViolations / totalDays) * 100);
+        const highWindDays = analysis.highWindDays || 0;
+
+        let html = `
+            <div class="technical-hazards painting-hazards">
+                <h3><i class="fas fa-paint-roller"></i> Exterior Painting - Technical Weather Impacts</h3>
+                <div class="hazard-grid">
+        `;
+
+        // Wind impact on spray application (CRITICAL for painting)
+        if (windViolations > 0) {
+            const severity = windViolationPercent > 30 ? 'critical' : windViolationPercent > 20 ? 'high' : 'moderate';
+            html += `
+                <div class="hazard-card ${severity}">
+                    <div class="hazard-icon"><i class="fas fa-wind"></i></div>
+                    <div class="hazard-content">
+                        <h4>Wind Affects Spray Quality</h4>
+                        <p class="hazard-stat">${windViolations} days (${windViolationPercent}%) exceed 25 km/h (16 mph) wind limit</p>
+                        <p class="hazard-detail">Winds ≥25 km/h cause overspray, uneven coverage, material waste, and poor adhesion. Must use brush/roller on windy days or reschedule spraying.</p>
+                        <p class="hazard-recommendation"><strong>Mitigation:</strong> Plan spray work during calm morning hours (typically before 10am). Have brush/roller equipment ready as backup. Monitor hourly wind forecasts.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Paint cure windows
+        const rainyDays = analysis.rainyDays || 0;
+        const heavyRainDays = analysis.heavyRainDays || 0;
+        if (rainyDays > 0) {
+            html += `
+                <div class="hazard-card moderate">
+                    <div class="hazard-icon"><i class="fas fa-cloud-rain"></i></div>
+                    <div class="hazard-content">
+                        <h4>48-Hour Cure Window Required</h4>
+                        <p class="hazard-stat">${rainyDays} rainy days total (${heavyRainDays} heavy rain events)</p>
+                        <p class="hazard-detail">Paint requires minimum 48 hours dry weather after application. Rain within cure window causes failure, blistering, or poor adhesion requiring complete re-work.</p>
+                        <p class="hazard-recommendation"><strong>Mitigation:</strong> Only start painting with 3+ day dry forecast. Have tarps ready for emergency protection. Consider fast-cure formulas for uncertain weather.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Temperature constraints
+        const freezingDays = analysis.allFreezingDays || 0;
+        if (freezingDays > 0) {
+            const freezingPercent = Math.round((freezingDays / totalDays) * 100);
+            html += `
+                <div class="hazard-card ${freezingPercent > 40 ? 'high' : 'moderate'}">
+                    <div class="hazard-icon"><i class="fas fa-thermometer-half"></i></div>
+                    <div class="hazard-content">
+                        <h4>Temperature Cure Constraints</h4>
+                        <p class="hazard-stat">${freezingDays} days (${freezingPercent}%) below 50°F (10°C) minimum cure temp</p>
+                        <p class="hazard-detail">Most paints won't cure properly below 50°F. Surface must be above dew point to prevent moisture condensation under paint film. Morning frost delays start times.</p>
+                        <p class="hazard-recommendation"><strong>Mitigation:</strong> Use cold-weather paint formulas (cure to 35°F). Work during warmest hours (11am-3pm). Monitor surface temperature, not just air temp. Allow frozen surfaces to thaw completely.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Humidity and dew point (note: data not currently available)
+        html += `
+            <div class="hazard-card info">
+                <div class="hazard-icon"><i class="fas fa-info-circle"></i></div>
+                <div class="hazard-content">
+                    <h4>Humidity & Dew Point</h4>
+                    <p class="hazard-detail"><strong>Note:</strong> Humidity and dew point data not currently included in this analysis. These factors significantly impact paint application and cure.</p>
+                    <p class="hazard-recommendation"><strong>Best Practice:</strong> Surface temperature must be minimum 5°F above dew point during application and cure. Use portable humidity meters on-site. Morning dew can delay start times (typically dry by 9-10am).</p>
+                </div>
+            </div>
+        `;
+
+        html += `
+                </div>
+            </div>
+        `;
+
+        return html;
     }
 
     generateExcavationTechnicalHazards(analysis, project) {
@@ -4216,16 +4293,24 @@ class XyloclimePro {
                 snowyDays: daily.snowfall_sum.filter(s => s !== null && s > 1).length,  // Measurable snow (>1mm water equiv)
                 heavySnowDays: daily.snowfall_sum.filter(s => s !== null && s > 10).length,  // Work-stopping snow (>10mm water equiv = ~4in depth)
 
-                // WIND THRESHOLD: 30 km/h (18.6 mph)
-                // Industry standard for construction impact:
-                // - Crane operations typically restricted at 30-40 km/h
-                // - Elevated work safety limits at 30-50 km/h
-                // - Material handling becomes challenging at 30+ km/h
+                // WIND THRESHOLDS (varies by work type):
+                // General construction:
                 // - Light wind (< 30 km/h): Safe for all construction activities
                 // - Elevated wind (≥ 30 km/h): Restricts crane operations, elevated work, material handling (monitoring)
                 // - Work-stopping wind (≥ 60 km/h): General construction work stoppage (safety hazard)
-                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Elevated wind (monitoring threshold, not work-stopping)
-                workStoppingWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 60).length,  // TRUE work stoppage (≥60 km/h = ≥37 mph)
+                //
+                // Template-specific (enforced in workableDays calculation):
+                // - Painting: ≥25 km/h affects spray quality (overspray, uneven coverage)
+                // - Roofing: ≥30 km/h affects shingle placement and worker safety
+                // - Excavation: ≥50 km/h affects dust control and equipment stability
+                highWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 30).length,  // Elevated wind (monitoring threshold for general construction)
+                workStoppingWindDays: daily.windspeed_10m_max.filter(w => w !== null && w >= 60).length,  // TRUE work stoppage for general construction (≥60 km/h = ≥37 mph)
+
+                // Template-specific wind violations (for accurate reporting)
+                templateWindViolations: template?.workabilityThresholds?.maxWind
+                    ? daily.windspeed_10m_max.filter(w => w !== null && w >= template.workabilityThresholds.maxWind).length
+                    : 0,  // Days exceeding template's wind limit (e.g., ≥25 km/h for painting)
+
                 avgWindSpeed: this.average(daily.windspeed_10m_max),
                 maxWindSpeed: (() => {
                     const windValues = daily.windspeed_10m_max.filter(w => w !== null);
@@ -4264,20 +4349,25 @@ class XyloclimePro {
 
                     // Use template-specific workable thresholds if available, otherwise use defaults
                     if (template?.workabilityThresholds) {
-                        // CRITICAL FIX: Workable should use MORE LENIENT thresholds than ideal
-                        // For workable, use general construction defaults (lenient) modified by template minimums
-                        // This ensures workable >> ideal, not workable ≈ ideal
+                        // CRITICAL FIX: Use template-specific thresholds for ALL criteria
+                        // Templates like painting have strict requirements (e.g., maxWind: 25 km/h for spray quality)
                         const templateMin = template.workabilityThresholds.criticalMinTemp;
                         const templateMax = template.workabilityThresholds.maxTemp;
+                        const templateMaxRain = template.workabilityThresholds.maxRain;
+                        const templateMaxWind = template.workabilityThresholds.maxWind;
+                        const templateMaxSnow = template.workabilityThresholds.maxSnow;
 
-                        // Use LENIENT general construction thresholds for rain/wind/snow
-                        // Only use template for temperature minimums (safety-critical)
+                        // For workable days, allow slightly more lenient temp than template strict ideal
+                        // But use template-specific rain/wind/snow limits (critical for quality work like painting)
                         const meetsTemp = temp_min !== null && t !== null &&
                                         temp_min >= templateMin &&  // Template safety minimum
                                         t <= (templateMax + 5);      // Slightly more lenient than template max
-                        const meetsRain = precip !== null && precip < 15;  // General heavy rain threshold: 15mm (0.6 in)
-                        const meetsWind = wind !== null && wind < 60;      // General work-stopping wind: 60 km/h (37 mph)
-                        const meetsSnow = snow === null || snow <= 10;     // No heavy snow: ≤10mm water equiv
+
+                        // CRITICAL FIX: Use template-specific thresholds, not general construction defaults!
+                        // Example: Painting needs maxWind: 25 km/h (not 60 km/h) to prevent overspray
+                        const meetsRain = precip !== null && precip < templateMaxRain;  // Template-specific rain limit
+                        const meetsWind = wind !== null && wind < templateMaxWind;      // Template-specific wind limit (e.g., 25 km/h for painting)
+                        const meetsSnow = snow === null || snow <= templateMaxSnow;     // Template-specific snow limit
 
                         return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {

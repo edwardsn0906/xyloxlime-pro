@@ -495,10 +495,13 @@ class SmartRecommendations {
             recommendedContingency = `${minContingency}-${maxContingency}%`;
         }
 
-        // Analyze risk levels (pass contingency to all methods)
+        // Get template for template-specific recommendations
+        const template = project.templateId ? this.templates.getTemplate(project.templateId) : null;
+
+        // Analyze risk levels (pass contingency and template to methods as needed)
         this.analyzeRainRisk(analysis, recommendations, recommendedContingency);
         this.analyzeTemperatureRisk(analysis, recommendations);
-        this.analyzeWindRisk(analysis, recommendations);
+        this.analyzeWindRisk(analysis, recommendations, template);  // Pass template for wind-specific thresholds
         this.analyzeSeasonalRisk(analysis, project, recommendations);
         this.analyzeWorkableDays(analysis, project, recommendations, recommendedContingency);
         this.generateSchedulingInsights(analysis, project, recommendations);
@@ -608,16 +611,41 @@ class SmartRecommendations {
         }
     }
 
-    analyzeWindRisk(analysis, recommendations) {
+    analyzeWindRisk(analysis, recommendations, template) {
         const highWindDays = analysis.highWindDays || 0;
+        const templateWindViolations = analysis.templateWindViolations || 0;
         const hasWindData = analysis.avgWindSpeed !== undefined && analysis.avgWindSpeed !== null;
 
-        // Only show wind recommendations if we have actual wind data
-        if (hasWindData && highWindDays > 3) {
+        // Check for template-specific wind violations (e.g., painting at 25 km/h)
+        if (hasWindData && templateWindViolations > 0 && template?.workabilityThresholds?.maxWind) {
+            const totalDays = analysis.actualProjectDays || 365;
+            const violationPercent = Math.round((templateWindViolations / totalDays) * 100);
+            const windLimit = template.workabilityThresholds.maxWind;
+            const windLimitMph = Math.round(windLimit * 0.621371);
+
+            if (template.name === 'Exterior Painting') {
+                recommendations.critical.push({
+                    icon: 'fa-wind',
+                    title: `High Wind Days Affect Spray Quality`,
+                    message: `${templateWindViolations} days (${violationPercent}%) exceed ${windLimit} km/h (${windLimitMph} mph) spray limit. Wind causes overspray, uneven coverage, and material waste.`,
+                    action: `Plan spray work during calm morning hours (before 10am). Have brush/roller equipment as backup. These days are NOT counted as workable for spray painting.`,
+                    priority: 'high'
+                });
+            } else {
+                recommendations.important.push({
+                    icon: 'fa-wind',
+                    title: `Template-Specific Wind Restrictions`,
+                    message: `${templateWindViolations} days exceed ${windLimit} km/h (${windLimitMph} mph) limit for ${template.name}.`,
+                    action: `Schedule wind-sensitive work during calm periods. Monitor hourly forecasts.`,
+                    priority: 'medium'
+                });
+            }
+        } else if (hasWindData && highWindDays > 3) {
+            // Generic wind warning for general construction
             recommendations.important.push({
                 icon: 'fa-wind',
                 title: 'High Wind Days Expected',
-                message: `${highWindDays} days with winds ≥30 km/h (≥19 mph). Affects roofing, crane work, painting.`,
+                message: `${highWindDays} days with winds ≥30 km/h (≥19 mph). Affects crane work, roofing, elevated work.`,
                 action: 'Schedule wind-sensitive tasks during calm periods. Have backup plans.',
                 priority: 'medium'
             });
