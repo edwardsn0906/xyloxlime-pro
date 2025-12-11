@@ -4742,8 +4742,8 @@ class XyloclimePro {
             // NEW - Yearly breakdown for transparency
             yearlyStats: yearlyStats,
 
-            // NEW - Monthly breakdown for concrete pour planning
-            monthlyBreakdown: this.calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats),
+            // NEW - Monthly breakdown for concrete pour planning (CRITICAL: Pass template for template-specific workability)
+            monthlyBreakdown: this.calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats, template),
 
             // NEW - Snow data source for proper warning display
             snowDataSource: snowDataSource,
@@ -5070,8 +5070,8 @@ class XyloclimePro {
         return extremeEvents;
     }
 
-    calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats) {
-        console.log('[MONTHLY] Calculating monthly breakdown for concrete pour planning');
+    calculateMonthlyBreakdown(historicalData, projectStartDate, projectEndDate, yearlyStats, template = null) {
+        console.log('[MONTHLY] Calculating monthly breakdown for project planning', template ? `(using ${template.name} template thresholds)` : '(using generic thresholds)');
 
         const monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June',
@@ -5137,17 +5137,65 @@ class XyloclimePro {
                 if (hasHeavySnow) monthlyStats[monthIndex].heavySnowDays++;
 
                 // Check if day is workable
-                const isWorkStopping = hasHeavyRain || hasWorkStoppingCold || hasHeavySnow || hasWorkStoppingWind || hasDangerousHeat;
-                if (!isWorkStopping) {
+                // CRITICAL FIX: Use template-specific thresholds instead of generic construction thresholds
+                // This ensures monthly breakdown matches the main workability analysis
+                let isWorkable = false;
+                if (template?.workabilityThresholds) {
+                    // Use template-specific thresholds (same logic as main workability calculation)
+                    const templateMin = template.workabilityThresholds.criticalMinTemp;
+                    const templateMax = template.workabilityThresholds.maxTemp;
+                    const templateMaxRain = template.workabilityThresholds.maxRain;
+                    const templateMaxWind = template.workabilityThresholds.maxWind;
+                    const templateMaxSnow = template.workabilityThresholds.maxSnow;
+
+                    const meetsTemp = temp_min !== null && temp_max !== null &&
+                                    temp_min >= templateMin &&
+                                    temp_max <= (templateMax + 5);
+                    const meetsRain = precip !== null && (templateMaxRain === 0 ? precip <= 1 : precip < templateMaxRain);
+                    const meetsWind = wind !== null && wind < templateMaxWind;
+                    const meetsSnow = snow === null || (templateMaxSnow === 0 ? snow <= 1 : snow <= templateMaxSnow);
+
+                    isWorkable = meetsTemp && meetsRain && meetsWind && meetsSnow;
+                } else {
+                    // Generic construction thresholds (fallback)
+                    const isWorkStopping = hasHeavyRain || hasWorkStoppingCold || hasHeavySnow || hasWorkStoppingWind || hasDangerousHeat;
+                    isWorkable = !isWorkStopping;
+                }
+
+                if (isWorkable) {
                     monthlyStats[monthIndex].workableDays++;
                 }
 
-                // Check if day is ideal (no extremes at all)
-                const hasLightRain = precip !== null && precip > 1 && precip <= 15;  // Light rain = between trace and heavy
-                const hasLightFreezing = temp_min !== null && temp_min > -5 && temp_min <= 0;
-                const hasExtremeHeat = temp_max !== null && temp_max >= 37.78;  // ≥100°F
-                const isIdeal = !hasHeavyRain && !hasLightRain && !hasWorkStoppingCold && !hasLightFreezing &&
-                               !hasHeavySnow && !hasElevatedWind && !hasExtremeHeat && !hasDangerousHeat;
+                // Check if day is ideal (stricter thresholds than workable)
+                // CRITICAL FIX: Use template-specific ideal thresholds
+                let isIdeal = false;
+                if (template?.workabilityThresholds) {
+                    // Template-specific ideal thresholds (same logic as main ideal days calculation)
+                    const workableThresholds = template.workabilityThresholds;
+                    const idealMinTemp = workableThresholds.idealMinTemp || workableThresholds.criticalMinTemp;
+                    const idealMaxRain = workableThresholds.maxRain === 0 ? 1 : Math.min(5, workableThresholds.maxRain * 0.33);
+                    const idealMaxWind = Math.min(20, workableThresholds.maxWind * 0.4);
+                    const idealMaxSnow = 0.5;
+                    const idealMaxTemp = Math.min(32, workableThresholds.maxTemp - 8);
+
+                    const meetsTemp = temp_min !== null && temp_max !== null &&
+                                    temp_min > idealMinTemp &&
+                                    temp_max > idealMinTemp &&
+                                    temp_max < idealMaxTemp;
+                    const meetsRain = precip !== null && (workableThresholds.maxRain === 0 ? precip <= idealMaxRain : precip < idealMaxRain);
+                    const meetsWind = wind !== null && wind < idealMaxWind;
+                    const meetsSnow = snow === null || snow <= idealMaxSnow;
+
+                    isIdeal = meetsTemp && meetsRain && meetsWind && meetsSnow;
+                } else {
+                    // Generic ideal thresholds (fallback)
+                    const hasLightRain = precip !== null && precip > 1 && precip <= 15;
+                    const hasLightFreezing = temp_min !== null && temp_min > -5 && temp_min <= 0;
+                    const hasExtremeHeat = temp_max !== null && temp_max >= 37.78;
+                    isIdeal = !hasHeavyRain && !hasLightRain && !hasWorkStoppingCold && !hasLightFreezing &&
+                             !hasHeavySnow && !hasElevatedWind && !hasExtremeHeat && !hasDangerousHeat;
+                }
+
                 if (isIdeal) {
                     monthlyStats[monthIndex].idealDays++;
                 }
