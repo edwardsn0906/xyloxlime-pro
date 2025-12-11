@@ -594,25 +594,55 @@ class SmartRecommendations {
         }
 
         // EXTREME cold stoppage (≤-18°C / ≤0°F) is true work stoppage
+        // CRITICAL FIX: Only show cold-weather method recommendations for templates that support them
+        // Asphalt paving has NO cold-weather methods - asphalt won't compact below 50°F
+        // Concrete and general construction CAN use cold-weather methods (accelerators, blankets, etc.)
+        const supportsColdWeatherMethods = template?.name === 'Concrete Foundations' ||
+                                          template?.name === 'General Construction';
+
         if (workStoppingCold > totalDays * 0.05) {
             // >5% extreme cold stoppage = significant
             const coldMethodsDays = analysis.coldWeatherMethodsDays || 0;
-            recommendations.critical.push({
-                icon: 'fa-snowflake',
-                title: 'Work-Stopping Cold Expected',
-                message: `${workStoppingCold} days expected ≤-18°C (≤0°F) requiring work stoppage. ${coldMethodsDays} additional days (0-23°F) workable with cold-weather methods. Concrete pours and major construction halted during extreme cold.`,
-                action: 'Plan for heated enclosures, winter additives, and extended cure times',
-                priority: 'high'
-            });
+
+            if (supportsColdWeatherMethods) {
+                // For concrete/general: mention cold-weather methods
+                recommendations.critical.push({
+                    icon: 'fa-snowflake',
+                    title: 'Work-Stopping Cold Expected',
+                    message: `${workStoppingCold} days expected ≤-18°C (≤0°F) requiring work stoppage. ${coldMethodsDays} additional days (0-23°F) workable with cold-weather methods. Concrete pours and major construction halted during extreme cold.`,
+                    action: 'Plan for heated enclosures, winter additives, and extended cure times',
+                    priority: 'high'
+                });
+            } else {
+                // For asphalt/other: don't mention cold-weather methods (they don't exist for these work types)
+                recommendations.critical.push({
+                    icon: 'fa-snowflake',
+                    title: 'Work-Stopping Cold Expected',
+                    message: `${workStoppingCold} days expected ≤-18°C (≤0°F) requiring work stoppage. Most work types cannot proceed in extreme cold.`,
+                    action: 'Schedule work during warmer months or consider project timing alternatives',
+                    priority: 'high'
+                });
+            }
         } else if (freezingDays > 20) {
             // Freezing but workable with precautions
-            recommendations.important.push({
-                icon: 'fa-snowflake',
-                title: 'Freezing Conditions Expected',
-                message: `${freezingDays} days below freezing (most workable with precautions). ${workStoppingCold} days require work stoppage (≤-18°C / ≤0°F).`,
-                action: 'Plan for cold-weather methods: heated blankets, winter mix concrete',
-                priority: 'medium'
-            });
+            if (supportsColdWeatherMethods) {
+                recommendations.important.push({
+                    icon: 'fa-snowflake',
+                    title: 'Freezing Conditions Expected',
+                    message: `${freezingDays} days below freezing (most workable with precautions). ${workStoppingCold} days require work stoppage (≤-18°C / ≤0°F).`,
+                    action: 'Plan for cold-weather methods: heated blankets, winter mix concrete',
+                    priority: 'medium'
+                });
+            } else {
+                // Generic freezing message for non-concrete work
+                recommendations.important.push({
+                    icon: 'fa-snowflake',
+                    title: 'Freezing Conditions Expected',
+                    message: `${freezingDays} days below freezing expected. ${workStoppingCold} days with extreme cold (≤-18°C / ≤0°F) require work stoppage.`,
+                    action: 'Plan work during warmer periods. Monitor temperature forecasts closely',
+                    priority: 'medium'
+                });
+            }
         }
 
         if (extremeHeatDays > 5) {
