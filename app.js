@@ -4642,6 +4642,17 @@ class XyloclimePro {
         const heavyRainProportion = rainyDays > 0 ? (heavyRainDays / rainyDays) * 100 : 0;
         console.log(`[ANALYSIS] Heavy rain validation: ${heavyRainDays}/${rainyDays} = ${heavyRainProportion.toFixed(1)}% (typical: 15-30%)`);
 
+        // CRITICAL VALIDATION: Wind data consistency check
+        // If average max wind > 30 km/h, there MUST be many days ≥30 km/h (statistical requirement)
+        // This catches data quality issues like sparse wind data or calculation errors
+        const avgWindSpeed = this.average(yearlyStats.map(y => y.avgWindSpeed));
+        const expectedHighWindDays = actualProjectDays * 0.3; // Conservative: expect at least 30% if avg > 30
+        if (avgWindSpeed > 30 && highWindDays < expectedHighWindDays) {
+            const highWindPercent = actualProjectDays > 0 ? (highWindDays / actualProjectDays) * 100 : 0;
+            console.warn(`[WIND WARNING] Suspicious wind data: Average max wind ${avgWindSpeed.toFixed(1)} km/h but only ${highWindDays} days (${highWindPercent.toFixed(1)}%) ≥30 km/h. Statistically, if average is above threshold, ~40-50% of days should exceed it. Possible causes: (1) Sparse/incomplete wind data, (2) Very short project duration, (3) Unusual wind distribution. Review ERA5 wind data quality for this location.`);
+        }
+        console.log(`[WIND VALIDATION] Average max wind: ${avgWindSpeed.toFixed(1)} km/h, High-wind days (≥30 km/h): ${highWindDays}/${actualProjectDays} (${actualProjectDays > 0 ? ((highWindDays / actualProjectDays) * 100).toFixed(1) : 0}%)`);
+
         // Calculate confidence intervals (standard deviation)
         const rainyDaysStdDev = this.standardDeviation(yearlyStats.map(y => y.rainyDays));
         const precipStdDev = this.standardDeviation(yearlyStats.map(y => y.totalPrecip));
