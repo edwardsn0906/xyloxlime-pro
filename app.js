@@ -9146,7 +9146,189 @@ class XyloclimePro {
             doc.setTextColor(150, 150, 150);
             doc.text(`Xyloclime Pro | Page 3`, 105, 287, { align: 'center' });
 
-            // ===== PAGE 4: EXTREME WEATHER EVENTS =====
+            // ===== PAGE 4: HUMIDITY & BEST PERIODS (if painting project with humidity data) =====
+            const template = project.templateId ? this.templates?.getTemplate(project.templateId) : null;
+            const humidityData = analysis.humidityData;
+
+            if (template?.name === 'Exterior Painting' && humidityData?.hasData) {
+                doc.addPage();
+                yPos = 20;
+
+                doc.setTextColor(0, 212, 255);
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text('Humidity & Optimal Work Periods', 20, yPos);
+                yPos += 12;
+
+                // Humidity Analysis Section
+                doc.setFillColor(0, 212, 255);
+                doc.rect(15, yPos, 4, 25, 'F');
+                doc.setFontSize(14);
+                doc.setTextColor(0, 212, 255);
+                doc.setFont(undefined, 'bold');
+                doc.text('Humidity & Dew Point Analysis', 23, yPos + 5);
+                yPos += 12;
+
+                doc.setFontSize(10);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont(undefined, 'normal');
+
+                const totalHumidityIssues = (humidityData.lowHumidityDays || 0) + (humidityData.highHumidityDays || 0) + (humidityData.poorDewPointSpreadDays || 0);
+
+                if (totalHumidityIssues > 0) {
+                    const humidityPercent = Math.round((totalHumidityIssues / totalDays) * 100);
+                    const humidityText = `Paint quality requires 40-85% relative humidity and surface temperature 5°F (3°C) above dew point. ${totalHumidityIssues} days (${humidityPercent}%) have challenging humidity conditions that may affect paint application and cure quality.`;
+                    const humidityLines = doc.splitTextToSize(humidityText, 167);
+                    doc.text(humidityLines, 23, yPos);
+                    yPos += (humidityLines.length * 5) + 8;
+
+                    // Humidity breakdown table
+                    const humidityTable = [
+                        ['Issue Type', 'Days', 'Impact'],
+                        ['Too Dry (<40% RH)', `${humidityData.lowHumidityDays}`, 'Fast drying, poor flow/leveling, brush marks, overspray'],
+                        ['Too Humid (>85% RH)', `${humidityData.highHumidityDays}`, 'Slow cure, runs/sags, moisture contamination'],
+                        ['Condensation Risk', `${humidityData.poorDewPointSpreadDays}`, 'Surface condensation, poor adhesion, blistering']
+                    ];
+
+                    doc.setFontSize(9);
+                    humidityTable.forEach((row, i) => {
+                        if (i === 0) {
+                            doc.setFillColor(0, 212, 255);
+                            doc.rect(20, yPos - 5, 170, 8, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFont(undefined, 'bold');
+                        } else {
+                            if (i % 2 === 1) {
+                                doc.setFillColor(245, 247, 250);
+                                doc.rect(20, yPos - 5, 170, 8, 'F');
+                            }
+                            doc.setTextColor(60, 60, 60);
+                            doc.setFont(undefined, 'normal');
+                        }
+                        doc.text(row[0], 25, yPos);
+                        doc.text(row[1], 75, yPos);
+                        const impactLines = doc.splitTextToSize(row[2], 90);
+                        doc.text(impactLines, 95, yPos);
+                        yPos += Math.max(8, impactLines.length * 4);
+                    });
+
+                    yPos += 6;
+                    doc.setFontSize(9);
+                    doc.setTextColor(60, 60, 60);
+                    doc.setFont(undefined, 'italic');
+                    const avgRH = humidityData.avgRelativeHumidity ? Math.round(humidityData.avgRelativeHumidity) + '%' : 'N/A';
+                    doc.text(`Average Relative Humidity: ${avgRH}`, 25, yPos);
+                    yPos += 8;
+                }
+
+                // Best Work Periods
+                if (analysis.bestPeriods && analysis.bestPeriods.length > 0) {
+                    if (yPos > 190) {
+                        doc.addPage();
+                        yPos = 20;
+                        doc.setTextColor(0, 212, 255);
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Optimal Work Periods (continued)', 20, yPos);
+                        yPos += 12;
+                    }
+
+                    doc.setFillColor(0, 212, 255);
+                    doc.rect(15, yPos, 4, 25, 'F');
+                    doc.setFontSize(14);
+                    doc.setTextColor(0, 212, 255);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Optimal 2-Week Work Periods', 23, yPos + 5);
+                    yPos += 12;
+
+                    doc.setFontSize(10);
+                    doc.setTextColor(60, 60, 60);
+                    doc.setFont(undefined, 'normal');
+                    const bestPeriodsIntro = 'Based on historical patterns, these 14-day windows offer the best conditions for painting work:';
+                    doc.text(bestPeriodsIntro, 23, yPos);
+                    yPos += 8;
+
+                    const topPeriods = analysis.bestPeriods.slice(0, 3);
+                    doc.setFontSize(9);
+                    topPeriods.forEach((period, index) => {
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`${index + 1}. ${period.start} to ${period.end} (Score: ${period.score}/100)`, 25, yPos);
+                        yPos += 5;
+
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`   ${period.idealDays} ideal days, ${period.workableDays} workable days`, 25, yPos);
+                        yPos += 4;
+
+                        if (period.rainyDays > 0 || period.lightRainDays > 0) {
+                            doc.text(`   Precipitation: ${period.rainyDays} heavy rain days, ${period.lightRainDays} light rain days`, 25, yPos);
+                            yPos += 4;
+                        }
+
+                        doc.text(`   Temperature: ${this.formatTemp(period.avgTempMin, 'C')} to ${this.formatTemp(period.avgTempMax, 'C')}`, 25, yPos);
+                        yPos += 6;
+                    });
+                }
+
+                // Footer
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`Xyloclime Pro | Page 4`, 105, 287, { align: 'center' });
+            }
+
+            // ===== PAGE 5: MONTHLY BREAKDOWN =====
+            if (analysis.monthlyBreakdown && analysis.monthlyBreakdown.length > 0) {
+                doc.addPage();
+                yPos = 20;
+
+                doc.setTextColor(0, 212, 255);
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text('Monthly Workability Analysis', 20, yPos);
+                yPos += 12;
+
+                doc.setFontSize(10);
+                doc.setTextColor(60, 60, 60);
+                doc.setFont(undefined, 'normal');
+                const monthlyIntro = 'Month-by-month breakdown of workability and weather conditions during the project period:';
+                doc.text(monthlyIntro, 20, yPos);
+                yPos += 10;
+
+                // Monthly table header
+                doc.setFontSize(9);
+                doc.setFillColor(0, 212, 255);
+                doc.rect(20, yPos - 5, 170, 8, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont(undefined, 'bold');
+                doc.text('Month', 25, yPos);
+                doc.text('Workable %', 65, yPos);
+                doc.text('Ideal %', 100, yPos);
+                doc.text('Avg Temp', 130, yPos);
+                doc.text('Rain Days', 165, yPos);
+                yPos += 8;
+
+                // Monthly data rows
+                doc.setFont(undefined, 'normal');
+                analysis.monthlyBreakdown.slice(0, 12).forEach((month, i) => {
+                    if (i % 2 === 0) {
+                        doc.setFillColor(245, 247, 250);
+                        doc.rect(20, yPos - 5, 170, 7, 'F');
+                    }
+                    doc.setTextColor(60, 60, 60);
+                    doc.text(month.month, 25, yPos);
+                    doc.text(`${month.workablePercent}%`, 65, yPos);
+                    doc.text(`${month.idealPercent}%`, 100, yPos);
+                    doc.text(this.formatTemp(month.avgTemp, 'C'), 130, yPos);
+                    doc.text(`${month.rainyDays}`, 165, yPos);
+                    yPos += 7;
+                });
+
+                // Footer
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`Xyloclime Pro | Page 5`, 105, 287, { align: 'center' });
+            }
+
+            // ===== PAGE 6+: EXTREME WEATHER EVENTS =====
             if (analysis.extremeEvents && analysis.extremeEvents.length > 0) {
                 doc.addPage();
                 yPos = 20;
@@ -9213,10 +9395,10 @@ class XyloclimePro {
                 // Footer
                 doc.setFontSize(8);
                 doc.setTextColor(150, 150, 150);
-                doc.text(`Xyloclime Pro | Page 4`, 105, 287, { align: 'center' });
+                doc.text(`Xyloclime Pro | Extreme Events`, 105, 287, { align: 'center' });
             }
 
-            // ===== PAGES 5+: CHARTS (ALL CHARTS IN HIGH RESOLUTION) =====
+            // ===== CHARTS PAGES: CHARTS (ALL CHARTS IN HIGH RESOLUTION) =====
             doc.addPage();
 
             doc.setTextColor(0, 212, 255);
@@ -9235,7 +9417,7 @@ class XyloclimePro {
             ];
 
             let chartYPos = 30;
-            let pageNum = 3;
+            let pageNum = 7; // Start after humidity/monthly/extreme pages
             let chartsOnPage = 0;
 
             for (let i = 0; i < chartIds.length; i++) {
