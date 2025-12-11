@@ -4540,7 +4540,9 @@ class XyloclimePro {
                         // - Snow: Virtually none allowed (0.5cm vs 5cm)
 
                         const idealMinTemp = workableThresholds.idealMinTemp || workableThresholds.criticalMinTemp;
-                        const idealMaxRain = Math.min(5, workableThresholds.maxRain * 0.33);  // 1/3 of workable, max 5mm
+                        // CRITICAL FIX: Handle maxRain=0 case (asphalt paving, etc.)
+                        // When maxRain=0, use 1mm as ideal threshold instead of 0 (precip < 0 is impossible!)
+                        const idealMaxRain = workableThresholds.maxRain === 0 ? 1 : Math.min(5, workableThresholds.maxRain * 0.33);  // 1/3 of workable, max 5mm
                         const idealMaxWind = Math.min(20, workableThresholds.maxWind * 0.4);  // 40% of workable, max 20 km/h
                         const idealMaxSnow = 0.5;  // Virtually no snow for ideal days (trace amounts only)
 
@@ -4554,7 +4556,8 @@ class XyloclimePro {
                                         temp_min > idealMinTemp &&
                                         t > idealMinTemp &&
                                         t < idealMaxTemp;
-                        const meetsRain = precip !== null && precip < idealMaxRain;
+                        // CRITICAL FIX: Same special handling as workable days - maxRain=0 means "allow trace amounts ≤1mm"
+                        const meetsRain = precip !== null && (workableThresholds.maxRain === 0 ? precip <= idealMaxRain : precip < idealMaxRain);
                         const meetsWind = wind !== null && wind < idealMaxWind;
                         const meetsSnow = snow === null || snow <= idealMaxSnow;
 
