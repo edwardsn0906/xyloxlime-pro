@@ -809,10 +809,25 @@ class SmartRecommendations {
 
     analyzeWorkableDays(analysis, project, recommendations, recommendedContingency) {
         const totalDays = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
-        const workableDays = analysis.workableDays || analysis.optimalDays || totalDays * 0.7;
+        // CRITICAL FIX: Don't use fallback - workableDays should be accurate from analysis
+        // If it's 0, it means the template requirements are too strict for this climate
+        const workableDays = analysis.workableDays !== undefined ? analysis.workableDays : (analysis.optimalDays || 0);
         const workablePercent = (workableDays / totalDays) * 100;
 
-        if (workablePercent < 60) {
+        // CRITICAL CASE: Essentially no workable days (template too strict for climate)
+        if (workablePercent < 10) {
+            recommendations.critical.push({
+                icon: 'fa-exclamation-triangle',
+                title: workablePercent === 0 ? 'No Workable Days - Template Requirements Too Strict' : 'Critically Low Workable Days',
+                message: workablePercent === 0
+                    ? `Template requirements cannot be met in this climate/season (0 of ${totalDays} days). This work type may not be feasible during this period.`
+                    : `Only ${Math.round(workablePercent)}% of days expected to be workable (${Math.round(workableDays)} of ${totalDays} days). Template requirements are extremely difficult to meet in this climate.`,
+                action: workablePercent === 0
+                    ? `Consider: (1) Different project timing (warmer season), (2) Different location, (3) Modified work methods/materials for cold weather, or (4) Different project type. Add ${recommendedContingency} minimum contingency if proceeding.`
+                    : `Focus all work during the ${Math.round(workableDays)} available windows. Add ${recommendedContingency} contingency. Consider alternative methods or timing.`,
+                priority: 'critical'
+            });
+        } else if (workablePercent < 60) {
             recommendations.critical.push({
                 icon: 'fa-exclamation-triangle',
                 title: 'Low Workable Days',

@@ -4481,9 +4481,11 @@ class XyloclimePro {
 
                         // CRITICAL FIX: Use template-specific thresholds, not general construction defaults!
                         // Example: Painting needs maxWind: 25 km/h (not 60 km/h) to prevent overspray
-                        const meetsRain = precip !== null && precip < templateMaxRain;  // Template-specific rain limit
+                        // SPECIAL HANDLING: maxRain=0 means "no measurable precipitation" (allow trace amounts <1mm)
+                        const meetsRain = precip !== null && (templateMaxRain === 0 ? precip <= 1 : precip < templateMaxRain);
                         const meetsWind = wind !== null && wind < templateMaxWind;      // Template-specific wind limit (e.g., 25 km/h for painting)
-                        const meetsSnow = snow === null || snow <= templateMaxSnow;     // Template-specific snow limit
+                        // SPECIAL HANDLING: maxSnow=0 means "no measurable snow" (allow trace amounts <1mm)
+                        const meetsSnow = snow === null || (templateMaxSnow === 0 ? snow <= 1 : snow <= templateMaxSnow);
 
                         return meetsTemp && meetsRain && meetsWind && meetsSnow;
                     } else {
