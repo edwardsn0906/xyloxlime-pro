@@ -4627,6 +4627,10 @@ class XyloclimePro {
         const idealDays = Math.round(this.average(yearlyStats.map(y => y.idealDays)));
         const workableDays = Math.round(this.average(yearlyStats.map(y => y.workableDays)));
 
+        // Template-specific temperature constraints
+        const belowPaintCureTemp = Math.round(this.average(yearlyStats.map(y => y.belowPaintCureTemp || 0)));
+        const templateWindViolations = Math.round(this.average(yearlyStats.map(y => y.templateWindViolations || 0)));
+
         // Validate temperature distribution reasonableness (using new -18°C / 0°F threshold)
         const extremeColdPercent = actualProjectDays > 0 ? (extremeColdDays / actualProjectDays) * 100 : 0;
         const coldWeatherPercent = actualProjectDays > 0 ? (coldWeatherMethodsDays / actualProjectDays) * 100 : 0;
@@ -4652,6 +4656,25 @@ class XyloclimePro {
             console.warn(`[WIND WARNING] Suspicious wind data: Average max wind ${avgWindSpeed.toFixed(1)} km/h but only ${highWindDays} days (${highWindPercent.toFixed(1)}%) ≥30 km/h. Statistically, if average is above threshold, ~40-50% of days should exceed it. Possible causes: (1) Sparse/incomplete wind data, (2) Very short project duration, (3) Unusual wind distribution. Review ERA5 wind data quality for this location.`);
         }
         console.log(`[WIND VALIDATION] Average max wind: ${avgWindSpeed.toFixed(1)} km/h, High-wind days (≥30 km/h): ${highWindDays}/${actualProjectDays} (${actualProjectDays > 0 ? ((highWindDays / actualProjectDays) * 100).toFixed(1) : 0}%)`);
+
+        // CRITICAL VALIDATION: Painting template workability consistency
+        // For painting projects, workable days must exclude all days below cure temperature
+        if (template?.name === 'Exterior Painting' && belowPaintCureTemp > 0) {
+            const paintWorkablePercent = actualProjectDays > 0 ? (workableDays / actualProjectDays) * 100 : 0;
+            const belowCureTempPercent = actualProjectDays > 0 ? (belowPaintCureTemp / actualProjectDays) * 100 : 0;
+
+            console.log(`[PAINTING VALIDATION] Template: ${template.name}, criticalMinTemp: ${template.workabilityThresholds.criticalMinTemp}°C (${(template.workabilityThresholds.criticalMinTemp * 9/5 + 32).toFixed(0)}°F)`);
+            console.log(`[PAINTING VALIDATION] Workable days: ${workableDays}/${actualProjectDays} (${paintWorkablePercent.toFixed(1)}%)`);
+            console.log(`[PAINTING VALIDATION] Below cure temp (<${template.workabilityThresholds.criticalMinTemp}°C): ${belowPaintCureTemp}/${actualProjectDays} (${belowCureTempPercent.toFixed(1)}%)`);
+            console.log(`[PAINTING VALIDATION] Above cure temp: ${actualProjectDays - belowPaintCureTemp} days (${(100 - belowCureTempPercent).toFixed(1)}%)`);
+
+            // Sanity check: workable days should never exceed days above cure temp
+            // (Other weather factors like rain/wind can reduce it further, but cure temp is a hard limit)
+            const maxPossibleWorkable = actualProjectDays - belowPaintCureTemp;
+            if (workableDays > maxPossibleWorkable) {
+                console.error(`[PAINTING ERROR] Workability logic error: ${workableDays} workable days > ${maxPossibleWorkable} days above cure temp! Days below ${template.workabilityThresholds.criticalMinTemp}°C should NEVER be workable for painting.`);
+            }
+        }
 
         // Calculate confidence intervals (standard deviation)
         const rainyDaysStdDev = this.standardDeviation(yearlyStats.map(y => y.rainyDays));
@@ -4691,6 +4714,10 @@ class XyloclimePro {
             extremeColdDays,          // EXTREME COLD STOPPAGE (≤-18°C/≤0°F) - true work stoppage
             extremeHeatDays,          // Days above 37°C (NOT workable)
             freezingDays: allFreezingDays,  // Backward compatibility
+
+            // Template-specific temperature constraints
+            belowPaintCureTemp,       // Days below paint cure temp (50°F/10°C) - NOT workable for painting
+            templateWindViolations,   // Days exceeding template's specific wind limit (e.g., 25 km/h for painting)
 
             // Temperature tier breakdown (TEMPERATURE ONLY - excludes rain/wind)
             // This is separate from workableDays which includes weather conditions
