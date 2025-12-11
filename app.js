@@ -4186,7 +4186,7 @@ class XyloclimePro {
     }
 
     async fetchWeatherData(lat, lng, startDate, endDate) {
-        let url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,windspeed_10m_max,relativehumidity_2m_max,relativehumidity_2m_min&timezone=auto`;
+        let url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,windspeed_10m_max,relative_humidity_2m_max,relative_humidity_2m_min&timezone=auto`;
 
         if (this.apiKey) {
             url += `&apikey=${this.apiKey}`;
@@ -4354,14 +4354,14 @@ class XyloclimePro {
                 // - Too high RH (>85%): Slow cure, runs/sags, moisture contamination
                 // - Insufficient dew point spread (<5°F): Surface condensation, poor adhesion, blistering
                 humidityData: (() => {
-                    const hasHumidityData = daily.relativehumidity_2m_max && daily.relativehumidity_2m_min;
+                    const hasHumidityData = daily.relative_humidity_2m_max && daily.relative_humidity_2m_min;
                     if (!hasHumidityData) return null;
 
                     // Calculate daily average humidity and dew point spread
                     const dailyHumidityStats = daily.temperature_2m_min.map((tempMin, i) => {
                         const tempMax = daily.temperature_2m_max[i];
-                        const rhMin = daily.relativehumidity_2m_min[i];
-                        const rhMax = daily.relativehumidity_2m_max[i];
+                        const rhMin = daily.relative_humidity_2m_min[i];
+                        const rhMax = daily.relative_humidity_2m_max[i];
 
                         if (tempMin === null || tempMax === null || rhMin === null || rhMax === null) {
                             return { avgRH: null, dewPointSpread: null };
