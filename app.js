@@ -4850,7 +4850,9 @@ class XyloclimePro {
                 const wind = daily.windspeed_10m_max?.[i];
 
                 const meetsTemp = temp_min > template.weatherCriteria.minTemp && temp_max < template.weatherCriteria.maxTemp;
-                const meetsRain = precip < template.weatherCriteria.maxRain;
+                // CRITICAL FIX: maxRain=0 means "no measurable precipitation" (allow trace amounts ≤1mm)
+                // Same fix as workability calculation to resolve "0 paving windows" bug
+                const meetsRain = template.weatherCriteria.maxRain === 0 ? precip <= 1 : precip < template.weatherCriteria.maxRain;
                 const meetsWind = !wind || wind < template.weatherCriteria.maxWind;
 
                 if (meetsTemp && meetsRain && meetsWind) {
