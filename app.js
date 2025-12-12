@@ -358,6 +358,7 @@ class XyloclimePro {
         this.selectedLocation = null;
         this.currentProject = null;
         this.weatherData = null;
+        this.isAnalyzing = false;  // CRITICAL FIX (Bug #15): Guard against concurrent analysis race condition
         this.apiKey = localStorage.getItem('xyloclime_apiKey') || '';
         // Default Visual Crossing API key (free tier, shared across all users)
         // Users can override this in Settings if they have their own key
@@ -3505,9 +3506,18 @@ class XyloclimePro {
     // ========================================================================
 
     async analyzeWeatherData() {
+        // CRITICAL FIX (Bug #15): Prevent concurrent analysis race condition
+        // If user double-clicks before button is disabled, prevent duplicate analysis
+        if (this.isAnalyzing) {
+            console.warn('[ANALYSIS] Analysis already in progress, ignoring duplicate request');
+            return;
+        }
+
+        this.isAnalyzing = true;
         this.sessionManager.logAction('analysis_started', {});
 
         if (!this.selectedLocation) {
+            this.isAnalyzing = false;  // Reset flag before returning
             window.toastManager.warning('Please select a location on the map or search for an address first', 'Location Required');
             return;
         }
@@ -3518,17 +3528,20 @@ class XyloclimePro {
 
         const nameValidation = this.validateProjectName(projectName);
         if (!nameValidation.valid) {
+            this.isAnalyzing = false;  // Reset flag before returning
             window.toastManager.error(nameValidation.error, 'Invalid Project Name');
             return;
         }
 
         if (!startDate || !endDate) {
+            this.isAnalyzing = false;  // Reset flag before returning
             window.toastManager.warning('Please select both start and end dates for your project', 'Dates Required');
             return;
         }
 
         const dateValidation = this.validateDates(startDate, endDate);
         if (!dateValidation.valid) {
+            this.isAnalyzing = false;  // Reset flag before returning
             window.toastManager.error(dateValidation.error, 'Invalid Date Range');
             return;
         }
@@ -3613,8 +3626,14 @@ class XyloclimePro {
             // Scroll to top to show results
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
+            // CRITICAL: Reset flag after successful completion
+            this.isAnalyzing = false;
+
         } catch (error) {
             console.error('Weather analysis failed:', error);
+
+            // CRITICAL: Reset flag on error to allow retry
+            this.isAnalyzing = false;
 
             // Hide loading indicators
             window.LoadingManager.hideProgress(progressInterval);
