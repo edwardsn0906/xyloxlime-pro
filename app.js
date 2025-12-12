@@ -4192,45 +4192,79 @@ class XyloclimePro {
         return era5Data;
     }
 
-    async fetchWeatherData(lat, lng, startDate, endDate) {
+    async fetchWeatherData(lat, lng, startDate, endDate, retries = 2) {
         let url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,windspeed_10m_max,relative_humidity_2m_max,relative_humidity_2m_min&timezone=auto`;
 
         if (this.apiKey) {
             url += `&apikey=${this.apiKey}`;
         }
 
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-            const response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                if (response.status === 429) {
-                    throw new Error('Rate limit exceeded. Please wait and try again.');
-                } else if (response.status === 400) {
-                    throw new Error('Invalid request parameters.');
-                } else if (response.status >= 500) {
-                    throw new Error('Weather API temporarily unavailable.');
+        // CRITICAL FIX (Bug #14): Add retry logic with exponential backoff for transient failures
+        // ERA5 is the critical fallback API - must be resilient to network glitches
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                if (attempt > 0) {
+                    console.log(`[ERA5] Retry attempt ${attempt}...`);
+                    // Exponential backoff: 1s, 2s delays
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
                 }
-                throw new Error(`API request failed: ${response.status}`);
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    // Don't retry non-retryable errors
+                    if (response.status === 429) {
+                        throw new Error('Rate limit exceeded. Please wait and try again.');
+                    } else if (response.status === 400) {
+                        throw new Error('Invalid request parameters.');
+                    } else if (response.status >= 500) {
+                        // Retry 500 errors (server issues)
+                        if (attempt === retries) {
+                            throw new Error('Weather API temporarily unavailable.');
+                        }
+                        throw new Error(`API server error: ${response.status}`);
+                    }
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.daily) {
+                    throw new Error('Invalid weather data received');
+                }
+
+                if (attempt > 0) {
+                    console.log(`[ERA5] ✓ Retry successful on attempt ${attempt + 1}`);
+                }
+
+                return data;
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    if (attempt === retries) {
+                        throw new Error('Request timeout. Check your internet connection.');
+                    }
+                    console.log(`[ERA5] Timeout on attempt ${attempt + 1}, retrying...`);
+                    continue;
+                }
+
+                // If this is a non-retryable error or last attempt, throw it
+                if (attempt === retries ||
+                    error.message.includes('Rate limit') ||
+                    error.message.includes('Invalid request')) {
+                    throw error;
+                }
+
+                // Log and continue to next retry
+                console.log(`[ERA5] Attempt ${attempt + 1} failed: ${error.message}`);
             }
-
-            const data = await response.json();
-
-            if (!data.daily) {
-                throw new Error('Invalid weather data received');
-            }
-
-            return data;
-
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                throw new Error('Request timeout. Check your internet connection.');
-            }
-            throw error;
         }
+
+        throw new Error('All retry attempts exhausted');
     }
 
     async fetchHistoricalDataForPrediction(lat, lng, projectStartDate, projectEndDate) {
