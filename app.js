@@ -1748,7 +1748,11 @@ class XyloclimePro {
             const data = await response.json();
 
             if (data.display_name) {
-                document.getElementById('locationSearch').value = data.display_name;
+                // CRITICAL FIX (Bug #18): Add null check before accessing element
+                const locationInput = document.getElementById('locationSearch');
+                if (locationInput) {
+                    locationInput.value = data.display_name;
+                }
             }
         } catch (error) {
             console.warn('Reverse geocoding failed:', error);
@@ -1831,7 +1835,11 @@ class XyloclimePro {
                     const locationName = isZipCode ?
                         `${sanitizedQuery}, ${result.address?.state || result.address?.county || 'USA'}` :
                         result.display_name;
-                    document.getElementById('locationSearch').value = locationName;
+                    // CRITICAL FIX (Bug #18): Add null check before accessing element
+                    const locationInput = document.getElementById('locationSearch');
+                    if (locationInput) {
+                        locationInput.value = locationName;
+                    }
 
                     this.showSearchStatus(isZipCode ? 'ZIP code found!' : 'Location found!', 'success');
                     setTimeout(() => this.hideSearchStatus(), 2000);
@@ -1884,7 +1892,11 @@ class XyloclimePro {
             item.addEventListener('click', () => {
                 const lat = parseFloat(result.lat);
                 const lng = parseFloat(result.lon);
-                document.getElementById('locationSearch').value = displayName;
+                // CRITICAL FIX (Bug #18): Add null check before accessing element
+                const locationInput = document.getElementById('locationSearch');
+                if (locationInput) {
+                    locationInput.value = displayName;
+                }
                 this.map.setView([lat, lng], 10);
                 this.selectLocation(lat, lng);
                 this.hideSuggestions();
