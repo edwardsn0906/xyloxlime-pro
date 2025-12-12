@@ -3,7 +3,7 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **18 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
+Fixed **21 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
 
 **Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
 **Bug #9:** Strict precipitation equality check
@@ -16,6 +16,9 @@ Fixed **18 critical bugs** and added **comprehensive validation suite** to ensur
 **Bug #16:** PDF percentage calculation inconsistency
 **Bug #17:** Format functions null/undefined handling
 **Bug #18:** Missing null checks in location search
+**Bug #19:** Missing database project validation
+**Bug #20:** Wind check using falsy instead of null
+**Bug #21:** NaN propagation in NOAA data conversion
 
 ---
 
@@ -613,6 +616,125 @@ if (locationInput) {
 
 ---
 
+## Bug #19: Missing Database Project Validation ✅
+**File:** `app.js:176-189`
+
+**Problem:** No validation when loading projects from Firestore snapshot:
+```javascript
+// BUGGY - assumes all documents contain valid data
+snapshot.forEach(doc => {
+    const data = doc.data();
+    projects.push({
+        id: doc.id,
+        ...data  // Could crash if data is null/invalid
+    });
+});
+```
+
+**Scenarios that could cause crashes:**
+- Corrupted documents in Firestore
+- Documents deleted during query
+- Network interruption returning partial data
+- Spread operator on null: "Cannot spread non-object"
+
+**Fix:**
+```javascript
+snapshot.forEach(doc => {
+    const data = doc.data();
+    // CRITICAL FIX: Validate project data before adding
+    if (!data || typeof data !== 'object') {
+        console.warn('[DATABASE] Skipping invalid project:', doc.id);
+        return;
+    }
+    projects.push({
+        id: doc.id,
+        ...data
+    });
+});
+```
+
+**Impact:** Gracefully handles corrupted/invalid Firestore documents instead of crashing.
+
+---
+
+## Bug #20: Wind Check Using Falsy Instead of Null ✅
+**File:** `app.js:5042-5044`
+
+**Problem:** Wind validation used falsy check (!wind) instead of explicit null check:
+```javascript
+// BUGGY - treats 0 km/h as missing data
+const meetsWind = !wind || wind < template.weatherCriteria.maxWind;
+```
+
+**Issue:** 0 km/h is **calm conditions** (perfect weather) but !wind evaluates to true:
+```javascript
+!0 === true  // 0 is falsy, so !0 is true
+```
+
+This skips the wind check when wind is 0, treating it as if wind data is missing.
+
+**Impact on Weather Windows:**
+- Calm days (0 km/h wind) incorrectly treated as "missing data"
+- Should PASS all wind criteria (0 < any threshold)
+- Bug causes under-counting of good weather windows
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Check for null/undefined, not falsy
+const meetsWind = wind === null || wind === undefined || wind < template.weatherCriteria.maxWind;
+```
+
+**Impact:** Calm days (0 km/h) now correctly counted in weather windows.
+
+---
+
+## Bug #21: NaN Propagation in NOAA Data Conversion ✅
+**File:** `app.js:3819-3834`
+
+**Problem:** No NaN checks after parseFloat in NOAA data conversion:
+```javascript
+// BUGGY - NaN propagates through calculations
+const precipInches = parseFloat(record.PRCP || 0);
+precipitation_sum.push(precipInches * 25.4);  // NaN * 25.4 = NaN
+
+const snowInches = parseFloat(record.SNOW || 0);
+const waterEquivalentMm = (snowInches * 25.4) / 10;  // NaN propagation
+snowfall_sum.push(waterEquivalentMm);
+```
+
+**Scenario:** If NOAA returns invalid data (empty string, "N/A", corrupted values):
+```javascript
+parseFloat("N/A") === NaN
+parseFloat("") === NaN
+parseFloat(undefined) === NaN
+```
+
+**Propagation Chain:**
+1. `precipInches = NaN`
+2. `NaN * 25.4 = NaN`
+3. Array contains NaN: `[0, 2.5, NaN, 1.8, ...]`
+4. Average calculation: `sum([0, 2.5, NaN, ...]) / length = NaN`
+5. **Entire analysis corrupted with NaN values**
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Check for NaN after parseFloat
+const precipInches = parseFloat(record.PRCP || 0);
+precipitation_sum.push(isNaN(precipInches) ? 0 : precipInches * 25.4);
+
+const snowInches = parseFloat(record.SNOW || 0);
+if (isNaN(snowInches)) {
+    snowfall_sum.push(0);
+} else {
+    const waterEquivalentMm = (snowInches * 25.4) / 10;
+    snowfall_sum.push(waterEquivalentMm);
+}
+```
+
+**Impact:** Prevents NaN corruption from invalid NOAA data. Uses 0 as safe fallback.
+
+---
+
 ## Deployment Status
 
 All fixes deployed to production: **2025-12-12**
@@ -634,6 +756,8 @@ All fixes deployed to production: **2025-12-12**
 14. Fix Bug #16: PDF percentage calculation inconsistency
 15. Fix Bug #17: Format functions null/undefined handling
 16. Fix Bug #18: Missing null checks in location search
+17. Fix Bugs #19-20: Database validation and wind check logic
+18. Fix Bug #21: NaN propagation in NOAA data conversion
 
 ---
 
