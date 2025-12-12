@@ -175,6 +175,12 @@ class DatabaseManager {
             const projects = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
+                // CRITICAL FIX (Bug #19): Validate project data before adding to array
+                // Corrupted/incomplete projects could crash the app
+                if (!data || typeof data !== 'object') {
+                    console.warn('[DATABASE] Skipping invalid project:', doc.id);
+                    return;
+                }
                 console.log('[DATABASE] Project found:', doc.id, data.name, 'updatedAt:', data.updatedAt);
                 projects.push({
                     id: doc.id,
@@ -5033,7 +5039,9 @@ class XyloclimePro {
                 // CRITICAL FIX: maxRain=0 means "no measurable precipitation" (allow trace amounts ≤1mm)
                 // Same fix as workability calculation to resolve "0 paving windows" bug
                 const meetsRain = precip !== null && (template.weatherCriteria.maxRain === 0 ? precip <= 1 : precip < template.weatherCriteria.maxRain);
-                const meetsWind = !wind || wind < template.weatherCriteria.maxWind;
+                // CRITICAL FIX (Bug #20): Check for null/undefined, not falsy (!wind fails for 0 km/h)
+                // 0 km/h is calm conditions and should meet criteria, not be treated as missing data
+                const meetsWind = wind === null || wind === undefined || wind < template.weatherCriteria.maxWind;
 
                 if (meetsTemp && meetsRain && meetsWind) {
                     currentStreak++;
