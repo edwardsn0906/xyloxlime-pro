@@ -3,7 +3,7 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **15 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
+Fixed **16 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
 
 **Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
 **Bug #9:** Strict precipitation equality check
@@ -13,6 +13,7 @@ Fixed **15 critical bugs** and added **comprehensive validation suite** to ensur
 **Bug #13:** sanitizeHTML null/undefined handling
 **Bug #14:** Missing retry logic in ERA5 API
 **Bug #15:** Race condition in analyzeWeatherData
+**Bug #16:** PDF percentage calculation inconsistency
 
 ---
 
@@ -491,6 +492,43 @@ async analyzeWeatherData() {
 
 ---
 
+## Bug #16: PDF Percentage Calculation Inconsistency ✅
+**File:** `app.js:9058-9062, 9111-9137`
+
+**Problem:** PDF was recalculating projectDays instead of using analysis.actualProjectDays:
+```javascript
+// BUGGY - PDF recalculates project days
+const projectDays = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+const workablePercent = Math.round(((analysis.workableDays || analysis.optimalDays) / projectDays) * 100);
+```
+
+This caused percentage inconsistencies between dashboard and PDF:
+- Dashboard uses `analysis.actualProjectDays` (correctly calculated during analysis)
+- PDF recalculated from dates (could differ by 1-2 days due to date math)
+- Result: PDF shows "65% workable" while dashboard shows "67% workable"
+
+**Additional Issues:**
+1. Dead code: `projectDaysTableCalc` variable declared but never used
+2. Confusing fallback chain: `analysis.workableDays || analysis.optimalDays`
+3. Missing division-by-zero guards
+
+**Root Cause:** PDF generation didn't reference the authoritative `actualProjectDays` value from analysis.
+
+**Fix:**
+```javascript
+// Use analysis.actualProjectDays (authoritative value from analysis)
+const projectDays = analysis.actualProjectDays || Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+// Add division-by-zero guards
+const workablePercent = projectDays > 0 ? Math.round(((analysis.workableDays || 0) / projectDays) * 100) : 0;
+const idealPercent = projectDays > 0 ? Math.round(((analysis.idealDays || 0) / projectDays) * 100) : 0;
+// Remove dead code
+// Clean up fallback chains
+```
+
+**Impact:** PDF percentages now match dashboard metrics exactly. Eliminated dead code and added safety guards.
+
+---
+
 ## Deployment Status
 
 All fixes deployed to production: **2025-12-12**
@@ -509,6 +547,7 @@ All fixes deployed to production: **2025-12-12**
 11. Fix Bug #13: sanitizeHTML null/undefined handling
 12. Fix Bug #14: Add retry logic to ERA5 API fetch
 13. Fix Bug #15: Race condition in analyzeWeatherData
+14. Fix Bug #16: PDF percentage calculation inconsistency
 
 ---
 
