@@ -9055,9 +9055,11 @@ class XyloclimePro {
             doc.setTextColor(255, 255, 255);
             doc.setFont(undefined, 'normal');
             const avgTemp = ((parseFloat(analysis.avgTempMax) || 0) + (parseFloat(analysis.avgTempMin) || 0)) / 2;
-            const projectDays = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
-            const workablePercent = Math.round(((analysis.workableDays || analysis.optimalDays) / projectDays) * 100);
-            const idealPercent = Math.round(((analysis.idealDays || 0) / projectDays) * 100);
+            // CRITICAL FIX (Bug #16): Use actualProjectDays from analysis instead of recalculating
+            // Recalculating projectDays can cause percentage inconsistencies in PDF vs dashboard
+            const projectDays = analysis.actualProjectDays || Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
+            const workablePercent = projectDays > 0 ? Math.round(((analysis.workableDays || 0) / projectDays) * 100) : 0;
+            const idealPercent = projectDays > 0 ? Math.round(((analysis.idealDays || 0) / projectDays) * 100) : 0;
 
             // Unit system indicator
             const unitLabel = this.unitSystem === 'imperial' ? 'Imperial Units (°F, in, mph)' : 'Metric Units (°C, mm, km/h)';
@@ -9106,8 +9108,7 @@ class XyloclimePro {
             doc.setFontSize(10);
             doc.setTextColor(60, 60, 60);
             doc.setFont(undefined, 'normal');
-            const projectDaysTableCalc = Math.max(1, Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) || 1);
-            // Use already declared workablePercent and idealPercent from line 3855-3856
+            // REMOVED dead code: projectDaysTableCalc - use projectDays and percentages from line 9060-9062
             let outlookText = '';
             if (workablePercent > 75) {
                 outlookText = `✓ HIGHER WORKABILITY: ${workablePercent}% workable conditions (${idealPercent}% ideal). Favorable for this region - good opportunity for efficient project execution.`;
@@ -9132,8 +9133,8 @@ class XyloclimePro {
 
             const metrics = [
                 [`Temperature Range`, `${this.formatTemp(parseFloat(analysis.avgTempMin) || 0, 'C')} to ${this.formatTemp(parseFloat(analysis.avgTempMax) || 0, 'C')}`],
-                [`Workable Days`, `${analysis.workableDays || analysis.optimalDays} days (${workablePercent}%)`],
-                [`Ideal Days`, `${analysis.idealDays || analysis.optimalDays} days (${idealPercent}%)`],
+                [`Workable Days`, `${analysis.workableDays || 0} days (${workablePercent}%)`],
+                [`Ideal Days`, `${analysis.idealDays || 0} days (${idealPercent}%)`],
                 [`Expected Rainy Days`, `${analysis.rainyDays} days (any precipitation)`],
                 [`Heavy Rain Days`, `${analysis.heavyRainDays || 0} days (≥15mm = work stoppage)`],
                 [`Expected Snow Days`, `${analysis.snowyDays} days`],
