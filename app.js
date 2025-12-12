@@ -3037,16 +3037,26 @@ class XyloclimePro {
             return;
         }
 
-        // Get current criteria
+        // CRITICAL FIX (Bug #26): Use same helper functions to handle 0 as valid value
+        // When saving templates, 0 thresholds should be preserved (e.g., "no rain allowed")
+        const getFloatValue = (id, defaultVal) => {
+            const val = parseFloat(document.getElementById(id).value);
+            return isNaN(val) ? defaultVal : val;
+        };
+        const getIntValue = (id, defaultVal) => {
+            const val = parseInt(document.getElementById(id).value);
+            return isNaN(val) ? defaultVal : val;
+        };
+
         const template = {
             name: templateName,
             criteria: {
-                maxRain: parseFloat(document.getElementById('maxRainThreshold').value) || 5,
-                maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 30,
-                minTemp: parseFloat(document.getElementById('minTempThreshold').value) || 0,
-                maxTemp: parseFloat(document.getElementById('maxTempThreshold').value) || 35,
-                maxSnow: parseFloat(document.getElementById('maxSnowThreshold').value) || 2,
-                consecutiveDays: parseInt(document.getElementById('consecutiveDays').value) || 1
+                maxRain: getFloatValue('maxRainThreshold', 5),
+                maxWind: getFloatValue('maxWindThreshold', 30),
+                minTemp: getFloatValue('minTempThreshold', 0),
+                maxTemp: getFloatValue('maxTempThreshold', 35),
+                maxSnow: getFloatValue('maxSnowThreshold', 2),
+                consecutiveDays: getIntValue('consecutiveDays', 1)
             },
             tempUnit: this.tempUnit,
             created: new Date().toISOString()
