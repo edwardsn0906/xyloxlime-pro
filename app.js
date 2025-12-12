@@ -1602,8 +1602,15 @@ class XyloclimePro {
     // ========================================================================
 
     sanitizeHTML(str) {
+        // CRITICAL FIX: Handle null/undefined/non-string inputs
+        // Prevents "Cannot read property 'textContent' of null" errors
+        if (str === null || str === undefined) {
+            return '';
+        }
+        // Convert to string if not already
+        const stringValue = String(str);
         const div = document.createElement('div');
-        div.textContent = str;
+        div.textContent = stringValue;
         return div.innerHTML;
     }
 
@@ -4243,9 +4250,31 @@ class XyloclimePro {
         for (let i = 0; i < yearsToFetch; i++) {
             const year = historicalEndYear - i;
 
-            let historicalStart = new Date(year, projectStartMonth, projectStartDay);
-            let historicalEnd = new Date(year + (projectEnd.getFullYear() - projectStart.getFullYear()),
-                projectEndMonth, projectEndDay);
+            // CRITICAL FIX: Handle leap year date rollover (Feb 29 in non-leap years)
+            // If project starts on Feb 29, use Feb 28 for non-leap years to avoid rollover to March 1
+            let adjustedStartDay = projectStartDay;
+            if (projectStartMonth === 1 && projectStartDay === 29) {  // February 29
+                const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+                if (!isLeapYear) {
+                    adjustedStartDay = 28;  // Use Feb 28 for non-leap years
+                    console.log(`[DATE] Adjusted Feb 29 -> Feb 28 for non-leap year ${year}`);
+                }
+            }
+
+            let historicalStart = new Date(year, projectStartMonth, adjustedStartDay);
+
+            // Same fix for end date
+            let adjustedEndDay = projectEndDay;
+            const endYear = year + (projectEnd.getFullYear() - projectStart.getFullYear());
+            if (projectEndMonth === 1 && projectEndDay === 29) {  // February 29
+                const isLeapYear = (endYear % 4 === 0 && endYear % 100 !== 0) || (endYear % 400 === 0);
+                if (!isLeapYear) {
+                    adjustedEndDay = 28;  // Use Feb 28 for non-leap years
+                    console.log(`[DATE] Adjusted Feb 29 -> Feb 28 for non-leap year ${endYear}`);
+                }
+            }
+
+            let historicalEnd = new Date(endYear, projectEndMonth, adjustedEndDay);
 
             const fiveDaysAgo = new Date();
             fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
