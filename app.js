@@ -7017,15 +7017,18 @@ class XyloclimePro {
                             const snow = data.daily.snowfall_sum?.[index];
                             const wind = data.daily.windspeed_10m_max?.[index];
 
-                            // Convert values based on unit system
+                            // CRITICAL FIX: Check for both null and NaN before calling toFixed()
+                            // NaN values can come from failed NOAA parsing and will export as "NaN" string
+                            const isValidNumber = (val) => val != null && !isNaN(val);
+
                             rows.push([
                                 yearData.year,
                                 date,
-                                tempMax != null ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMax, 'C').toFixed(1) : tempMax.toFixed(1)) : '',
-                                tempMin != null ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMin, 'C').toFixed(1) : tempMin.toFixed(1)) : '',
-                                precip != null ? (this.unitSystem === 'imperial' ? this.mmToInches(precip).toFixed(2) : precip.toFixed(1)) : '',
-                                snow != null ? (this.unitSystem === 'imperial' ? this.cmToInches(snow).toFixed(2) : snow.toFixed(1)) : '',  // snow in mm water equiv = cm depth numerically
-                                wind != null ? (this.unitSystem === 'imperial' ? this.kmhToMph(wind).toFixed(1) : wind.toFixed(1)) : ''
+                                isValidNumber(tempMax) ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMax, 'C').toFixed(1) : tempMax.toFixed(1)) : '',
+                                isValidNumber(tempMin) ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMin, 'C').toFixed(1) : tempMin.toFixed(1)) : '',
+                                isValidNumber(precip) ? (this.unitSystem === 'imperial' ? this.mmToInches(precip).toFixed(2) : precip.toFixed(1)) : '',
+                                isValidNumber(snow) ? (this.unitSystem === 'imperial' ? this.cmToInches(snow).toFixed(2) : snow.toFixed(1)) : '',
+                                isValidNumber(wind) ? (this.unitSystem === 'imperial' ? this.kmhToMph(wind).toFixed(1) : wind.toFixed(1)) : ''
                             ]);
                         });
                     }
@@ -7317,21 +7320,27 @@ class XyloclimePro {
                 const date = new Date(dateStr);
                 const month = date.getMonth(); // 0-11
 
-                // Collect data for this month
-                if (daily.temperature_2m_max?.[index] != null) {
-                    monthlyData.tempMax[month].push(daily.temperature_2m_max[index]);
+                // CRITICAL FIX: Check for both null and NaN before collecting data
+                // NaN values will corrupt the averages through reduce operations
+                const tempMax = daily.temperature_2m_max?.[index];
+                if (tempMax != null && !isNaN(tempMax)) {
+                    monthlyData.tempMax[month].push(tempMax);
                 }
-                if (daily.temperature_2m_min?.[index] != null) {
-                    monthlyData.tempMin[month].push(daily.temperature_2m_min[index]);
+                const tempMin = daily.temperature_2m_min?.[index];
+                if (tempMin != null && !isNaN(tempMin)) {
+                    monthlyData.tempMin[month].push(tempMin);
                 }
-                if (daily.precipitation_sum?.[index] != null) {
-                    monthlyData.precip[month].push(daily.precipitation_sum[index]);
+                const precip = daily.precipitation_sum?.[index];
+                if (precip != null && !isNaN(precip)) {
+                    monthlyData.precip[month].push(precip);
                 }
-                if (daily.snowfall_sum?.[index] != null) {
-                    monthlyData.snow[month].push(daily.snowfall_sum[index]);
+                const snow = daily.snowfall_sum?.[index];
+                if (snow != null && !isNaN(snow)) {
+                    monthlyData.snow[month].push(snow);
                 }
-                if (daily.windspeed_10m_max?.[index] != null) {
-                    monthlyData.wind[month].push(daily.windspeed_10m_max[index]);
+                const wind = daily.windspeed_10m_max?.[index];
+                if (wind != null && !isNaN(wind)) {
+                    monthlyData.wind[month].push(wind);
                 }
             });
         });
@@ -7424,9 +7433,10 @@ class XyloclimePro {
             precipLabel = 'Rain (in)';
             snowLabel = 'Snow (in)';
         } else {
-            // Keep metric (mm for rain, snow in mm water equiv = cm depth numerically)
-            precipData = monthlyData.precip;
-            snowData = monthlyData.snow;  // Already in cm depth equivalent
+            // CRITICAL FIX: Handle null values in metric data like imperial does
+            // Charts cannot render null values properly, need to convert to 0
+            precipData = monthlyData.precip.map(p => p ?? 0);
+            snowData = monthlyData.snow.map(s => s ?? 0);
             precipLabel = 'Rain (mm)';
             snowLabel = 'Snow (cm)';
         }
@@ -7521,17 +7531,19 @@ class XyloclimePro {
         const end = new Date(this.currentProject.endDate);
         const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
+        // CRITICAL FIX: Prevent negative "Other" value when categories overlap
+        // Categories can overlap (e.g., a day can be both workable and have light rain)
+        const workable = analysis.workableDays || 0;
+        const heavyRain = analysis.heavyRainDays || 0;
+        const snowy = analysis.snowyDays || 0;
+        const other = Math.max(0, totalDays - workable - heavyRain - snowy);
+
         this.charts.distribution = new Chart(canvas, {
             type: 'doughnut',
             data: {
                 labels: ['Workable Days', 'Heavy Rain Days', 'Snow Days', 'Other'],
                 datasets: [{
-                    data: [
-                        analysis.workableDays || 0,
-                        analysis.heavyRainDays || 0,
-                        analysis.snowyDays || 0,
-                        totalDays - (analysis.workableDays || 0) - (analysis.heavyRainDays || 0) - (analysis.snowyDays || 0)
-                    ],
+                    data: [workable, heavyRain, snowy, other],
                     backgroundColor: [
                         'rgba(0, 229, 204, 0.8)',
                         'rgba(77, 208, 225, 0.8)',
@@ -7585,7 +7597,8 @@ class XyloclimePro {
             precipData = monthlyData.precip.map(p => p != null ? this.mmToInches(p) : 0);
             precipLabel = 'Precipitation (in)';
         } else {
-            precipData = monthlyData.precip;
+            // CRITICAL FIX: Handle null values in metric data
+            precipData = monthlyData.precip.map(p => p ?? 0);
             precipLabel = 'Precipitation (mm)';
         }
 
