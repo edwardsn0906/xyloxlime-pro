@@ -3,7 +3,12 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **8 critical calculation bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy and prevent future regression.
+Fixed **11 critical calculation bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy and prevent future regression.
+
+**Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
+**Bug #9:** Strict precipitation equality check
+**Bug #10:** Missing null checks in temperature comparisons
+**Bug #11:** Division by zero in validation logging
 
 ---
 
@@ -282,19 +287,75 @@ All projects should show comprehensive validation:
 
 ---
 
+## Bug #9: Compaction Days Strict Precipitation ✅
+**File:** `app.js:4959`
+
+**Problem:** Used strict `=== 0` check for precipitation:
+```javascript
+if (temp_max >= 10 && precip === 0)
+```
+Rejected days with trace precipitation (0.1mm, 0.5mm mist).
+
+**Fix:** Allow trace amounts ≤1mm:
+```javascript
+if (temp_max >= 10 && precip !== null && precip <= 1)
+```
+
+**Impact:** Compaction days KPI now correctly counts days with trace moisture.
+
+---
+
+## Bug #10: Missing Null Checks in Temperature Comparisons ✅
+**File:** `app.js:4914, 4989`
+
+**Problem:** KPI calculations didn't check for null temperatures:
+```javascript
+const meetsTemp = temp_min > minTemp && temp_max < maxTemp;
+```
+Missing data could cause NaN propagation or incorrect calculations.
+
+**Fix:** Added explicit null checks:
+```javascript
+const meetsTemp = temp_min !== null && temp_max !== null &&
+                 temp_min > minTemp && temp_max < maxTemp;
+```
+
+**Impact:** Handles missing data gracefully without false positives.
+
+---
+
+## Bug #11: Division by Zero in Validation Logging ✅
+**File:** `app.js:4684`
+
+**Problem:** Validation logged percentages without guarding against zero:
+```javascript
+(idealDays / actualProjectDays * 100).toFixed(1)
+```
+Would produce NaN or Infinity in edge cases.
+
+**Fix:** Added guards before division:
+```javascript
+const idealPercent = actualProjectDays > 0 ? (idealDays / actualProjectDays * 100).toFixed(1) : 0;
+```
+
+**Impact:** Validation logging safe for all edge cases including zero-day projects.
+
+---
+
 ## Deployment Status
 
 All fixes deployed to production: **2025-12-12**
 
 **Git Commits:**
-1. `6b6143f` - Fix workable days contradiction
-2. `7b7c5dc` - Fix paving windows calculation
-3. `6f2c99e` - Fix cold-weather methods contradiction
-4. `721b901` - Fix ideal days calculation
-5. `d79b496` - Add wind data validation
-6. `6066b8b` - Fix monthly breakdown template inconsistency
-7. `1617208` - Add painting workability validation
-8. `ef60aac` - Fix paint application days KPI + comprehensive validation
+1. Fix workable days contradiction
+2. Fix paving windows calculation
+3. Fix cold-weather methods contradiction
+4. Fix ideal days calculation
+5. Add wind data validation
+6. Fix monthly breakdown template inconsistency
+7. Add painting workability validation
+8. Fix paint application days KPI + comprehensive validation
+9. Fix bugs #9-11: Compaction days, null handling, and division by zero
 
 ---
 
