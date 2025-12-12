@@ -3,12 +3,16 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **11 critical calculation bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy and prevent future regression.
+Fixed **15 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
 
 **Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
 **Bug #9:** Strict precipitation equality check
 **Bug #10:** Missing null checks in temperature comparisons
 **Bug #11:** Division by zero in validation logging
+**Bug #12:** Leap year date rollover (Feb 29 handling)
+**Bug #13:** sanitizeHTML null/undefined handling
+**Bug #14:** Missing retry logic in ERA5 API
+**Bug #15:** Race condition in analyzeWeatherData
 
 ---
 
@@ -342,6 +346,151 @@ const idealPercent = actualProjectDays > 0 ? (idealDays / actualProjectDays * 10
 
 ---
 
+## Bug #12: Leap Year Date Rollover ✅
+**File:** `app.js:4253-4275`
+
+**Problem:** Feb 29 project dates rolled over to March 1 in non-leap years:
+```
+Project start: Feb 29, 2023 (non-leap year)
+Historical fetch: Created date "2023-03-01" instead of "2023-02-28"
+Result: Off-by-one-day error in historical data fetching
+```
+
+**Root Cause:**
+```javascript
+// Date object auto-rolls over Feb 29 to March 1 in non-leap years
+new Date(2023, 1, 29)  // Returns March 1, 2023 (not Feb 28)
+```
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Handle leap year date rollover
+let adjustedStartDay = projectStartDay;
+if (projectStartMonth === 1 && projectStartDay === 29) {  // February 29
+    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    if (!isLeapYear) {
+        adjustedStartDay = 28;  // Use Feb 28 for non-leap years
+        console.log(`[DATE] Adjusted Feb 29 -> Feb 28 for non-leap year ${year}`);
+    }
+}
+```
+
+**Impact:** Prevents off-by-one-day errors when fetching 10 years of historical data for Feb 29 project dates.
+
+---
+
+## Bug #13: sanitizeHTML Null Handling ✅
+**File:** `app.js:1604-1615`
+
+**Problem:** sanitizeHTML didn't handle null/undefined inputs:
+```javascript
+// BUGGY:
+sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;  // Error if str is null/undefined!
+    return div.innerHTML;
+}
+```
+
+**Fix:**
+```javascript
+sanitizeHTML(str) {
+    // CRITICAL FIX: Handle null/undefined/non-string inputs
+    if (str === null || str === undefined) {
+        return '';
+    }
+    const stringValue = String(str);
+    const div = document.createElement('div');
+    div.textContent = stringValue;
+    return div.innerHTML;
+}
+```
+
+**Impact:** Prevents errors when sanitizing null/undefined values from user input or API responses.
+
+---
+
+## Bug #14: Missing Retry Logic in ERA5 API ✅
+**File:** `app.js:4195-4268`
+
+**Problem:** ERA5 API fetch had NO retry logic for transient failures:
+- NOAA API had retry logic with exponential backoff
+- ERA5 API (critical global fallback) failed immediately on network glitches
+- Fetching 10 years of data = 10 API calls = high failure probability
+
+**Root Cause:** Inconsistent error handling across data sources.
+
+**Fix:**
+```javascript
+async fetchWeatherData(lat, lng, startDate, endDate, retries = 2) {
+    // CRITICAL FIX: Add retry logic with exponential backoff
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            if (attempt > 0) {
+                console.log(`[ERA5] Retry attempt ${attempt}...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            // ... retry 500 errors, don't retry 400/429
+
+            return data;
+        } catch (error) {
+            if (attempt === retries || isNonRetryableError(error)) {
+                throw error;
+            }
+            console.log(`[ERA5] Attempt ${attempt + 1} failed: ${error.message}`);
+        }
+    }
+}
+```
+
+**Impact:** ERA5 API now resilient to transient network errors and server glitches. Matches NOAA retry pattern.
+
+---
+
+## Bug #15: Race Condition in analyzeWeatherData ✅
+**File:** `app.js:360-361, 3508-3649`
+
+**Problem:** No guard against concurrent analysis execution:
+- User double-clicks analyze button before it's disabled
+- Two analyses run simultaneously
+- Causes: duplicate API calls, state corruption, unpredictable behavior
+
+**Root Cause:** Missing concurrency control in async function.
+
+**Fix:**
+```javascript
+// Add flag to state initialization
+this.isAnalyzing = false;
+
+async analyzeWeatherData() {
+    // CRITICAL FIX: Prevent concurrent analysis
+    if (this.isAnalyzing) {
+        console.warn('[ANALYSIS] Analysis already in progress, ignoring duplicate request');
+        return;
+    }
+
+    this.isAnalyzing = true;
+
+    try {
+        // ... perform analysis
+        this.isAnalyzing = false;  // Reset on success
+    } catch (error) {
+        this.isAnalyzing = false;  // Reset on error
+        throw error;
+    }
+}
+```
+
+**Impact:** Prevents race conditions from duplicate analyze button clicks. Ensures only one analysis runs at a time.
+
+---
+
 ## Deployment Status
 
 All fixes deployed to production: **2025-12-12**
@@ -356,6 +505,10 @@ All fixes deployed to production: **2025-12-12**
 7. Add painting workability validation
 8. Fix paint application days KPI + comprehensive validation
 9. Fix bugs #9-11: Compaction days, null handling, and division by zero
+10. Fix Bug #12: Leap year date rollover handling
+11. Fix Bug #13: sanitizeHTML null/undefined handling
+12. Fix Bug #14: Add retry logic to ERA5 API fetch
+13. Fix Bug #15: Race condition in analyzeWeatherData
 
 ---
 
