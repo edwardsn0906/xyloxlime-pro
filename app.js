@@ -3817,14 +3817,21 @@ class XyloclimePro {
                     temperature_2m_min.push(isNaN(tminF) ? null : (tminF - 32) * 5/9);
 
                     // Precipitation: Convert inches to mm
+                    // CRITICAL FIX (Bug #21): Check for NaN after parseFloat
+                    // Invalid NOAA data could return NaN and propagate through calculations
                     const precipInches = parseFloat(record.PRCP || 0);
-                    precipitation_sum.push(precipInches * 25.4);
+                    precipitation_sum.push(isNaN(precipInches) ? 0 : precipInches * 25.4);
 
                     // Snow: Convert inches depth to mm water equivalent
+                    // CRITICAL FIX (Bug #21): Check for NaN after parseFloat
                     const snowInches = parseFloat(record.SNOW || 0);
-                    const snowMm = snowInches * 25.4; // Convert inches depth to mm depth
-                    const waterEquivalentMm = snowMm / 10; // Convert depth to water equivalent (10:1 ratio)
-                    snowfall_sum.push(waterEquivalentMm);
+                    if (isNaN(snowInches)) {
+                        snowfall_sum.push(0);
+                    } else {
+                        const snowMm = snowInches * 25.4; // Convert inches depth to mm depth
+                        const waterEquivalentMm = snowMm / 10; // Convert depth to water equivalent (10:1 ratio)
+                        snowfall_sum.push(waterEquivalentMm);
+                    }
 
                     // Wind: Convert mph to km/h
                     const windMph = parseFloat(record.AWND);
