@@ -4681,7 +4681,11 @@ class XyloclimePro {
         if (idealDays > workableDays) {
             console.error(`[WORKABILITY ERROR] Logic error: ${idealDays} ideal days > ${workableDays} workable days! Ideal days MUST be a subset of workable days. This indicates a threshold calculation bug.`);
         }
-        console.log(`[WORKABILITY VALIDATION] Ideal: ${idealDays}/${actualProjectDays} (${(idealDays / actualProjectDays * 100).toFixed(1)}%), Workable: ${workableDays}/${actualProjectDays} (${(workableDays / actualProjectDays * 100).toFixed(1)}%), Ratio: ${workableDays > 0 ? (idealDays / workableDays * 100).toFixed(1) : 0}% ideal/workable`);
+        // CRITICAL FIX: Guard against division by zero in validation logging
+        const idealPercent = actualProjectDays > 0 ? (idealDays / actualProjectDays * 100).toFixed(1) : 0;
+        const workablePercent = actualProjectDays > 0 ? (workableDays / actualProjectDays * 100).toFixed(1) : 0;
+        const idealWorkableRatio = workableDays > 0 ? (idealDays / workableDays * 100).toFixed(1) : 0;
+        console.log(`[WORKABILITY VALIDATION] Ideal: ${idealDays}/${actualProjectDays} (${idealPercent}%), Workable: ${workableDays}/${actualProjectDays} (${workablePercent}%), Ratio: ${idealWorkableRatio}% ideal/workable`);
 
         // VALIDATION: Template-specific consistency checks
         if (template) {
@@ -4911,10 +4915,14 @@ class XyloclimePro {
                 const precip = daily.precipitation_sum[i];
                 const wind = daily.windspeed_10m_max?.[i];
 
-                const meetsTemp = temp_min > template.weatherCriteria.minTemp && temp_max < template.weatherCriteria.maxTemp;
+                // CRITICAL FIX: Add null checks for temperature data
+                // Missing data could cause incorrect window calculations or NaN comparisons
+                const meetsTemp = temp_min !== null && temp_max !== null &&
+                                temp_min > template.weatherCriteria.minTemp &&
+                                temp_max < template.weatherCriteria.maxTemp;
                 // CRITICAL FIX: maxRain=0 means "no measurable precipitation" (allow trace amounts ≤1mm)
                 // Same fix as workability calculation to resolve "0 paving windows" bug
-                const meetsRain = template.weatherCriteria.maxRain === 0 ? precip <= 1 : precip < template.weatherCriteria.maxRain;
+                const meetsRain = precip !== null && (template.weatherCriteria.maxRain === 0 ? precip <= 1 : precip < template.weatherCriteria.maxRain);
                 const meetsWind = !wind || wind < template.weatherCriteria.maxWind;
 
                 if (meetsTemp && meetsRain && meetsWind) {
@@ -4956,7 +4964,10 @@ class XyloclimePro {
             for (let i = 0; i < daily.time.length; i++) {
                 const temp_max = daily.temperature_2m_max[i];
                 const precip = daily.precipitation_sum[i];
-                if (temp_max >= 10 && precip === 0) { // >50°F and dry
+                // CRITICAL FIX: Allow trace amounts (≤1mm) for "dry" compaction days
+                // Strict === 0 is too harsh - trace mist/drizzle shouldn't disqualify compaction
+                // Consistent with other "dry day" calculations throughout codebase
+                if (temp_max >= 10 && precip !== null && precip <= 1) { // >50°F and dry (trace amounts OK)
                     compactionDays++;
                 }
             }
@@ -4983,9 +4994,11 @@ class XyloclimePro {
                 const wind = daily.windspeed_10m_max?.[i] || 0;
 
                 // Check if day meets painting requirements
-                const tempOK = temp_min > minTemp && temp_max < maxTemp;
+                // CRITICAL FIX: Add null checks for temperature data consistency
+                const tempOK = temp_min !== null && temp_max !== null &&
+                             temp_min > minTemp && temp_max < maxTemp;
                 // CRITICAL FIX: maxRain=0 means "allow trace amounts ≤1mm" not impossible <0mm
-                const dryOK = maxRain === 0 ? precip <= 1 : precip < maxRain;
+                const dryOK = precip !== null && (maxRain === 0 ? precip <= 1 : precip < maxRain);
                 const windOK = wind < maxWind;
 
                 if (tempOK && dryOK && windOK) {
