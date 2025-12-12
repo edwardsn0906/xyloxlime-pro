@@ -3,7 +3,7 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **16 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
+Fixed **18 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
 
 **Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
 **Bug #9:** Strict precipitation equality check
@@ -14,6 +14,8 @@ Fixed **16 critical bugs** and added **comprehensive validation suite** to ensur
 **Bug #14:** Missing retry logic in ERA5 API
 **Bug #15:** Race condition in analyzeWeatherData
 **Bug #16:** PDF percentage calculation inconsistency
+**Bug #17:** Format functions null/undefined handling
+**Bug #18:** Missing null checks in location search
 
 ---
 
@@ -529,6 +531,88 @@ const idealPercent = projectDays > 0 ? Math.round(((analysis.idealDays || 0) / p
 
 ---
 
+## Bug #17: Format Functions Null/Undefined Handling ✅
+**File:** `app.js:411-496`
+
+**Problem:** Unit formatting functions didn't check for null/undefined before calling `.toFixed()`:
+```javascript
+// BUGGY - crashes if temp is null
+formatTemp(temp, fromUnit = 'C', includeUnit = true, decimals = 0) {
+    const converted = this.convertTemp(temp, fromUnit);
+    const formatted = converted.toFixed(decimals);  // Error if temp is null!
+    return includeUnit ? `${formatted}°${this.tempUnit}` : formatted;
+}
+```
+
+**Called with potentially null values:**
+```javascript
+formatPrecip(analysis.totalPrecip)  // totalPrecip could be null
+formatWind(analysis.avgWindSpeed)   // avgWindSpeed could be undefined
+formatSnow(analysis.totalSnowfall)  // totalSnowfall could be null
+```
+
+**Error Message:** "Cannot read property 'toFixed' of null"
+
+**Root Cause:** Functions assumed non-null input but were called with potentially missing data.
+
+**Affected Functions:**
+- `formatTemp()` - Temperature formatting
+- `formatPrecip()` - Precipitation formatting
+- `formatSnow()` - Snowfall formatting
+- `formatWind()` - Wind speed formatting
+
+**Fix:**
+```javascript
+formatTemp(temp, fromUnit = 'C', includeUnit = true, decimals = 0) {
+    // CRITICAL FIX: Handle null/undefined input
+    if (temp === null || temp === undefined || isNaN(temp)) {
+        return includeUnit ? `N/A` : '0';
+    }
+    const converted = this.convertTemp(temp, fromUnit);
+    const formatted = converted.toFixed(decimals);
+    return includeUnit ? `${formatted}°${this.tempUnit}` : formatted;
+}
+```
+
+**Impact:** Prevents crashes when rendering incomplete weather data. Displays "N/A" for missing values.
+
+---
+
+## Bug #18: Missing Null Checks in Location Search ✅
+**File:** `app.js:1745-1902`
+
+**Problem:** Direct access to `document.getElementById('locationSearch').value` without checking if element exists:
+```javascript
+// BUGGY - crashes if element doesn't exist
+document.getElementById('locationSearch').value = displayName;  // Error if element is null!
+```
+
+**Affected Locations:**
+1. `reverseGeocode()` - Line 1751
+2. `searchLocation()` single result handler - Line 1834
+3. `showSuggestions()` click handler - Line 1895
+
+**Error Message:** "Cannot set property 'value' of null"
+
+**Root Cause:** Pattern inconsistency - other parts of codebase use safe pattern:
+```javascript
+const el = document.getElementById('id');
+if (el) el.value = ...
+```
+
+**Fix:** Applied safe pattern to all location search functions:
+```javascript
+// CRITICAL FIX: Add null check before accessing element
+const locationInput = document.getElementById('locationSearch');
+if (locationInput) {
+    locationInput.value = displayName;
+}
+```
+
+**Impact:** Prevents crashes if location input element is missing or not yet loaded.
+
+---
+
 ## Deployment Status
 
 All fixes deployed to production: **2025-12-12**
@@ -548,6 +632,8 @@ All fixes deployed to production: **2025-12-12**
 12. Fix Bug #14: Add retry logic to ERA5 API fetch
 13. Fix Bug #15: Race condition in analyzeWeatherData
 14. Fix Bug #16: PDF percentage calculation inconsistency
+15. Fix Bug #17: Format functions null/undefined handling
+16. Fix Bug #18: Missing null checks in location search
 
 ---
 
