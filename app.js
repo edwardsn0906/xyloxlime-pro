@@ -409,6 +409,10 @@ class XyloclimePro {
     }
 
     formatTemp(temp, fromUnit = 'C', includeUnit = true, decimals = 0) {
+        // CRITICAL FIX (Bug #17): Handle null/undefined input
+        if (temp === null || temp === undefined || isNaN(temp)) {
+            return includeUnit ? `N/A` : '0';
+        }
         const converted = this.convertTemp(temp, fromUnit);
         // For construction thresholds, use whole numbers (0°F, 20°F, 32°F)
         // NOT arbitrary decimals like "-0.4°F" or "23.0°F"
@@ -429,6 +433,10 @@ class XyloclimePro {
     }
 
     formatPrecip(mm, includeUnit = true) {
+        // CRITICAL FIX (Bug #17): Handle null/undefined input
+        if (mm === null || mm === undefined || isNaN(mm)) {
+            return includeUnit ? 'N/A' : '0';
+        }
         if (this.unitSystem === 'imperial') {
             const inches = this.mmToInches(mm);
             return includeUnit ? `${inches.toFixed(1)} in` : inches.toFixed(1);
@@ -450,6 +458,10 @@ class XyloclimePro {
     }
 
     formatSnow(cm, includeUnit = true) {
+        // CRITICAL FIX (Bug #17): Handle null/undefined input
+        if (cm === null || cm === undefined || isNaN(cm)) {
+            return includeUnit ? 'N/A' : '0';
+        }
         if (this.unitSystem === 'imperial') {
             const inches = this.cmToInches(cm);
             return includeUnit ? `${inches.toFixed(1)} in` : inches.toFixed(1);
@@ -471,6 +483,10 @@ class XyloclimePro {
     }
 
     formatWind(kmh, includeUnit = true) {
+        // CRITICAL FIX (Bug #17): Handle null/undefined input
+        if (kmh === null || kmh === undefined || isNaN(kmh)) {
+            return includeUnit ? 'N/A' : '0';
+        }
         if (this.unitSystem === 'imperial') {
             const mph = this.kmhToMph(kmh);
             return includeUnit ? `${mph.toFixed(1)} mph` : mph.toFixed(1);
