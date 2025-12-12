@@ -2858,14 +2858,25 @@ class XyloclimePro {
     calculateWorkableDays() {
         console.log('[ADVANCED CALC] Calculating workable days with custom criteria');
 
-        // Get user-defined criteria
+        // CRITICAL FIX (Bug #26): Handle 0 as valid threshold value
+        // Using || treats 0 as falsy and replaces it with default
+        // User may legitimately want 0 (e.g., "no rain allowed", "0°C minimum")
+        const getFloatValue = (id, defaultVal) => {
+            const val = parseFloat(document.getElementById(id).value);
+            return isNaN(val) ? defaultVal : val;
+        };
+        const getIntValue = (id, defaultVal) => {
+            const val = parseInt(document.getElementById(id).value);
+            return isNaN(val) ? defaultVal : val;
+        };
+
         const criteria = {
-            maxRain: parseFloat(document.getElementById('maxRainThreshold').value) || 5,
-            maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 30,
-            minTemp: parseFloat(document.getElementById('minTempThreshold').value) || 0,
-            maxTemp: parseFloat(document.getElementById('maxTempThreshold').value) || 35,
-            maxSnow: parseFloat(document.getElementById('maxSnowThreshold').value) || 2,
-            consecutiveDays: parseInt(document.getElementById('consecutiveDays').value) || 1
+            maxRain: getFloatValue('maxRainThreshold', 5),
+            maxWind: getFloatValue('maxWindThreshold', 30),
+            minTemp: getFloatValue('minTempThreshold', 0),
+            maxTemp: getFloatValue('maxTempThreshold', 35),
+            maxSnow: getFloatValue('maxSnowThreshold', 2),
+            consecutiveDays: getIntValue('consecutiveDays', 1)
         };
 
         // Convert temperature thresholds to Celsius if user has Fahrenheit selected
