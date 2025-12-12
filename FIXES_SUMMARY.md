@@ -3,7 +3,7 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **21 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
+Fixed **25 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
 
 **Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
 **Bug #9:** Strict precipitation equality check
@@ -19,6 +19,10 @@ Fixed **21 critical bugs** and added **comprehensive validation suite** to ensur
 **Bug #19:** Missing database project validation
 **Bug #20:** Wind check using falsy instead of null
 **Bug #21:** NaN propagation in NOAA data conversion
+**Bug #22:** CSV export NaN handling
+**Bug #23:** Precipitation chart metric data null handling
+**Bug #24:** Distribution chart negative values
+**Bug #25:** Monthly averages NaN propagation
 
 ---
 
@@ -791,6 +795,270 @@ Extensive validation logging helps diagnose issues during development and testin
 
 ---
 
+## Bug #22: CSV Export NaN Handling ✅
+**File:** `app.js:7020-7032`
+
+**Problem:**
+CSV export checked for `!= null` but didn't check for NaN values. When numeric data contained NaN (from failed NOAA parsing or other sources), `.toFixed()` would export the string "NaN" into CSV files, corrupting data exports.
+
+**Example:**
+```csv
+Year,Date,Temperature Max (°F),...
+2020,2020-01-15,NaN,...
+```
+
+**Root Cause:**
+```javascript
+// OLD CODE - only checks null
+tempMax != null ? this.convertTemp(tempMax, 'C').toFixed(1) : ''
+```
+
+The `!= null` check passes for NaN values, but `NaN.toFixed(1)` returns the string `"NaN"`.
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Check for both null and NaN before calling toFixed()
+// NaN values can come from failed NOAA parsing and will export as "NaN" string
+const isValidNumber = (val) => val != null && !isNaN(val);
+
+rows.push([
+    yearData.year,
+    date,
+    isValidNumber(tempMax) ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMax, 'C').toFixed(1) : tempMax.toFixed(1)) : '',
+    isValidNumber(tempMin) ? (this.unitSystem === 'imperial' ? this.convertTemp(tempMin, 'C').toFixed(1) : tempMin.toFixed(1)) : '',
+    isValidNumber(precip) ? (this.unitSystem === 'imperial' ? this.mmToInches(precip).toFixed(2) : precip.toFixed(1)) : '',
+    isValidNumber(snow) ? (this.unitSystem === 'imperial' ? this.cmToInches(snow).toFixed(2) : snow.toFixed(1)) : '',
+    isValidNumber(wind) ? (this.unitSystem === 'imperial' ? this.kmhToMph(wind).toFixed(1) : wind.toFixed(1)) : ''
+]);
+```
+
+**Impact:**
+- CSV exports now contain clean empty strings instead of "NaN" for missing/corrupted data
+- Data integrity maintained even when source data has NaN values
+- Prevents spreadsheet import errors and downstream analysis corruption
+
+**Testing:**
+1. Export CSV with NOAA data containing parse failures
+2. Verify all numeric columns show empty cells (not "NaN") for corrupted values
+3. Confirm CSV imports correctly into Excel/Google Sheets
+
+**Prevention:**
+Use `isValidNumber()` helper (checks both `!= null` and `!isNaN()`) before any numeric formatting operations.
+
+---
+
+## Bug #23: Precipitation Chart Metric Data Null Handling ✅
+**Files:**
+- `app.js:7429-7436` (Precipitation chart)
+- `app.js:7586-7595` (Comprehensive chart)
+
+**Problem:**
+Precipitation charts in metric mode didn't handle null values like the imperial mode did. The imperial version mapped data with null checks (`p != null ? this.mmToInches(p) : 0`), but metric version directly assigned arrays containing nulls, causing Chart.js rendering issues.
+
+**Inconsistency:**
+```javascript
+// Imperial - handles nulls correctly
+precipData = monthlyData.precip.map(p => p != null ? this.mmToInches(p) : 0);
+snowData = monthlyData.snow.map(s => s != null ? this.cmToInches(s) : 0);
+
+// Metric - NO null handling! Charts can't render null values
+precipData = monthlyData.precip;  // ❌ May contain nulls
+snowData = monthlyData.snow;      // ❌ May contain nulls
+```
+
+**Root Cause:**
+When monthly averages calculation returns `null` for months with no data, Chart.js either:
+1. Renders gaps in the chart
+2. Throws rendering errors
+3. Shows tooltips with "null" text
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Handle null values in metric data like imperial does
+// Charts cannot render null values properly, need to convert to 0
+precipData = monthlyData.precip.map(p => p ?? 0);
+snowData = monthlyData.snow.map(s => s ?? 0);
+```
+
+Applied to both:
+- Precipitation chart (bar chart)
+- Comprehensive chart (line chart)
+
+**Impact:**
+- Metric charts now render cleanly even with missing monthly data
+- Consistent behavior between imperial and metric unit systems
+- No more Chart.js console errors or rendering artifacts
+
+**Testing:**
+1. Switch to metric units
+2. Load project with sparse historical data (some months missing)
+3. Verify precipitation chart shows 0 for missing months instead of gaps/errors
+4. Verify comprehensive chart renders smooth line without null gaps
+
+**Prevention:**
+Always map metric data arrays with null coalescing (`?? 0`) when preparing chart datasets, matching the pattern used for imperial conversions.
+
+---
+
+## Bug #24: Distribution Chart Negative Values ✅
+**File:** `app.js:7528-7540`
+
+**Problem:**
+The distribution chart's "Other" category calculation could become negative when day categories overlapped, causing Chart.js rendering errors and distorted visualizations.
+
+**Scenario:**
+```
+totalDays = 100
+workableDays = 70
+heavyRainDays = 25
+snowyDays = 15
+
+Other = 100 - 70 - 25 - 15 = -10  ❌ NEGATIVE!
+```
+
+Categories overlap (e.g., a workable day with light rain counts in both categories), so sum can exceed total.
+
+**Root Cause:**
+```javascript
+// OLD CODE - no protection against negative values
+data: [
+    analysis.workableDays || 0,
+    analysis.heavyRainDays || 0,
+    analysis.snowyDays || 0,
+    totalDays - (analysis.workableDays || 0) - (analysis.heavyRainDays || 0) - (analysis.snowyDays || 0)
+    // ^^^^^^ This can be negative!
+]
+```
+
+**Chart.js Impact:**
+- Negative values cause rendering artifacts
+- Doughnut chart percentages exceed 100%
+- Visual distortion and incorrect legends
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Prevent negative "Other" value when categories overlap
+// Categories can overlap (e.g., a day can be both workable and have light rain)
+const workable = analysis.workableDays || 0;
+const heavyRain = analysis.heavyRainDays || 0;
+const snowy = analysis.snowyDays || 0;
+const other = Math.max(0, totalDays - workable - heavyRain - snowy);
+
+this.charts.distribution = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+        labels: ['Workable Days', 'Heavy Rain Days', 'Snow Days', 'Other'],
+        datasets: [{
+            data: [workable, heavyRain, snowy, other],
+            // ... rest of config
+        }]
+    }
+});
+```
+
+**Impact:**
+- Distribution chart always renders correctly regardless of category overlap
+- "Other" category shows 0 minimum instead of negative values
+- Clean visualizations even with complex multi-category days
+
+**Testing:**
+1. Create project where workable + heavy rain + snow > totalDays
+2. Verify distribution chart shows "Other: 0" instead of negative
+3. Confirm chart percentages sum correctly
+4. Check chart renders without artifacts
+
+**Prevention:**
+Use `Math.max(0, ...)` for any calculated values that represent counts/quantities and should never be negative, especially in chart datasets.
+
+---
+
+## Bug #25: Monthly Averages NaN Propagation ✅
+**File:** `app.js:7319-7346`
+
+**Problem:**
+The `getMonthlyAverages()` function didn't filter NaN values when collecting monthly data, causing NaN to propagate through reduce operations and corrupt all chart calculations.
+
+**NaN Propagation Chain:**
+```
+1. NOAA parsing fails → temperature_2m_max[5] = NaN
+2. getMonthlyAverages collects NaN into array → monthlyData.tempMax[0] = [12, 15, NaN, 18, ...]
+3. Reduce operation propagates NaN → sum = 12 + 15 + NaN + 18 = NaN
+4. Average calculation → average = NaN / 4 = NaN
+5. Chart data corrupted → All temperature charts show NaN
+```
+
+**Root Cause:**
+```javascript
+// OLD CODE - only checks null, not NaN
+if (daily.temperature_2m_max?.[index] != null) {
+    monthlyData.tempMax[month].push(daily.temperature_2m_max[index]);
+    // ^^^^^^ If this is NaN, it passes the check and corrupts the average!
+}
+```
+
+The `!= null` check evaluates to `true` for NaN, so NaN values get collected and corrupt the reduce sum.
+
+**Mathematical Impact:**
+```javascript
+// Reduce with NaN
+arr.reduce((a, b) => a + b, 0)
+// [10, 20, NaN, 30] → 10 + 20 + NaN + 30 = NaN
+
+// Average with NaN
+NaN / 4 = NaN  // Corrupts final result
+```
+
+**Fix:**
+```javascript
+// CRITICAL FIX: Check for both null and NaN before collecting data
+// NaN values will corrupt the averages through reduce operations
+const tempMax = daily.temperature_2m_max?.[index];
+if (tempMax != null && !isNaN(tempMax)) {
+    monthlyData.tempMax[month].push(tempMax);
+}
+const tempMin = daily.temperature_2m_min?.[index];
+if (tempMin != null && !isNaN(tempMin)) {
+    monthlyData.tempMin[month].push(tempMin);
+}
+const precip = daily.precipitation_sum?.[index];
+if (precip != null && !isNaN(precip)) {
+    monthlyData.precip[month].push(precip);
+}
+const snow = daily.snowfall_sum?.[index];
+if (snow != null && !isNaN(snow)) {
+    monthlyData.snow[month].push(snow);
+}
+const wind = daily.windspeed_10m_max?.[index];
+if (wind != null && !isNaN(wind)) {
+    monthlyData.wind[month].push(wind);
+}
+```
+
+**Impact:**
+- Monthly averages now calculate correctly even with corrupted source data
+- All charts (temperature, precipitation, comprehensive, radar) receive clean data
+- NaN is filtered at collection point instead of propagating through entire system
+- Graceful degradation: corrupted days are excluded rather than breaking all calculations
+
+**Charts Affected:**
+1. Temperature chart (`createTemperatureChart`)
+2. Precipitation chart (`createPrecipitationChart`)
+3. Comprehensive chart (`createComprehensiveChart`)
+4. Radar chart (uses analysis data derived from monthly averages)
+
+**Testing:**
+1. Inject NaN into NOAA parsed data
+2. Run analysis and verify monthly averages exclude NaN values
+3. Confirm all charts render with correct numeric values
+4. Verify console shows no "NaN detected" warnings in chart data
+
+**Prevention:**
+- Always check `!isNaN()` in addition to `!= null` before collecting numeric data into arrays
+- Especially critical before reduce operations that will propagate NaN
+- Use defensive validation at data collection boundaries (API parsing, file imports, user input)
+
+---
+
 ## Conclusion
 
 The Xyloclime Pro weather analysis system now provides:
@@ -799,5 +1067,8 @@ The Xyloclime Pro weather analysis system now provides:
 - ✅ **Comprehensive validation** to catch logic errors
 - ✅ **Transparent logging** for debugging and verification
 - ✅ **Accurate KPIs** for all project types
+- ✅ **Robust data export** with NaN protection
+- ✅ **Reliable chart rendering** with null/NaN handling
+- ✅ **Clean monthly averages** without corruption
 
 All identified contradictions have been resolved, and validation suite prevents future regression.
