@@ -4676,6 +4676,27 @@ class XyloclimePro {
             }
         }
 
+        // CRITICAL VALIDATION: Workability tier consistency
+        // Mathematical requirement: idealDays ≤ workableDays (ideal is subset of workable)
+        if (idealDays > workableDays) {
+            console.error(`[WORKABILITY ERROR] Logic error: ${idealDays} ideal days > ${workableDays} workable days! Ideal days MUST be a subset of workable days. This indicates a threshold calculation bug.`);
+        }
+        console.log(`[WORKABILITY VALIDATION] Ideal: ${idealDays}/${actualProjectDays} (${(idealDays / actualProjectDays * 100).toFixed(1)}%), Workable: ${workableDays}/${actualProjectDays} (${(workableDays / actualProjectDays * 100).toFixed(1)}%), Ratio: ${workableDays > 0 ? (idealDays / workableDays * 100).toFixed(1) : 0}% ideal/workable`);
+
+        // VALIDATION: Template-specific consistency checks
+        if (template) {
+            console.log(`[TEMPLATE VALIDATION] Template: ${template.name}`);
+            console.log(`[TEMPLATE VALIDATION] criticalMinTemp: ${template.workabilityThresholds?.criticalMinTemp}°C, maxRain: ${template.workabilityThresholds?.maxRain}mm, maxWind: ${template.workabilityThresholds?.maxWind} km/h, maxSnow: ${template.workabilityThresholds?.maxSnow}cm`);
+
+            // For templates with maxRain=0, verify we're handling trace amounts correctly
+            if (template.workabilityThresholds?.maxRain === 0) {
+                console.log(`[TEMPLATE VALIDATION] maxRain=0 template detected - trace amounts (≤1mm) should be allowed, not strict <0mm`);
+            }
+            if (template.workabilityThresholds?.maxSnow === 0) {
+                console.log(`[TEMPLATE VALIDATION] maxSnow=0 template detected - trace amounts (≤1mm) should be allowed, not strict <0mm`);
+            }
+        }
+
         // Calculate confidence intervals (standard deviation)
         const rainyDaysStdDev = this.standardDeviation(yearlyStats.map(y => y.rainyDays));
         const precipStdDev = this.standardDeviation(yearlyStats.map(y => y.totalPrecip));
@@ -4963,7 +4984,8 @@ class XyloclimePro {
 
                 // Check if day meets painting requirements
                 const tempOK = temp_min > minTemp && temp_max < maxTemp;
-                const dryOK = precip < maxRain;
+                // CRITICAL FIX: maxRain=0 means "allow trace amounts ≤1mm" not impossible <0mm
+                const dryOK = maxRain === 0 ? precip <= 1 : precip < maxRain;
                 const windOK = wind < maxWind;
 
                 if (tempOK && dryOK && windOK) {
