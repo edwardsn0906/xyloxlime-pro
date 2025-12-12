@@ -3,7 +3,7 @@
 ## Session Date: 2025-12-12
 
 ### Executive Summary
-Fixed **25 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
+Fixed **26 critical bugs** and added **comprehensive validation suite** to ensure weather analysis accuracy, prevent future regression, and improve system reliability.
 
 **Bugs #1-8:** maxRain=0/maxSnow=0 mathematical impossibility pattern
 **Bug #9:** Strict precipitation equality check
@@ -23,6 +23,7 @@ Fixed **25 critical bugs** and added **comprehensive validation suite** to ensur
 **Bug #23:** Precipitation chart metric data null handling
 **Bug #24:** Distribution chart negative values
 **Bug #25:** Monthly averages NaN propagation
+**Bug #26:** Advanced calculator zero threshold handling
 
 ---
 
@@ -1059,6 +1060,116 @@ if (wind != null && !isNaN(wind)) {
 
 ---
 
+## Bug #26: Advanced Calculator Zero Threshold Handling ✅
+**Files:**
+- `app.js:2861-2880` (calculateWorkableDays function)
+- `app.js:3040-3063` (saveWorkableTemplate function)
+
+**Problem:**
+The advanced workable days calculator and template save function used `parseFloat(value) || defaultValue` pattern, which treats 0 as a falsy value and replaces it with the default. This prevented users from setting strict thresholds like "no rain allowed" (maxRain: 0) or "0°C minimum temperature".
+
+**User Impact Example:**
+```javascript
+User enters: maxRain = 0 (meaning "no rain allowed for this operation")
+Code executes: parseFloat("0") || 5
+Result: maxRain = 5 (default value!)
+```
+
+The user's strict requirement (0mm rain) is completely ignored and replaced with a permissive default (5mm rain).
+
+**Root Cause:**
+```javascript
+// OLD CODE - treats 0 as invalid
+const criteria = {
+    maxRain: parseFloat(document.getElementById('maxRainThreshold').value) || 5,
+    maxWind: parseFloat(document.getElementById('maxWindThreshold').value) || 30,
+    minTemp: parseFloat(document.getElementById('minTempThreshold').value) || 0,
+    maxTemp: parseFloat(document.getElementById('maxTempThreshold').value) || 35,
+    maxSnow: parseFloat(document.getElementById('maxSnowThreshold').value) || 2,
+    consecutiveDays: parseInt(document.getElementById('consecutiveDays').value) || 1
+};
+```
+
+The `|| defaultValue` pattern evaluates as:
+- If `parseFloat()` returns a number (including 0): uses that number UNLESS it's 0, then uses default
+- 0 is falsy in JavaScript, so `0 || 5 = 5`
+- This makes 0 impossible to set as a threshold value
+
+**Valid Use Cases for 0:**
+1. **maxRain: 0** - No rain allowed (critical operations like electronics installation, open concrete pours)
+2. **maxWind: 0** - No wind (precision work, chemical spraying)
+3. **maxSnow: 0** - No snow (paving, painting, roofing)
+4. **minTemp: 0** - Minimum 0°C (freezing point threshold)
+5. **maxTemp: 0** - Maximum 0°C (ice preservation work)
+
+**Fix:**
+```javascript
+// CRITICAL FIX (Bug #26): Handle 0 as valid threshold value
+// Using || treats 0 as falsy and replaces it with default
+// User may legitimately want 0 (e.g., "no rain allowed", "0°C minimum")
+const getFloatValue = (id, defaultVal) => {
+    const val = parseFloat(document.getElementById(id).value);
+    return isNaN(val) ? defaultVal : val;
+};
+const getIntValue = (id, defaultVal) => {
+    const val = parseInt(document.getElementById(id).value);
+    return isNaN(val) ? defaultVal : val;
+};
+
+const criteria = {
+    maxRain: getFloatValue('maxRainThreshold', 5),
+    maxWind: getFloatValue('maxWindThreshold', 30),
+    minTemp: getFloatValue('minTempThreshold', 0),
+    maxTemp: getFloatValue('maxTempThreshold', 35),
+    maxSnow: getFloatValue('maxSnowThreshold', 2),
+    consecutiveDays: getIntValue('consecutiveDays', 1)
+};
+```
+
+**How the Fix Works:**
+- `getFloatValue()` explicitly checks `isNaN()` instead of relying on falsy evaluation
+- Only uses default if value is **actually NaN** (not a number)
+- 0 is recognized as a valid number: `isNaN(0) = false`, so it's used
+- Empty/invalid input becomes NaN: `isNaN(NaN) = true`, so default is used
+
+**Comparison Table:**
+| User Input | parseFloat() | Old Code (|| 5) | New Code (isNaN check) |
+|------------|--------------|-----------------|------------------------|
+| "0"        | 0            | 5 (wrong!)      | 0 (correct!)           |
+| ""         | NaN          | 5 (correct)     | 5 (correct)            |
+| "invalid"  | NaN          | 5 (correct)     | 5 (correct)            |
+| "10"       | 10           | 10 (correct)    | 10 (correct)           |
+
+**Impact:**
+- Users can now set strict thresholds including 0 values
+- Critical for sensitive operations requiring precise weather windows
+- Template saving now preserves 0 thresholds correctly
+- Both calculation and template save functions fixed consistently
+
+**Locations Fixed:**
+1. **calculateWorkableDays()** - When computing workable days with custom criteria
+2. **saveWorkableTemplate()** - When saving user-defined templates to localStorage
+
+**Testing:**
+1. Open Advanced Workable Days Calculator
+2. Set maxRain = 0, maxWind = 0
+3. Click "Calculate Workable Days"
+4. Verify criteria shows maxRain: 0, maxWind: 0 (not 5, 30)
+5. Save template with 0 values
+6. Reload and load template
+7. Verify 0 values preserved (not replaced with defaults)
+
+**Prevention:**
+- **Never use `|| defaultValue` with numeric inputs that can legitimately be 0**
+- Always use explicit NaN checking: `isNaN(val) ? defaultVal : val`
+- For boolean/string inputs, `||` is fine (0 is not a valid value)
+- Document which inputs accept 0 as valid to guide future development
+
+**Related Bug:**
+This is the same pattern as Bug #20 (wind check using falsy instead of null), demonstrating a recurring anti-pattern in the codebase of treating 0 as invalid when it's actually a valid value.
+
+---
+
 ## Conclusion
 
 The Xyloclime Pro weather analysis system now provides:
@@ -1070,5 +1181,6 @@ The Xyloclime Pro weather analysis system now provides:
 - ✅ **Robust data export** with NaN protection
 - ✅ **Reliable chart rendering** with null/NaN handling
 - ✅ **Clean monthly averages** without corruption
+- ✅ **Precise user input handling** for zero thresholds
 
 All identified contradictions have been resolved, and validation suite prevents future regression.
